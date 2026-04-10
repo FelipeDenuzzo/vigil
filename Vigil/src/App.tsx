@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { SelectAttention } from './pages/SelectAttention';
 import { SelectiveHub } from './attentions/selective/SelectiveHub';
@@ -10,16 +10,16 @@ import './shared/base.css';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
-        <Route path="/"                   element={<Home />} />
-        <Route path="/treinar"            element={<SelectAttention />} />
-        <Route path="/treinar/seletiva"   element={<SelectiveHub />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/treinar" element={<SelectAttention />} />
+        <Route path="/treinar/seletiva" element={<SelectiveHub />} />
         <Route path="/treinar/sustentada" element={<SustainedHub />} />
-        <Route path="/treinar/alternada"  element={<AlternatingHub />} />
-        <Route path="/treinar/dividida"   element={<DividedHub />} />
-        <Route path="*"                   element={<NotFound />} />
+        <Route path="/treinar/alternada" element={<AlternatingHub />} />
+        <Route path="/treinar/dividida" element={<DividedHub />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
