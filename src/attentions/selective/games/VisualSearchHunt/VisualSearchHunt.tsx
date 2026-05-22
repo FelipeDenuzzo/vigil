@@ -3,6 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../../shared/components/Button';
 import { Card } from '../../../../shared/components/Card';
 import type { GameResult } from '../../../../shared/types';
+import { saveSession, saveResult } from '../../../../shared/storage';
+import type {
+  VisualSearchClickLog,
+  VisualSearchRoundLog,
+  VisualSearchSessionLog,
+  VisualSearchShape,
+  VisualSearchColor,
+} from './types';
 
 type Shape = 'circle' | 'square' | 'triangle';
 type Color = 'red' | 'blue' | 'green' | 'yellow';
@@ -18,18 +26,7 @@ type Tile = {
   selected: boolean;
 };
 
-type ClickEventLog = {
-  timestampMs: number;
-  roundIndex: number;
-  phaseLevel: number;
-  action: ClickAction;
-  tileId: string;
-  isTarget: boolean;
-  clickedShape: Shape;
-  clickedColor: Color;
-  targetShape: Shape;
-  targetColor: Color;
-};
+
 
 type RoundResult = {
   roundIndex: number;
@@ -47,7 +44,7 @@ type RoundResult = {
   remainingTimeSeconds: number;
   startedAt: number;
   endedAt: number;
-  clickEvents: ClickEventLog[];
+  clickEvents: VisualSearchClickLog[];
 };
 
 type VisualSearchHuntProps = {
@@ -336,7 +333,51 @@ export default function VisualSearchHunt({
 
   const timerRef = useRef<number | null>(null);
   const roundStartRef = useRef<number>(0);
-  const clickLogRef = useRef<ClickEventLog[]>([]);
+  const clickLogRef = useRef<VisualSearchClickLog[]>([]);
+  const sessionLogRef = useRef<VisualSearchSessionLog | null>(null);
+
+  const persistRoundLog = useCallback((result: RoundResult) => {
+    try {
+      if (!sessionLogRef.current) return;
+
+      const startedAt = result.startedAt;
+      const endedAt = result.endedAt;
+
+      const reactionTimes = clickLogRef.current
+        .filter((c) => c.action === 'mark' && c.isTarget)
+        .map((c) => c.timestampMs - startedAt);
+
+      const totalTargets = result.totalTargets;
+      const totalSelections = result.hits + result.errors;
+      const accuracy = totalSelections > 0 ? Number(((result.hits / totalSelections) * 100).toFixed(2)) : 0;
+
+      const roundLog: VisualSearchRoundLog = {
+        roundIndex: result.roundIndex,
+        level: result.level,
+        startedAt,
+        endedAt,
+        completed: result.status === 'won',
+        targetShape: result.targetShape as VisualSearchShape,
+        targetColor: result.targetColor as VisualSearchColor,
+        totalTargets,
+        hits: result.hits,
+        errors: result.errors,
+        missedTargets: result.missedTargets,
+        gridSize: result.gridSize,
+        timeLimitSeconds: result.timeLimitSeconds,
+        remainingTimeSeconds: result.remainingTimeSeconds,
+        durationMs: result.durationMs,
+        reactionTimes,
+        clicks: [...clickLogRef.current],
+        accuracy,
+      };
+
+      sessionLogRef.current.rounds.push(roundLog);
+      saveSession(sessionLogRef.current);
+    } catch (e) {
+      // não quebrar o jogo por causa do log
+    }
+  }, []);
 
   const clearTimer = useCallback(() => {
     if (timerRef.current !== null) {
@@ -362,6 +403,7 @@ export default function VisualSearchHunt({
     clickLogRef.current = [];
     roundStartRef.current = 0;
   }, [level]);
+
 
   useEffect(() => {
     if (status === 'instruction') {
@@ -401,6 +443,28 @@ export default function VisualSearchHunt({
       };
 
       setRoundResults((prev) => [...prev, result]);
+      // persist log específico do Visual Search
+      try {
+        if (!sessionLogRef.current) {
+          const sStarted = Date.now();
+          sessionLogRef.current = {
+            sessionId: `vsh-${sStarted}`,
+            gameId: 'visual-search-hunt',
+            attentionType: 'selective',
+            startedAt: sStarted,
+            sessionStatus: 'started',
+            schemaVersion: 1,
+            abandoned: false,
+            rounds: [],
+          };
+          saveSession(sessionLogRef.current);
+        }
+
+        persistRoundLog(result);
+      } catch (e) {
+        // não bloquear o jogo
+      }
+
       setStatus(resultStatus);
     },
     [
@@ -416,6 +480,24 @@ export default function VisualSearchHunt({
   );
 
   const startRound = useCallback(() => {
+    // iniciar sessão de log na primeira rodada
+    if (!sessionLogRef.current) {
+      const sStarted = Date.now();
+      sessionLogRef.current = {
+        sessionId: `vsh-${sStarted}`,
+        gameId: 'visual-search-hunt',
+        attentionType: 'selective',
+        startedAt: sStarted,
+        sessionStatus: 'started',
+        schemaVersion: 1,
+        abandoned: false,
+        rounds: [],
+      };
+      try {
+        saveSession(sessionLogRef.current);
+      } catch {}
+    }
+
     setStatus('playing');
     roundStartRef.current = Date.now();
 
@@ -441,17 +523,17 @@ export default function VisualSearchHunt({
 
       const nextAction: ClickAction = tile.selected ? 'unmark' : 'mark';
 
-      const clickEvent: ClickEventLog = {
+      const clickEvent: VisualSearchClickLog = {
         timestampMs: Date.now(),
+        action: nextAction,
+        isTarget: tile.isTarget,
+        tileId: tile.id,
         roundIndex,
         phaseLevel: level,
-        action: nextAction,
-        tileId: tile.id,
-        isTarget: tile.isTarget,
-        clickedShape: tile.shape,
-        clickedColor: tile.color,
-        targetShape,
-        targetColor,
+        clickedShape: tile.shape as VisualSearchShape,
+        clickedColor: tile.color as VisualSearchColor,
+        targetShape: targetShape as VisualSearchShape,
+        targetColor: targetColor as VisualSearchColor,
       };
 
       clickLogRef.current.push(clickEvent);
@@ -515,6 +597,17 @@ export default function VisualSearchHunt({
 
         accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
       };
+      try {
+        // marcar sessão como completa e salvar resultado resumido
+        if (sessionLogRef.current) {
+          sessionLogRef.current.completedAt = completedAt;
+          sessionLogRef.current.abandoned = false;
+          saveSession(sessionLogRef.current);
+        }
+        saveResult(gameResult);
+      } catch (e) {
+        // não bloquear o fluxo do jogo
+      }
 
       onEnd?.(gameResult);
       setStatus('finished');
@@ -556,6 +649,25 @@ export default function VisualSearchHunt({
       clickEvents: [...clickLogRef.current],
     };
 
+    // persistir esta rodada antes de atualizar o estado
+    try {
+      if (!sessionLogRef.current) {
+        const sStarted = Date.now();
+        sessionLogRef.current = {
+          sessionId: `vsh-${sStarted}`,
+          gameId: 'visual-search-hunt',
+          attentionType: 'selective',
+          startedAt: sStarted,
+          sessionStatus: 'started',
+          schemaVersion: 1,
+          abandoned: false,
+          rounds: [],
+        };
+        saveSession(sessionLogRef.current);
+      }
+      persistRoundLog(result);
+    } catch (e) {}
+
     setRoundResults((prev) => {
       const next = [...prev, result];
 
@@ -590,6 +702,15 @@ export default function VisualSearchHunt({
           accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
         };
 
+        try {
+          if (sessionLogRef.current) {
+            sessionLogRef.current.completedAt = completedAt;
+            sessionLogRef.current.abandoned = false;
+            saveSession(sessionLogRef.current);
+          }
+          saveResult(gameResult);
+        } catch (e) {}
+
         onEnd?.(gameResult);
         setStatus('finished');
       } else {
@@ -605,6 +726,21 @@ export default function VisualSearchHunt({
   useEffect(() => {
     return () => clearTimer();
   }, [clearTimer]);
+
+  // marcar sessão como abandonada se o componente desmontar antes de completar
+  useEffect(() => {
+    return () => {
+      try {
+        if (sessionLogRef.current && !sessionLogRef.current.completedAt) {
+          sessionLogRef.current.abandoned = true;
+          sessionLogRef.current.completedAt = Date.now();
+          saveSession(sessionLogRef.current);
+        }
+      } catch (e) {
+        // silencioso
+      }
+    };
+  }, []);
 
   const gridTemplateColumns = `repeat(${config.gridSize}, minmax(0, 1fr))`;
   const nextPhaseNumber = roundIndex + 1;
