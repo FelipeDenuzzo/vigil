@@ -553,64 +553,65 @@ export default function VisualSearchHunt({
       {status === 'instruction' && (
         <Card>
           <div style={{ display: 'grid', gap: 20 }}>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Button onClick={startRound}>
-                  Começar
-                </Button>
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Button onClick={startRound}>
+                Começar
+              </Button>
+            </div>
 
-              <div style={{ textAlign: 'center' }}>
-                <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
-                <p style={{ marginTop: 10, marginBottom: 0 }}>
-                  Encontre todos os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}.
-                </p>
-              </div>
+            <div style={{ textAlign: 'center' }}>
+              <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
+              <p style={{ marginTop: 10, marginBottom: 0 }}>
+                Encontre todos os{' '}
+                <span style={{ textTransform: 'uppercase', fontWeight: 700 }}>
+                  {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
+                </span>
+                .
+              </p>
+            </div>
 
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: 180,
+                borderRadius: 18,
+                border: 'none',
+                background: 'transparent',
+                boxShadow: 'none',
+              }}
+            >
               <div
                 style={{
+                  width: 140,
+                  height: 140,
                   display: 'flex',
-                  justifyContent: 'center',
                   alignItems: 'center',
-                  minHeight: 140,
-                  borderRadius: 18,
-                  border: 'none',
-                  background: 'transparent',
-                  boxShadow: 'none',
+                  justifyContent: 'center',
+                  background: '#ffffff',
+                  borderRadius: 12,
                 }}
               >
+                <img
+                  src={SHAPE_IMAGE[targetShape][targetColor]}
+                  alt={`${targetShape} ${targetColor}`}
+                  style={{ width: 78, height: 78, objectFit: 'contain' }}
+                  onError={(event) => {
+                    const img = event.currentTarget;
+                    img.style.display = 'none';
+                    const fallback = img.nextElementSibling as HTMLDivElement | null;
+                    if (fallback) fallback.style.display = 'block';
+                  }}
+                />
                 <div
                   style={{
-                    width: 96,
-                    height: 96,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    display: 'none',
+                    ...getShapeFallbackStyle(targetShape, targetColor),
                   }}
-                >
-                  <img
-                    src={SHAPE_IMAGE[targetShape][targetColor]}
-                    alt={`${targetShape} ${targetColor}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                    onError={(event) => {
-                      const img = event.currentTarget;
-                      img.style.display = 'none';
-                      const fallback = img.nextElementSibling as HTMLDivElement | null;
-                      if (fallback) fallback.style.display = 'block';
-                    }}
-                  />
-                  <div
-                    style={{
-                      display: 'none',
-                      ...getShapeFallbackStyle(targetShape, targetColor),
-                    }}
-                  />
-                </div>
+                />
               </div>
-
-              <div style={{ display: 'grid', gap: 8, color: '#374151' }}>
-                <p style={{ margin: 0 }}>Toque para marcar. Toque novamente para desmarcar.</p>
-                <p style={{ margin: 0 }}>Marque apenas as figuras que combinam com o alvo mostrado.</p>
-              </div>
+            </div>
           </div>
         </Card>
       )}
