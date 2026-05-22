@@ -59,7 +59,7 @@ type VisualSearchHuntProps = {
 const SHAPES: Shape[] = ['circle', 'square', 'triangle'];
 const COLORS: Color[] = ['red', 'blue', 'green', 'yellow'];
 const FIXED_TIME_SECONDS = 30;
-const MAX_PHASES = 5;
+const MAX_PHASES = 10;
 
 const SHAPE_LABEL: Record<Shape, string> = {
   circle: 'círculos',
@@ -170,7 +170,35 @@ function getLevelConfig(level: number): {
       mode: 'mixed',
       gridSize: 5,
       targetMin: 4,
+      targetMax: 5,
+      timeSeconds: FIXED_TIME_SECONDS,
+    };
+  }
+   if (level <= 6) {
+    return {
+      mode: 'mixed',
+      gridSize: 7,
+      targetMin: 8,
       targetMax: 6,
+      timeSeconds: FIXED_TIME_SECONDS,
+    };
+      }
+   if (level <= 7) {
+    return {
+      mode: 'mixed',
+      gridSize: 7,
+      targetMin: ,
+      targetMax: 8,
+      timeSeconds: FIXED_TIME_SECONDS,
+    };
+  }
+  
+   if (level <= 9) {
+    return {
+      mode: 'mixed',
+      gridSize: 10,
+      targetMin: 10,
+      targetMax: 10,
       timeSeconds: FIXED_TIME_SECONDS,
     };
   }
@@ -555,7 +583,7 @@ export default function VisualSearchHunt({
           <div style={{ display: 'grid', gap: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Button onClick={startRound}>
-                Começar
+                {`Começar — Fase ${roundIndex}`}
               </Button>
             </div>
 
