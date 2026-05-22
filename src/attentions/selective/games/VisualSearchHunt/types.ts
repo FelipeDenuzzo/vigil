@@ -45,4 +45,7 @@ export interface VisualSearchSessionLog extends BaseTrainingSessionLog {
   rounds: VisualSearchRoundLog[];
   // indicar se sessão foi abandonada (compatibilidade local)
   abandoned?: boolean;
+  // indicar em qual fase (round) e nível (level) a desistência ocorreu
+  abandonedAtRound?: number;
+  abandonedAtLevel?: number;
 }
