@@ -558,6 +558,10 @@ export default function VisualSearchHunt({
               <p style={{ marginTop: 10, marginBottom: 0 }}>
                 Encontre todos os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}.
               </p>
+
+              <div style={{ marginTop: 12, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+                <Button onClick={startRound} style={{ width: '100%' }}>Começar — Fase {roundIndex}</Button>
+              </div>
             </div>
 
             <div
@@ -603,10 +607,6 @@ export default function VisualSearchHunt({
             <div style={{ display: 'grid', gap: 8, color: '#374151' }}>
               <p style={{ margin: 0 }}>Toque para marcar. Toque novamente para desmarcar.</p>
               <p style={{ margin: 0 }}>Marque apenas as figuras que combinam com o alvo mostrado.</p>
-            </div>
-
-            <div style={{ marginTop: 12 }}>
-              <Button onClick={startRound} style={{ width: '100%' }}>Começar — Fase {roundIndex}</Button>
             </div>
           </div>
         </Card>
