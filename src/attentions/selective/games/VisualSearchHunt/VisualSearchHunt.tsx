@@ -465,6 +465,82 @@ export default function VisualSearchHunt({
     setStatus('instruction');
   }, [roundIndex, roundResults, onEnd]);
 
+  const advanceRoundNow = useCallback(() => {
+    clearTimer();
+
+    const endedAt = Date.now();
+    const startedAt = roundStartRef.current || endedAt;
+
+    const hits = tiles.filter((tile) => tile.selected && tile.isTarget).length;
+    const errors = tiles.filter((tile) => tile.selected && !tile.isTarget).length;
+    const missedTargets = tiles.filter((tile) => !tile.selected && tile.isTarget).length;
+    const totalTargets = tiles.filter((tile) => tile.isTarget).length;
+
+    const result: RoundResult = {
+      roundIndex,
+      level,
+      targetShape,
+      targetColor,
+      status: 'lost',
+      hits,
+      errors,
+      missedTargets,
+      totalTargets,
+      gridSize: config.gridSize,
+      durationMs: endedAt - startedAt,
+      timeLimitSeconds: FIXED_TIME_SECONDS,
+      remainingTimeSeconds: Number(remainingTime.toFixed(1)),
+      startedAt,
+      endedAt,
+      clickEvents: [...clickLogRef.current],
+    };
+
+    setRoundResults((prev) => {
+      const next = [...prev, result];
+
+      const totalHits = next.reduce((sum, r) => sum + r.hits, 0);
+      const totalErrors = next.reduce((sum, r) => sum + r.errors, 0);
+      const roundsWon = next.filter((r) => r.status === 'won').length;
+      const roundsLost = next.filter((r) => r.status === 'lost').length;
+      const totalSelections = totalHits + totalErrors;
+
+      if (roundIndex >= MAX_PHASES) {
+        const started = next[0]?.startedAt ?? Date.now();
+        const completedAt = Date.now();
+
+        const gameResult: GameResult = {
+          sessionId: `session-${started}`,
+          gameId: 'visual-search-hunt',
+          attentionType: 'selective',
+
+          startedAt: started,
+          completedAt,
+
+          sessionStatus: 'completed',
+          abandoned: false,
+          completed: true,
+
+          totalRoundsPlanned: next.length,
+          completedRounds: roundsWon + roundsLost,
+          startedRounds: next.length,
+          lastRoundIndexReached: next[next.length - 1]?.roundIndex ?? roundIndex,
+          lastLevelReached: next[next.length - 1]?.level ?? level,
+
+          accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
+        };
+
+        onEnd?.(gameResult);
+        setStatus('finished');
+      } else {
+        setLevel((l) => l + 1);
+        setRoundIndex((r) => r + 1);
+        setStatus('instruction');
+      }
+
+      return next;
+    });
+  }, [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime, onEnd]);
+
   useEffect(() => {
     return () => clearTimer();
   }, [clearTimer]);
@@ -564,82 +640,89 @@ export default function VisualSearchHunt({
           </Card>
 
           <Card>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns,
-                gap: 10,
-                padding: 4,
-                borderRadius: 18,
-                border: `2px solid ${
-                  feedback === 'mark'
-                    ? '#22c55e'
-                    : feedback === 'unmark'
-                    ? '#f59e0b'
-                    : '#e5e7eb'
-                }`,
-                transition: 'border-color 120ms ease',
-              }}
-            >
-              {tiles.map((tile) => (
-                <button
-                  key={tile.id}
-                  type="button"
-                  onClick={() => handleTileClick(tile)}
-                  aria-label={`${tile.shape} ${tile.color}`}
-                  style={{
-                    aspectRatio: '1 / 1',
-                    minHeight: 58,
-                    borderRadius: 14,
-                    border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb',
-                    background: tile.selected ? '#eff6ff' : '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    transition: 'all 120ms ease',
-                  }}
-                >
-                  <img
-                    src={SHAPE_IMAGE[tile.shape][tile.color]}
-                    alt=""
-                    aria-hidden="true"
-                    style={{
-                      width: '72%',
-                      height: '72%',
-                      objectFit: 'contain',
-                    }}
-                    onError={(event) => {
-                      const img = event.currentTarget;
-                      img.style.display = 'none';
-                      const fallback = img.nextElementSibling as HTMLDivElement | null;
-                      if (fallback) fallback.style.display = 'block';
-                    }}
-                  />
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 50 }}>
+                <Button onClick={advanceRoundNow}>Avançar</Button>
+              </div>
 
-                  <div
-                    aria-hidden="true"
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns,
+                  gap: 10,
+                  padding: 4,
+                  borderRadius: 18,
+                  border: `2px solid ${
+                    feedback === 'mark'
+                      ? '#22c55e'
+                      : feedback === 'unmark'
+                      ? '#f59e0b'
+                      : '#e5e7eb'
+                  }`,
+                  transition: 'border-color 120ms ease',
+                }}
+              >
+                {tiles.map((tile) => (
+                  <button
+                    key={tile.id}
+                    type="button"
+                    onClick={() => handleTileClick(tile)}
+                    aria-label={`${tile.shape} ${tile.color}`}
                     style={{
-                      display: 'none',
-                      ...getShapeFallbackStyle(tile.shape, tile.color),
+                      aspectRatio: '1 / 1',
+                      minHeight: 58,
+                      borderRadius: 14,
+                      border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb',
+                      background: tile.selected ? '#eff6ff' : '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      transition: 'all 120ms ease',
+                      zIndex: 20,
                     }}
-                  />
-
-                  {tile.selected && (
-                    <span
+                  >
+                    <img
+                      src={SHAPE_IMAGE[tile.shape][tile.color]}
+                      alt=""
+                      aria-hidden="true"
                       style={{
-                        position: 'absolute',
-                        top: 6,
-                        right: 6,
-                        width: 10,
-                        height: 10,
-                        borderRadius: 999,
-                        background: '#111827',
+                        width: '72%',
+                        height: '72%',
+                        objectFit: 'contain',
+                      }}
+                      onError={(event) => {
+                        const img = event.currentTarget;
+                        img.style.display = 'none';
+                        const fallback = img.nextElementSibling as HTMLDivElement | null;
+                        if (fallback) fallback.style.display = 'block';
                       }}
                     />
-                  )}
-                </button>
-              ))}
+
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        display: 'none',
+                        ...getShapeFallbackStyle(tile.shape, tile.color),
+                      }}
+                    />
+
+                    {tile.selected && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: 6,
+                          right: 6,
+                          width: 10,
+                          height: 10,
+                          borderRadius: 999,
+                          background: '#111827',
+                        }}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </Card>
         </div>
