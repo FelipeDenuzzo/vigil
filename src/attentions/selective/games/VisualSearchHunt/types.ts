@@ -36,16 +36,24 @@ export type VisualSearchRoundLog = {
   reactionTimes: number[];
   clicks: VisualSearchClickLog[];
   accuracy: number;
+
+  // novos campos, sem quebrar compatibilidade
+  firstClickAtMs?: number;
+  lastClickAtMs?: number;
+  advancePhaseAtMs?: number;
+
+  // métricas derivadas opcionais
+  timeToFirstClickMs?: number;
+  timeToLastClickMs?: number;
+  timeToAdvanceMs?: number;
 };
 
 export interface VisualSearchSessionLog extends BaseTrainingSessionLog {
   gameId: 'visual-search-hunt';
   attentionType: 'selective';
-  // rounds acumuladas
   rounds: VisualSearchRoundLog[];
-  // indicar se sessão foi abandonada (compatibilidade local)
+
   abandoned?: boolean;
-  // indicar em qual fase (round) e nível (level) a desistência ocorreu
   abandonedAtRound?: number;
   abandonedAtLevel?: number;
 }

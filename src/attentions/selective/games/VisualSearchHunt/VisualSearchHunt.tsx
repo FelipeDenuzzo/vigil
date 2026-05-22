@@ -757,6 +757,28 @@ export default function VisualSearchHunt({
     }
   }, [level, roundIndex]);
 
+  const restartTraining = useCallback(() => {
+    try {
+      // marcar sessão atual como abandonada para histórico
+      markSessionAbandoned();
+    } catch (e) {
+      // ignore
+    }
+
+    clearTimer();
+    // resetar estados
+    setLevel(1);
+    setRoundIndex(1);
+    setStatus('instruction');
+    setTiles([]);
+    setRoundResults([]);
+    setRemainingTime(FIXED_TIME_SECONDS);
+    clickLogRef.current = [];
+    roundStartRef.current = 0;
+    // iniciar nova sessão quando começar a próxima rodada
+    sessionLogRef.current = null;
+  }, [clearTimer, markSessionAbandoned]);
+
   // marcar sessão como abandonada se o componente desmontar antes de completar
   useEffect(() => {
     return () => {
@@ -980,6 +1002,9 @@ export default function VisualSearchHunt({
                 navigate('/selective');
               }}>
                 Sair
+              </Button>
+              <Button onClick={() => restartTraining()}>
+                Reiniciar
               </Button>
             </div>
           </div>
