@@ -727,12 +727,44 @@ export default function VisualSearchHunt({
     return () => clearTimer();
   }, [clearTimer]);
 
+  const markSessionAbandoned = useCallback(() => {
+    try {
+      const now = Date.now();
+      if (!sessionLogRef.current) {
+        sessionLogRef.current = {
+          sessionId: `vsh-${now}`,
+          gameId: 'visual-search-hunt',
+          attentionType: 'selective',
+          startedAt: now,
+          sessionStatus: 'started',
+          schemaVersion: 1,
+          abandoned: true,
+          abandonedAtRound: roundIndex,
+          abandonedAtLevel: level,
+          completedAt: now,
+          rounds: [],
+        };
+      } else {
+        sessionLogRef.current.abandoned = true;
+        sessionLogRef.current.abandonedAtRound = roundIndex;
+        sessionLogRef.current.abandonedAtLevel = level;
+        sessionLogRef.current.completedAt = now;
+      }
+
+      saveSession(sessionLogRef.current);
+    } catch (e) {
+      // não bloquear o fluxo
+    }
+  }, [level, roundIndex]);
+
   // marcar sessão como abandonada se o componente desmontar antes de completar
   useEffect(() => {
     return () => {
       try {
         if (sessionLogRef.current && !sessionLogRef.current.completedAt) {
           sessionLogRef.current.abandoned = true;
+          sessionLogRef.current.abandonedAtRound = roundIndex;
+          sessionLogRef.current.abandonedAtLevel = level;
           sessionLogRef.current.completedAt = Date.now();
           saveSession(sessionLogRef.current);
         }
@@ -943,7 +975,10 @@ export default function VisualSearchHunt({
                 {roundIndex >= MAX_PHASES ? 'Finalizar' : `Fase ${nextPhaseNumber}`}
               </Button>
 
-              <Button onClick={() => navigate('/selective')}>
+              <Button onClick={() => {
+                markSessionAbandoned();
+                navigate('/selective');
+              }}>
                 Sair
               </Button>
             </div>
