@@ -155,62 +155,95 @@ function getLevelConfig(level: number): {
   targetMax: number;
   timeSeconds: number;
 } {
-  if (level <= 2) {
+  if (level === 1) {
     return {
       mode: 'popout',
       gridSize: 4,
       targetMin: 3,
-      targetMax: 5,
+      targetMax: 4,
       timeSeconds: FIXED_TIME_SECONDS,
     };
   }
 
-  if (level <= 4) {
+  if (level === 2) {
     return {
-      mode: 'mixed',
-      gridSize: 5,
+      mode: 'popout',
+      gridSize: 4,
       targetMin: 4,
       targetMax: 5,
       timeSeconds: FIXED_TIME_SECONDS,
     };
   }
-   if (level <= 6) {
+
+  if (level === 3) {
     return {
       mode: 'mixed',
-      gridSize: 7,
-      targetMin: 8,
+      gridSize: 5,
+      targetMin: 4,
       targetMax: 6,
       timeSeconds: FIXED_TIME_SECONDS,
     };
-      }
-   if (level <= 7) {
+  }
+
+  if (level === 4) {
     return {
       mode: 'mixed',
-      gridSize: 7,
-      targetMin: ,
+      gridSize: 5,
+      targetMin: 5,
+      targetMax: 7,
+      timeSeconds: FIXED_TIME_SECONDS,
+    };
+  }
+
+  if (level === 5) {
+    return {
+      mode: 'mixed',
+      gridSize: 6,
+      targetMin: 6,
       targetMax: 8,
       timeSeconds: FIXED_TIME_SECONDS,
     };
   }
-  
-   if (level <= 9) {
+
+  if (level === 6) {
     return {
-      mode: 'mixed',
-      gridSize: 10,
-      targetMin: 10,
+      mode: 'conjunction',
+      gridSize: 6,
+      targetMin: 6,
+      targetMax: 9,
+      timeSeconds: FIXED_TIME_SECONDS,
+    };
+  }
+
+  if (level === 7) {
+    return {
+      mode: 'conjunction',
+      gridSize: 7,
+      targetMin: 7,
       targetMax: 10,
       timeSeconds: FIXED_TIME_SECONDS,
     };
   }
 
+  if (level === 8) {
+    return {
+      mode: 'conjunction',
+      gridSize: 7,
+      targetMin: 8,
+      targetMax: 12,
+      timeSeconds: FIXED_TIME_SECONDS,
+    };
+  }
+
   return {
-    mode: 'conjunction',
-    gridSize: 6,
-    targetMin: 5,
-    targetMax: 8,
+    mode: 'hard-conjunction',
+    gridSize: 8,
+    targetMin: 10,
+    targetMax: 14,
     timeSeconds: FIXED_TIME_SECONDS,
   };
 }
+
 
 function buildTiles(targetShape: Shape, targetColor: Color, level: number) {
   const config = getLevelConfig(level);
