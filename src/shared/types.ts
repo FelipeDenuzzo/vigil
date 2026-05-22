@@ -1,4 +1,4 @@
-export type AttentionType = 'selective' | 'sustained' | 'alternating' | 'divided';
+export type AttentionType = "selective" | "sustained" | "alternating" | "divided";
 
 export interface AttentionInfo {
   id: AttentionType;
@@ -10,7 +10,7 @@ export interface AttentionInfo {
 }
 
 export interface GameProps {
-  onEnd: (session: any) => void;
+  onEnd: (result: GameResult) => void;
 }
 
 export type SessionStatus = "in_progress" | "completed" | "abandoned";
@@ -30,7 +30,7 @@ export interface RoundLog {
   endedAt?: number;
   completed: boolean;
   accuracy?: number;
-  reactionTimes?: number[];
+  reactionTimes: number[];
   clicks: ClickEvent[];
 }
 
