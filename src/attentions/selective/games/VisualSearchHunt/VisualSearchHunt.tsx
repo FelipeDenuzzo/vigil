@@ -6,18 +6,17 @@ import type { GameResult } from '../../../../shared/types';
 
 type Shape = 'circle' | 'square' | 'triangle';
 type Color = 'red' | 'blue' | 'green' | 'yellow';
-
+type SearchMode = 'popout' | 'mixed' | 'conjunction' | 'hard-conjunction';
 type RoundStatus = 'instruction' | 'playing' | 'won' | 'lost' | 'finished';
+type ClickAction = 'mark' | 'unmark';
 
 type Tile = {
   id: string;
   shape: Shape;
   color: Color;
   isTarget: boolean;
-  found: boolean;
+  selected: boolean;
 };
-
-type ClickAction = 'mark' | 'unmark';
 
 type ClickEventLog = {
   timestampMs: number;
@@ -30,7 +29,6 @@ type ClickEventLog = {
   clickedColor: Color;
   targetShape: Shape;
   targetColor: Color;
-  targetsRemainingBeforeClick: number;
 };
 
 type RoundResult = {
@@ -52,7 +50,6 @@ type RoundResult = {
   clickEvents: ClickEventLog[];
 };
 
-
 type VisualSearchHuntProps = {
   onCorrectSound?: () => void;
   onErrorSound?: () => void;
@@ -61,6 +58,8 @@ type VisualSearchHuntProps = {
 
 const SHAPES: Shape[] = ['circle', 'square', 'triangle'];
 const COLORS: Color[] = ['red', 'blue', 'green', 'yellow'];
+const FIXED_TIME_SECONDS = 30;
+const MAX_PHASES = 5;
 
 const SHAPE_LABEL: Record<Shape, string> = {
   circle: 'círculos',
@@ -82,6 +81,35 @@ const COLOR_HEX: Record<Color, string> = {
   yellow: '#eab308',
 };
 
+/*
+  Preferência recomendada:
+  coloque seus arquivos dentro de public/formas/
+  Exemplo:
+  public/formas/circle-red.png
+  public/formas/square-blue.png
+  public/formas/triangle-green.png
+*/
+const SHAPE_IMAGE: Record<Shape, Record<Color, string>> = {
+  circle: {
+    red: '/formas/circle-red.png',
+    blue: '/formas/circle-blue.png',
+    green: '/formas/circle-green.png',
+    yellow: '/formas/circle-yellow.png',
+  },
+  square: {
+    red: '/formas/square-red.png',
+    blue: '/formas/square-blue.png',
+    green: '/formas/square-green.png',
+    yellow: '/formas/square-yellow.png',
+  },
+  triangle: {
+    red: '/formas/triangle-red.png',
+    blue: '/formas/triangle-blue.png',
+    green: '/formas/triangle-green.png',
+    yellow: '/formas/triangle-yellow.png',
+  },
+};
+
 function randomItem<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
 }
@@ -95,15 +123,15 @@ function shuffle<T>(items: T[]): T[] {
   return arr;
 }
 
-function getShapeStyle(shape: Shape, color: Color): React.CSSProperties {
+function getShapeFallbackStyle(shape: Shape, color: Color): React.CSSProperties {
   const base: React.CSSProperties = {
-    width: '70%',
-    height: '70%',
+    width: '68%',
+    height: '68%',
     backgroundColor: COLOR_HEX[color],
   };
 
   if (shape === 'circle') {
-    return { ...base, borderRadius: '999px' };
+    return { ...base, borderRadius: 999 };
   }
 
   if (shape === 'square') {
@@ -114,53 +142,45 @@ function getShapeStyle(shape: Shape, color: Color): React.CSSProperties {
     width: 0,
     height: 0,
     backgroundColor: 'transparent',
-    borderLeft: '22px solid transparent',
-    borderRight: '22px solid transparent',
-    borderBottom: `40px solid ${COLOR_HEX[color]}`,
+    borderLeft: '20px solid transparent',
+    borderRight: '20px solid transparent',
+    borderBottom: `38px solid ${COLOR_HEX[color]}`,
   };
 }
 
-function getLevelConfig(level: number) {
+function getLevelConfig(level: number): {
+  mode: SearchMode;
+  gridSize: number;
+  targetMin: number;
+  targetMax: number;
+  timeSeconds: number;
+} {
   if (level <= 2) {
     return {
+      mode: 'popout',
       gridSize: 4,
-      minTargets: 3,
-      maxTargets: 5,
-      timeSeconds: 28,
-      errorPenaltySeconds: 0.5,
-      distractorMode: 'popout' as const,
+      targetMin: 3,
+      targetMax: 5,
+      timeSeconds: FIXED_TIME_SECONDS,
     };
   }
 
   if (level <= 4) {
     return {
+      mode: 'mixed',
       gridSize: 5,
-      minTargets: 4,
-      maxTargets: 6,
-      timeSeconds: 24,
-      errorPenaltySeconds: 1,
-      distractorMode: 'mixed' as const,
-    };
-  }
-
-  if (level <= 6) {
-    return {
-      gridSize: 6,
-      minTargets: 5,
-      maxTargets: 8,
-      timeSeconds: 20,
-      errorPenaltySeconds: 1,
-      distractorMode: 'conjunction' as const,
+      targetMin: 4,
+      targetMax: 6,
+      timeSeconds: FIXED_TIME_SECONDS,
     };
   }
 
   return {
-    gridSize: 7,
-    minTargets: 6,
-    maxTargets: 9,
-    timeSeconds: 16,
-    errorPenaltySeconds: 1.5,
-    distractorMode: 'hard-conjunction' as const,
+    mode: 'conjunction',
+    gridSize: 6,
+    targetMin: 5,
+    targetMax: 8,
+    timeSeconds: FIXED_TIME_SECONDS,
   };
 }
 
@@ -168,33 +188,31 @@ function buildTiles(targetShape: Shape, targetColor: Color, level: number) {
   const config = getLevelConfig(level);
   const totalCells = config.gridSize * config.gridSize;
   const totalTargets =
-    Math.floor(Math.random() * (config.maxTargets - config.minTargets + 1)) + config.minTargets;
+    Math.floor(Math.random() * (config.targetMax - config.targetMin + 1)) + config.targetMin;
 
   const targets: Tile[] = Array.from({ length: totalTargets }, (_, index) => ({
     id: `target-${index}`,
     shape: targetShape,
     color: targetColor,
     isTarget: true,
-    found: false,
+    selected: false,
   }));
 
-  const otherShapes = SHAPES.filter((s) => s !== targetShape);
-  const otherColors = COLORS.filter((c) => c !== targetColor);
+  const otherShapes = SHAPES.filter((shape) => shape !== targetShape);
+  const otherColors = COLORS.filter((color) => color !== targetColor);
 
   const distractors: Tile[] = [];
 
-  for (let i = 0; i < totalCells - totalTargets; i += 1) {
+  for (let index = 0; index < totalCells - totalTargets; index += 1) {
     let shape: Shape = randomItem(SHAPES);
     let color: Color = randomItem(COLORS);
 
-    if (config.distractorMode === 'popout') {
-      const emphasizeSingleFeature = Math.random() > 0.5;
-      shape = emphasizeSingleFeature ? randomItem(otherShapes) : randomItem(SHAPES);
-      color = emphasizeSingleFeature ? randomItem(COLORS) : randomItem(otherColors);
-    }
-
-    if (config.distractorMode === 'mixed') {
-      const variant = i % 3;
+    if (config.mode === 'popout') {
+      const popByShape = Math.random() > 0.5;
+      shape = popByShape ? randomItem(otherShapes) : randomItem(SHAPES);
+      color = popByShape ? randomItem(COLORS) : randomItem(otherColors);
+    } else if (config.mode === 'mixed') {
+      const variant = index % 3;
       if (variant === 0) {
         shape = targetShape;
         color = randomItem(otherColors);
@@ -205,10 +223,8 @@ function buildTiles(targetShape: Shape, targetColor: Color, level: number) {
         shape = randomItem(otherShapes);
         color = randomItem(otherColors);
       }
-    }
-
-    if (config.distractorMode === 'conjunction' || config.distractorMode === 'hard-conjunction') {
-      const variant = i % 4;
+    } else {
+      const variant = index % 4;
       if (variant === 0) {
         shape = targetShape;
         color = randomItem(otherColors);
@@ -222,11 +238,11 @@ function buildTiles(targetShape: Shape, targetColor: Color, level: number) {
     }
 
     distractors.push({
-      id: `distractor-${i}`,
+      id: `distractor-${index}`,
       shape,
       color,
       isTarget: false,
-      found: false,
+      selected: false,
     });
   }
 
@@ -250,27 +266,27 @@ export default function VisualSearchHunt({
 
   const [targetShape, setTargetShape] = useState<Shape>('triangle');
   const [targetColor, setTargetColor] = useState<Color>('red');
-
   const [tiles, setTiles] = useState<Tile[]>([]);
-  const [hits, setHits] = useState(0);
-  const [errors, setErrors] = useState(0);
-  const [targetsRemaining, setTargetsRemaining] = useState(0);
-  const [remainingTime, setRemainingTime] = useState(0);
-
+  const [remainingTime, setRemainingTime] = useState(FIXED_TIME_SECONDS);
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]);
-  const [feedback, setFeedback] = useState<'success' | 'error' | null>(null);
-
-  const roundStartRef = useRef<number>(0);
-  const clickLogRef = useRef<ClickEventLog[]>([]);
-  const timerRef = useRef<number | null>(null);
+  const [feedback, setFeedback] = useState<'mark' | 'unmark' | null>(null);
 
   const config = useMemo(() => getLevelConfig(level), [level]);
 
-  const clearRoundTimer = useCallback(() => {
-    if (timerRef.current) {
+  const timerRef = useRef<number | null>(null);
+  const roundStartRef = useRef<number>(0);
+  const clickLogRef = useRef<ClickEventLog[]>([]);
+
+  const clearTimer = useCallback(() => {
+    if (timerRef.current !== null) {
       window.clearInterval(timerRef.current);
       timerRef.current = null;
     }
+  }, []);
+
+  const showFeedback = useCallback((type: 'mark' | 'unmark') => {
+    setFeedback(type);
+    window.setTimeout(() => setFeedback(null), 120);
   }, []);
 
   const generateRound = useCallback(() => {
@@ -281,25 +297,28 @@ export default function VisualSearchHunt({
     setTargetShape(nextShape);
     setTargetColor(nextColor);
     setTiles(generated.tiles);
-    setHits(0);
-    setErrors(0);
-    setTargetsRemaining(generated.totalTargets);
-    setRemainingTime(generated.config.timeSeconds);
+    setRemainingTime(FIXED_TIME_SECONDS);
     clickLogRef.current = [];
     roundStartRef.current = 0;
   }, [level]);
 
   useEffect(() => {
-    generateRound();
-  }, [generateRound]);
+    if (status === 'instruction') {
+      generateRound();
+    }
+  }, [status, generateRound]);
 
   const finishRound = useCallback(
     (resultStatus: 'won' | 'lost') => {
-      clearRoundTimer();
+      clearTimer();
 
       const endedAt = Date.now();
       const startedAt = roundStartRef.current || endedAt;
-      const missedTargets = tiles.filter((tile) => tile.isTarget && !tile.found).length;
+
+      const hits = tiles.filter((tile) => tile.selected && tile.isTarget).length;
+      const errors = tiles.filter((tile) => tile.selected && !tile.isTarget).length;
+      const missedTargets = tiles.filter((tile) => !tile.selected && tile.isTarget).length;
+      const totalTargets = tiles.filter((tile) => tile.isTarget).length;
 
       const result: RoundResult = {
         roundIndex,
@@ -310,10 +329,10 @@ export default function VisualSearchHunt({
         hits,
         errors,
         missedTargets,
-        totalTargets: hits + missedTargets,
+        totalTargets,
         gridSize: config.gridSize,
         durationMs: endedAt - startedAt,
-        timeLimitSeconds: config.timeSeconds,
+        timeLimitSeconds: FIXED_TIME_SECONDS,
         remainingTimeSeconds: Number(remainingTime.toFixed(1)),
         startedAt,
         endedAt,
@@ -324,16 +343,13 @@ export default function VisualSearchHunt({
       setStatus(resultStatus);
     },
     [
-      clearRoundTimer,
+      clearTimer,
       tiles,
       roundIndex,
       level,
       targetShape,
       targetColor,
-      hits,
-      errors,
       config.gridSize,
-      config.timeSeconds,
       remainingTime,
     ],
   );
@@ -342,69 +358,58 @@ export default function VisualSearchHunt({
     setStatus('playing');
     roundStartRef.current = Date.now();
 
-    clearRoundTimer();
+    clearTimer();
+
     timerRef.current = window.setInterval(() => {
       setRemainingTime((prev) => {
         const next = Number((prev - 0.1).toFixed(1));
+
         if (next <= 0) {
-          finishRound('lost');
+          window.setTimeout(() => finishRound('lost'), 0);
           return 0;
         }
+
         return next;
       });
     }, 100);
-  }, [clearRoundTimer, finishRound]);
-
-  const showFeedback = useCallback((type: 'success' | 'error') => {
-    setFeedback(type);
-    window.setTimeout(() => setFeedback(null), 160);
-  }, []);
+  }, [clearTimer, finishRound]);
 
   const handleTileClick = useCallback(
     (tile: Tile) => {
-      if (status !== 'playing' || tile.found) return;
+      if (status !== 'playing') return;
+
+      const nextAction: ClickAction = tile.selected ? 'unmark' : 'mark';
 
       const clickEvent: ClickEventLog = {
         timestampMs: Date.now(),
         roundIndex,
         phaseLevel: level,
-        action: 'mark',
+        action: nextAction,
         tileId: tile.id,
         isTarget: tile.isTarget,
         clickedShape: tile.shape,
         clickedColor: tile.color,
         targetShape,
         targetColor,
-        targetsRemainingBeforeClick: targetsRemaining,
       };
 
       clickLogRef.current.push(clickEvent);
 
-      if (tile.isTarget) {
+      if (nextAction === 'mark') {
         onCorrectSound?.();
-        showFeedback('success');
-
-        setTiles((prev) =>
-          prev.map((item) => (item.id === tile.id ? { ...item, found: true } : item)),
-        );
-
-        setHits((prev) => prev + 1);
-        setTargetsRemaining((prev) => {
-          const next = prev - 1;
-          if (next <= 0) {
-            window.setTimeout(() => finishRound('won'), 150);
-            return 0;
-          }
-          return next;
-        });
-
-        return;
+        showFeedback('mark');
+      } else {
+        onErrorSound?.();
+        showFeedback('unmark');
       }
 
-      onErrorSound?.();
-      showFeedback('error');
-      setErrors((prev) => prev + 1);
-      setRemainingTime((prev) => Math.max(0, Number((prev - config.errorPenaltySeconds).toFixed(1))));
+      setTiles((prev) =>
+        prev.map((item) =>
+          item.id === tile.id
+            ? { ...item, selected: !item.selected }
+            : item,
+        ),
+      );
     },
     [
       status,
@@ -412,80 +417,70 @@ export default function VisualSearchHunt({
       level,
       targetShape,
       targetColor,
-      targetsRemaining,
       onCorrectSound,
       onErrorSound,
       showFeedback,
-      finishRound,
-      config.errorPenaltySeconds,
     ],
   );
 
-  const nextRound = useCallback(() => {
-    const nextLevel = Math.min(level + 1, 8);
-    setLevel(nextLevel);
+  const goToNextRound = useCallback(() => {
+    if (roundIndex >= MAX_PHASES) {
+      const totalHits = roundResults.reduce((sum, round) => sum + round.hits, 0);
+      const totalErrors = roundResults.reduce((sum, round) => sum + round.errors, 0);
+      const roundsWon = roundResults.filter((round) => round.status === 'won').length;
+      const roundsLost = roundResults.filter((round) => round.status === 'lost').length;
+      const totalSelections = totalHits + totalErrors;
+
+      const startedAt = roundResults[0]?.startedAt ?? Date.now();
+      const completedAt = Date.now();
+
+      const gameResult: GameResult = {
+        sessionId: `session-${startedAt}`,
+        gameId: 'visual-search-hunt',
+        attentionType: 'selective',
+
+        startedAt,
+        completedAt,
+
+        sessionStatus: 'completed',
+        abandoned: false,
+        completed: true,
+
+        totalRoundsPlanned: roundResults.length,
+        completedRounds: roundsWon + roundsLost,
+        startedRounds: roundResults.length,
+        lastRoundIndexReached: roundResults[roundResults.length - 1]?.roundIndex ?? roundIndex,
+        lastLevelReached: roundResults[roundResults.length - 1]?.level ?? level,
+
+        accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
+      };
+
+      onEnd?.(gameResult);
+      setStatus('finished');
+      return;
+    }
+
+    setLevel((prev) => prev + 1);
     setRoundIndex((prev) => prev + 1);
     setStatus('instruction');
-  }, [level]);
+  }, [roundIndex, roundResults, onEnd]);
 
   useEffect(() => {
-    if (status === 'instruction') {
-      generateRound();
-    }
-  }, [status, generateRound]);
-
-  const finishSession = useCallback(() => {
-    const totalHits = roundResults.reduce((sum, round) => sum + round.hits, 0);
-    const totalErrors = roundResults.reduce((sum, round) => sum + round.errors, 0);
-    const roundsWon = roundResults.filter((round) => round.status === 'won').length;
-    const roundsLost = roundResults.filter((round) => round.status === 'lost').length;
-    const totalActions = totalHits + totalErrors;
-
-    const startedAt = roundResults[0]?.startedAt ?? Date.now();
-    const completedAt = Date.now();
-
-    const gameResult: GameResult = {
-      sessionId: `session-${startedAt}`,
-      gameId: 'visual-search-hunt',
-      attentionType: 'selective',
-
-      startedAt,
-      completedAt,
-
-      sessionStatus: 'completed',
-      abandoned: false,
-      completed: true,
-
-      totalRoundsPlanned: roundResults.length,
-      completedRounds: roundsWon + roundsLost,
-      startedRounds: roundResults.length,
-      lastRoundIndexReached: roundResults[roundResults.length - 1]?.roundIndex ?? roundIndex,
-      lastLevelReached: roundResults[roundResults.length - 1]?.level ?? level,
-
-      accuracy: totalActions > 0 ? Number(((totalHits / totalActions) * 100).toFixed(2)) : 0,
-    };
-
-    onEnd?.(gameResult);
-    setStatus('finished');
-  }, [onEnd, roundResults]);
-
-  useEffect(() => {
-    return () => clearRoundTimer();
-  }, [clearRoundTimer]);
+    return () => clearTimer();
+  }, [clearTimer]);
 
   const gridTemplateColumns = `repeat(${config.gridSize}, minmax(0, 1fr))`;
-
-  const instructionText = `Encontre todos os ${SHAPE_LABEL[targetShape]} ${COLOR_LABEL[targetColor]}.`;
+  const nextPhaseNumber = roundIndex + 1;
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: 16 }}>
+    <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
       {status === 'instruction' && (
         <Card>
-          <div style={{ display: 'grid', gap: 16 }}>
-            <div>
+          <div style={{ display: 'grid', gap: 20 }}>
+            <div style={{ textAlign: 'center' }}>
               <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
-              <p style={{ marginTop: 8 }}>
-                {instructionText}
+              <p style={{ marginTop: 10, marginBottom: 0 }}>
+                Encontre todos os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}.
               </p>
             </div>
 
@@ -494,22 +489,44 @@ export default function VisualSearchHunt({
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                minHeight: 120,
+                minHeight: 140,
+                borderRadius: 18,
                 border: '1px solid #e5e7eb',
-                borderRadius: 16,
-                background: '#fff',
+                background: '#ffffff',
               }}
             >
-              <div style={getShapeStyle(targetShape, targetColor)} />
+              <div
+                style={{
+                  width: 96,
+                  height: 96,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <img
+                  src={SHAPE_IMAGE[targetShape][targetColor]}
+                  alt={`${targetShape} ${targetColor}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  onError={(event) => {
+                    const img = event.currentTarget;
+                    img.style.display = 'none';
+                    const fallback = img.nextElementSibling as HTMLDivElement | null;
+                    if (fallback) fallback.style.display = 'block';
+                  }}
+                />
+                <div
+                  style={{
+                    display: 'none',
+                    ...getShapeFallbackStyle(targetShape, targetColor),
+                  }}
+                />
+              </div>
             </div>
 
-            <div>
-              <p style={{ margin: 0 }}>
-                Clique apenas nos alvos corretos e ignore as figuras parecidas.
-              </p>
-              <p style={{ marginTop: 8 }}>
-                Nível {level} · Grade {config.gridSize}x{config.gridSize} · Tempo {config.timeSeconds}s
-              </p>
+            <div style={{ display: 'grid', gap: 8, color: '#374151' }}>
+              <p style={{ margin: 0 }}>Toque para marcar. Toque novamente para desmarcar.</p>
+              <p style={{ margin: 0 }}>Marque apenas as figuras que combinam com o alvo mostrado.</p>
             </div>
 
             <Button onClick={startRound}>Começar</Button>
@@ -520,18 +537,9 @@ export default function VisualSearchHunt({
       {status === 'playing' && (
         <div style={{ display: 'grid', gap: 16 }}>
           <Card>
-            <div style={{ display: 'grid', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <div>
-                  <strong>Alvo:</strong> {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
-                </div>
-                <div>
-                  <strong>Tempo:</strong> {remainingTime.toFixed(1)}s
-                </div>
-              </div>
-
-              <div>
-                <strong>Acertos:</strong> {hits} · <strong>Erros:</strong> {errors} · <strong>Faltando:</strong> {targetsRemaining}
+            <div style={{ display: 'grid', gap: 14 }}>
+              <div style={{ textAlign: 'center', fontWeight: 700, color: '#111827' }}>
+                Encontre os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
               </div>
 
               <div
@@ -546,9 +554,9 @@ export default function VisualSearchHunt({
                 <div
                   style={{
                     height: '100%',
-                    width: `${(remainingTime / config.timeSeconds) * 100}%`,
-                    background: feedback === 'error' ? '#ef4444' : '#111827',
-                    transition: 'width 120ms linear, background-color 120ms linear',
+                    width: `${Math.max(0, (remainingTime / FIXED_TIME_SECONDS) * 100)}%`,
+                    background: '#111827',
+                    transition: 'width 100ms linear',
                   }}
                 />
               </div>
@@ -560,11 +568,15 @@ export default function VisualSearchHunt({
               style={{
                 display: 'grid',
                 gridTemplateColumns,
-                gap: 8,
+                gap: 10,
                 padding: 4,
-                borderRadius: 16,
+                borderRadius: 18,
                 border: `2px solid ${
-                  feedback === 'success' ? '#22c55e' : feedback === 'error' ? '#ef4444' : '#e5e7eb'
+                  feedback === 'mark'
+                    ? '#22c55e'
+                    : feedback === 'unmark'
+                    ? '#f59e0b'
+                    : '#e5e7eb'
                 }`,
                 transition: 'border-color 120ms ease',
               }}
@@ -574,20 +586,58 @@ export default function VisualSearchHunt({
                   key={tile.id}
                   type="button"
                   onClick={() => handleTileClick(tile)}
-                  disabled={tile.found}
                   aria-label={`${tile.shape} ${tile.color}`}
                   style={{
                     aspectRatio: '1 / 1',
-                    borderRadius: 12,
-                    border: '1px solid #e5e7eb',
-                    background: tile.found ? '#d1d5db' : '#ffffff',
+                    minHeight: 58,
+                    borderRadius: 14,
+                    border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb',
+                    background: tile.selected ? '#eff6ff' : '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    minHeight: 56,
+                    position: 'relative',
+                    transition: 'all 120ms ease',
                   }}
                 >
-                  <div style={getShapeStyle(tile.shape, tile.color)} />
+                  <img
+                    src={SHAPE_IMAGE[tile.shape][tile.color]}
+                    alt=""
+                    aria-hidden="true"
+                    style={{
+                      width: '72%',
+                      height: '72%',
+                      objectFit: 'contain',
+                    }}
+                    onError={(event) => {
+                      const img = event.currentTarget;
+                      img.style.display = 'none';
+                      const fallback = img.nextElementSibling as HTMLDivElement | null;
+                      if (fallback) fallback.style.display = 'block';
+                    }}
+                  />
+
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      display: 'none',
+                      ...getShapeFallbackStyle(tile.shape, tile.color),
+                    }}
+                  />
+
+                  {tile.selected && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: 6,
+                        right: 6,
+                        width: 10,
+                        height: 10,
+                        borderRadius: 999,
+                        background: '#111827',
+                      }}
+                    />
+                  )}
                 </button>
               ))}
             </div>
@@ -597,26 +647,17 @@ export default function VisualSearchHunt({
 
       {(status === 'won' || status === 'lost') && (
         <Card>
-          <div style={{ display: 'grid', gap: 12 }}>
-            <h3 style={{ margin: 0 }}>
-              {status === 'won' ? 'Rodada concluída' : 'Tempo esgotado'}
+          <div style={{ display: 'grid', gap: 14 }}>
+            <h3 style={{ margin: 0, textAlign: 'center' }}>
+              {status === 'won' ? 'Fase concluída' : 'Tempo encerrado'}
             </h3>
 
-            <p style={{ margin: 0 }}>
-              Acertos: {hits} · Erros: {errors}
-            </p>
-
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              {roundResults.length >= 5 ? (
-                <Button onClick={finishSession}>Encerrar treino</Button>
-              ) : (
-                <Button onClick={nextRound}>Próxima fase</Button>
-              )}
+              <Button onClick={goToNextRound}>
+                {roundIndex >= MAX_PHASES ? 'Finalizar' : `Fase ${nextPhaseNumber}`}
+              </Button>
 
-              <Button
-                onClick={() => navigate('/selective')}
-                variant="secondary"
-              >
+              <Button onClick={() => navigate('/selective')}>
                 Sair
               </Button>
             </div>
@@ -629,9 +670,11 @@ export default function VisualSearchHunt({
           <div style={{ display: 'grid', gap: 12 }}>
             <h3 style={{ margin: 0 }}>Treino finalizado</h3>
             <p style={{ margin: 0 }}>
-              Sessão encerrada e pronta para integração com o histórico e validação.
+              Sessão encerrada e pronta para integração com o log e avaliação detalhada.
             </p>
-            <Button onClick={() => navigate('/selective')}>Voltar</Button>
+            <Button onClick={() => navigate('/selective')}>
+              Voltar
+            </Button>
           </div>
         </Card>
       )}
