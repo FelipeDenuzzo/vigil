@@ -489,16 +489,16 @@ export default function VisualSearchHunt({
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                minHeight: 140,
-                borderRadius: 18,
+                minHeight: 100,
+                borderRadius: 12,
                 border: '1px solid #e5e7eb',
                 background: '#ffffff',
               }}
             >
               <div
                 style={{
-                  width: 96,
-                  height: 96,
+                  width: 72,
+                  height: 72,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
