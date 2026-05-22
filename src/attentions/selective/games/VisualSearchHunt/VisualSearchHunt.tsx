@@ -91,22 +91,22 @@ const COLOR_HEX: Record<Color, string> = {
 */
 const SHAPE_IMAGE: Record<Shape, Record<Color, string>> = {
   circle: {
-    red: '/formas/circle-red.png',
-    blue: '/formas/circle-blue.png',
-    green: '/formas/circle-green.png',
-    yellow: '/formas/circle-yellow.png',
+    red: '/formas/circulo_vermelho.png',
+    blue: '/formas/circulo_azul.png',
+    green: '/formas/circulo_verde.png',
+    yellow: '/formas/circulo_amarelo.png',
   },
   square: {
-    red: '/formas/square-red.png',
-    blue: '/formas/square-blue.png',
-    green: '/formas/square-green.png',
-    yellow: '/formas/square-yellow.png',
+    red: '/formas/quadrado_vermelho.png',
+    blue: '/formas/quadrado_azul.png',
+    green: '/formas/quadrado_verde.png',
+    yellow: '/formas/quadrado_amarelo.png',
   },
   triangle: {
-    red: '/formas/triangle-red.png',
-    blue: '/formas/triangle-blue.png',
-    green: '/formas/triangle-green.png',
-    yellow: '/formas/triangle-yellow.png',
+    red: '/formas/triangulo_vermelho.png',
+    blue: '/formas/triangulo_azul.png',
+    green: '/formas/triangulo_verde.png',
+    yellow: '/formas/triangulo_amarelo.png',
   },
 };
 
