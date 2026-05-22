@@ -614,13 +614,8 @@ export default function VisualSearchHunt({
         <div style={{ display: 'grid', gap: 16 }}>
           <Card>
             <div style={{ display: 'grid', gap: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ textAlign: 'left', fontWeight: 700, color: '#111827' }}>
-                  Encontre os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
-                </div>
-                <div style={{ marginLeft: 12 }}>
-                  <Button onClick={advanceRoundNow}>Avançar</Button>
-                </div>
+              <div style={{ textAlign: 'left', fontWeight: 700, color: '#111827' }}>
+                Encontre os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
               </div>
 
               <div
@@ -640,6 +635,10 @@ export default function VisualSearchHunt({
                     transition: 'width 100ms linear',
                   }}
                 />
+              </div>
+
+              <div>
+                <Button onClick={advanceRoundNow} style={{ width: '100%' }}>Avançar</Button>
               </div>
             </div>
           </Card>
