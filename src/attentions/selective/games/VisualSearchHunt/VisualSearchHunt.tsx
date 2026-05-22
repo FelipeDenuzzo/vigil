@@ -605,7 +605,9 @@ export default function VisualSearchHunt({
               <p style={{ margin: 0 }}>Marque apenas as figuras que combinam com o alvo mostrado.</p>
             </div>
 
-            <Button onClick={startRound}>Começar — Fase {roundIndex}</Button>
+            <div style={{ marginTop: 12 }}>
+              <Button onClick={startRound} style={{ width: '100%' }}>Começar — Fase {roundIndex}</Button>
+            </div>
           </div>
         </Card>
       )}
