@@ -605,7 +605,7 @@ export default function VisualSearchHunt({
               <p style={{ margin: 0 }}>Marque apenas as figuras que combinam com o alvo mostrado.</p>
             </div>
 
-            <Button onClick={startRound}>Começar</Button>
+            <Button onClick={startRound}>Começar — Fase {roundIndex}</Button>
           </div>
         </Card>
       )}
@@ -614,8 +614,13 @@ export default function VisualSearchHunt({
         <div style={{ display: 'grid', gap: 16 }}>
           <Card>
             <div style={{ display: 'grid', gap: 14 }}>
-              <div style={{ textAlign: 'center', fontWeight: 700, color: '#111827' }}>
-                Encontre os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ textAlign: 'left', fontWeight: 700, color: '#111827' }}>
+                  Encontre os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
+                </div>
+                <div style={{ marginLeft: 12 }}>
+                  <Button onClick={advanceRoundNow}>Avançar</Button>
+                </div>
               </div>
 
               <div
@@ -641,10 +646,6 @@ export default function VisualSearchHunt({
 
           <Card>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 50 }}>
-                <Button onClick={advanceRoundNow}>Avançar</Button>
-              </div>
-
               <div
                 style={{
                   display: 'grid',
