@@ -15,6 +15,10 @@ export type VisualSearchClickLog = {
   clickedColor: VisualSearchColor;
   targetShape: VisualSearchShape;
   targetColor: VisualSearchColor;
+  // coordenadas explícitas no grid (adicionado para análise de busca visual)
+  row?: number;
+  col?: number;
+  screenHalf?: 'left' | 'right';
 };
 
 export type VisualSearchRoundLog = {
@@ -46,6 +50,17 @@ export type VisualSearchRoundLog = {
   timeToFirstClickMs?: number;
   timeToLastClickMs?: number;
   timeToAdvanceMs?: number;
+
+  // métricas de análise de busca visual (organização e assimetria espacial)
+  systematicMoves?: number;
+  erraticMoves?: number;
+  organizationIndex?: number;
+  scanPattern?: 'row-wise' | 'column-wise' | 'mixed' | 'chaotic';
+  leftSideClicks?: number;
+  rightSideClicks?: number;
+  leftSideTargetMisses?: number;
+  rightSideTargetMisses?: number;
+  spatialAsymmetryIndex?: number;
 };
 
 export interface VisualSearchSessionLog extends BaseTrainingSessionLog {

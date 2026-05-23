@@ -24,6 +24,8 @@ type Tile = {
   color: Color;
   isTarget: boolean;
   selected: boolean;
+  row?: number;
+  col?: number;
 };
 
 
@@ -311,6 +313,117 @@ function buildTiles(targetShape: Shape, targetColor: Color, level: number) {
   };
 }
 
+/**
+ * Análise de padrão de busca visual organização e assimetria espacial.
+ * Filtra cliques elegíveis (action === 'mark'), calcula distâncias e classifica movimento.
+ */
+function analyzeVisualSearchOrganization(clickLog: VisualSearchClickLog[], gridSize: number, tiles: Tile[]) {
+  // cliques elegíveis para análise: apenas 'mark'
+  const markClicks = clickLog.filter((c) => c.action === 'mark');
+
+  // métricas padrão (neutra)
+  const result = {
+    systematicMoves: 0,
+    erraticMoves: 0,
+    organizationIndex: undefined as number | undefined,
+    scanPattern: 'chaotic' as const,
+    leftSideClicks: 0,
+    rightSideClicks: 0,
+    leftSideTargetMisses: 0,
+    rightSideTargetMisses: 0,
+    spatialAsymmetryIndex: undefined as number | undefined,
+  };
+
+  // se menos de 2 cliques, não é possível analisar padrão
+  if (markClicks.length < 2) {
+    return result;
+  }
+
+  // análise de movimento: calcular distâncias manhattan entre cliques consecutivos
+  let horizontalMovements = 0;
+  let verticalMovements = 0;
+
+  for (let i = 1; i < markClicks.length; i += 1) {
+    const prev = markClicks[i - 1];
+    const curr = markClicks[i];
+
+    // ambos devem ter row/col definidos
+    if (prev.row === undefined || curr.row === undefined || prev.col === undefined || curr.col === undefined) {
+      continue;
+    }
+
+    const rowDelta = Math.abs(curr.row - prev.row);
+    const colDelta = Math.abs(curr.col - prev.col);
+    const manhattan = rowDelta + colDelta;
+
+    // classificação: manhattan <= 2 = sistemático; > 2 = errático
+    if (manhattan <= 2) {
+      result.systematicMoves += 1;
+    } else {
+      result.erraticMoves += 1;
+    }
+
+    // contabilizar predominância de movimento
+    if (colDelta > rowDelta) {
+      horizontalMovements += 1;
+    } else if (rowDelta > colDelta) {
+      verticalMovements += 1;
+    }
+  }
+
+  // organização: proporção de movimentos sistemáticos
+  const totalComparableMoves = result.systematicMoves + result.erraticMoves;
+  if (totalComparableMoves > 0) {
+    result.organizationIndex = Number(((result.systematicMoves / totalComparableMoves) * 100).toFixed(2));
+  }
+
+  // padrão dominante de varredura
+  if (result.organizationIndex !== undefined && result.organizationIndex < 30) {
+    result.scanPattern = 'chaotic';
+  } else if (horizontalMovements > verticalMovements * 1.5) {
+    result.scanPattern = 'row-wise';
+  } else if (verticalMovements > horizontalMovements * 1.5) {
+    result.scanPattern = 'column-wise';
+  } else if (result.organizationIndex !== undefined && result.organizationIndex >= 40) {
+    result.scanPattern = 'mixed';
+  } else {
+    result.scanPattern = 'chaotic';
+  }
+
+  // assimetria espacial: contar cliques por lado
+  for (const click of markClicks) {
+    if (click.screenHalf === 'left') {
+      result.leftSideClicks += 1;
+    } else if (click.screenHalf === 'right') {
+      result.rightSideClicks += 1;
+    }
+  }
+
+  // calcular targets não encontrados por lado
+  for (const tile of tiles) {
+    if (!tile.isTarget || tile.selected || tile.row === undefined || tile.col === undefined) {
+      continue;
+    }
+
+    // target não marcado (missed)
+    const centerCol = gridSize / 2;
+    if (tile.col < centerCol) {
+      result.leftSideTargetMisses += 1;
+    } else {
+      result.rightSideTargetMisses += 1;
+    }
+  }
+
+  // índice de assimetria baseado em cliques
+  const totalSideClicks = result.leftSideClicks + result.rightSideClicks;
+  if (totalSideClicks > 0) {
+    const asymmetry = Math.abs(result.leftSideClicks - result.rightSideClicks) / totalSideClicks;
+    result.spatialAsymmetryIndex = Number((asymmetry * 100).toFixed(2));
+  }
+
+  return result;
+}
+
 export default function VisualSearchHunt({
   onCorrectSound,
   onErrorSound,
@@ -351,6 +464,13 @@ export default function VisualSearchHunt({
       const totalSelections = result.hits + result.errors;
       const accuracy = totalSelections > 0 ? Number(((result.hits / totalSelections) * 100).toFixed(2)) : 0;
 
+      // análise de padrão de busca visual
+      const searchAnalysis = analyzeVisualSearchOrganization(
+        [...clickLogRef.current],
+        result.gridSize,
+        tiles,
+      );
+
       const roundLog: VisualSearchRoundLog = {
         roundIndex: result.roundIndex,
         level: result.level,
@@ -370,6 +490,16 @@ export default function VisualSearchHunt({
         reactionTimes,
         clicks: [...clickLogRef.current],
         accuracy,
+        // métricas de análise de busca visual
+        systematicMoves: searchAnalysis.systematicMoves,
+        erraticMoves: searchAnalysis.erraticMoves,
+        organizationIndex: searchAnalysis.organizationIndex,
+        scanPattern: searchAnalysis.scanPattern,
+        leftSideClicks: searchAnalysis.leftSideClicks,
+        rightSideClicks: searchAnalysis.rightSideClicks,
+        leftSideTargetMisses: searchAnalysis.leftSideTargetMisses,
+        rightSideTargetMisses: searchAnalysis.rightSideTargetMisses,
+        spatialAsymmetryIndex: searchAnalysis.spatialAsymmetryIndex,
       };
 
       sessionLogRef.current.rounds.push(roundLog);
@@ -377,7 +507,7 @@ export default function VisualSearchHunt({
     } catch (e) {
       // não quebrar o jogo por causa do log
     }
-  }, []);
+  }, [tiles]);
 
   const clearTimer = useCallback(() => {
     if (timerRef.current !== null) {
@@ -396,9 +526,16 @@ export default function VisualSearchHunt({
     const nextColor = randomItem(COLORS);
     const generated = buildTiles(nextShape, nextColor, level);
 
+    // adicionar row/col explícitos aos tiles com base na posição no array
+    const tilesWithCoords = generated.tiles.map((tile, index) => ({
+      ...tile,
+      row: Math.floor(index / generated.config.gridSize),
+      col: index % generated.config.gridSize,
+    }));
+
     setTargetShape(nextShape);
     setTargetColor(nextColor);
-    setTiles(generated.tiles);
+    setTiles(tilesWithCoords);
     setRemainingTime(FIXED_TIME_SECONDS);
     clickLogRef.current = [];
     roundStartRef.current = 0;
@@ -523,6 +660,13 @@ export default function VisualSearchHunt({
 
       const nextAction: ClickAction = tile.selected ? 'unmark' : 'mark';
 
+      // calcular screenHalf baseado em coluna e centro do grid
+      let screenHalf: 'left' | 'right' | undefined;
+      if (tile.col !== undefined) {
+        const centerCol = config.gridSize / 2;
+        screenHalf = tile.col < centerCol ? 'left' : 'right';
+      }
+
       const clickEvent: VisualSearchClickLog = {
         timestampMs: Date.now(),
         action: nextAction,
@@ -534,6 +678,9 @@ export default function VisualSearchHunt({
         clickedColor: tile.color as VisualSearchColor,
         targetShape: targetShape as VisualSearchShape,
         targetColor: targetColor as VisualSearchColor,
+        row: tile.row,
+        col: tile.col,
+        screenHalf,
       };
 
       clickLogRef.current.push(clickEvent);
@@ -560,6 +707,7 @@ export default function VisualSearchHunt({
       level,
       targetShape,
       targetColor,
+      config.gridSize,
       onCorrectSound,
       onErrorSound,
       showFeedback,
