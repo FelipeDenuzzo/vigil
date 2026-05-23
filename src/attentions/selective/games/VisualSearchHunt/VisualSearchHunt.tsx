@@ -321,12 +321,14 @@ function analyzeVisualSearchOrganization(clickLog: VisualSearchClickLog[], gridS
   // cliques elegíveis para análise: apenas 'mark'
   const markClicks = clickLog.filter((c) => c.action === 'mark');
 
+  type ScanPattern = 'chaotic' | 'row-wise' | 'column-wise' | 'mixed';
+
   // métricas padrão (neutra)
   const result = {
     systematicMoves: 0,
     erraticMoves: 0,
     organizationIndex: undefined as number | undefined,
-    scanPattern: 'chaotic' as const,
+    scanPattern: 'chaotic' as ScanPattern,
     leftSideClicks: 0,
     rightSideClicks: 0,
     leftSideTargetMisses: 0,
@@ -757,7 +759,8 @@ export default function VisualSearchHunt({
         // não bloquear o fluxo do jogo
       }
 
-      onEnd?.(gameResult);
+      // Não chamar onEnd aqui - deixar os botões da tela de finalização cuidarem da navegação
+      // para evitar erro React: "Cannot update a component while rendering a different component"
       setStatus('finished');
       return;
     }
@@ -859,7 +862,8 @@ export default function VisualSearchHunt({
           saveResult(gameResult);
         } catch (e) {}
 
-        onEnd?.(gameResult);
+        // Não chamar onEnd aqui - deixar os botões da tela de finalização cuidarem da navegação
+        // para evitar erro React: "Cannot update a component while rendering a different component"
         setStatus('finished');
       } else {
         setLevel((l) => l + 1);
@@ -1172,9 +1176,17 @@ export default function VisualSearchHunt({
             <p style={{ margin: 0 }}>
               Sessão encerrada e pronta para integração com o log e avaliação detalhada.
             </p>
-            <Button onClick={() => navigate('/selective')}>
-              Voltar
-            </Button>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <Button onClick={() => navigate('/treinar/seletiva/visual-search/evaluation')}>
+                Ver Avaliação
+              </Button>
+              <Button onClick={() => restartTraining()}>
+                Recomeçar
+              </Button>
+              <Button onClick={() => navigate('/selective')}>
+                Voltar
+              </Button>
+            </div>
           </div>
         </Card>
       )}
