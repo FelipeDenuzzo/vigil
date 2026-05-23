@@ -1,5 +1,8 @@
 import { getAllSessions } from "../../../../shared/storage";
 import type { SessionLog, RoundLog, ClickEvent } from "../../../../shared/types";
+import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
+import { buildVisualSearchTechnicalReport } from "./assessment/buildVisualSearchTechnicalReport";
+import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
 
 export interface RoundEvaluation {
   roundIndex: number;
@@ -72,6 +75,8 @@ export interface EvaluationReport {
   history: SessionEvaluation[];
   trend: "improved" | "stable" | "declined" | "first_session";
   deltaScorePct: number | null;
+  scaleResult?: ReturnType<typeof buildVisualSearchScaleResult>;
+  technicalReport?: ReturnType<typeof buildVisualSearchTechnicalReport>;
 }
 
 const GAME_ID = "visual-search-hunt";
@@ -307,6 +312,24 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
 
   const current = evaluateSession(currentLog);
 
+  // Converter log para formato esperado pelas novas funções
+  const sessionMetrics: VisualSearchSessionMetricsInput = {
+    sessionId: currentLog.sessionId,
+    gameId: currentLog.gameId,
+    startedAt: currentLog.startedAt ? new Date(currentLog.startedAt).toISOString() : undefined,
+    completedAt: currentLog.completedAt ? new Date(currentLog.completedAt).toISOString() : undefined,
+    rounds: (currentLog.rounds ?? []).map((round, idx) => ({
+      round: idx + 1,
+      totalTargets: round.totalTargets ?? 0,
+      hits: round.hits ?? 0,
+      errors: round.errors ?? 0,
+      missedTargets: round.missedTargets ?? 0,
+    })),
+  };
+
+  const scaleResult = buildVisualSearchScaleResult(sessionMetrics);
+  const technicalReport = buildVisualSearchTechnicalReport(sessionMetrics);
+
   const history = allSessions
     .filter((session) => session.sessionId !== currentSessionId)
     .sort((a, b) => (a.completedAt ?? 0) - (b.completedAt ?? 0))
@@ -318,6 +341,8 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
       history,
       trend: "first_session",
       deltaScorePct: null,
+      scaleResult,
+      technicalReport,
     };
   }
 
@@ -343,5 +368,7 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
     history,
     trend,
     deltaScorePct,
+    scaleResult,
+    technicalReport,
   };
 }

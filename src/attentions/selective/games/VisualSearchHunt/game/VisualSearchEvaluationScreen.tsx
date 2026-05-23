@@ -1,105 +1,77 @@
 /* src/attentions/selective/games/VisualSearchHunt/game/VisualSearchEvaluationScreen.tsx */
 
-import { useMemo } from 'react';
-import { evaluateVisualSearchAssessment } from '../assessment/visualSearchAssessment';
-import type { VisualSearchSessionLog } from '../assessment/visualSearchAssessment.types';
+import type { VisualSearchScaleResult, VisualSearchTechnicalReport } from '../assessment/visualSearchScale.types';
 
-const mockSessionLog: VisualSearchSessionLog = {
-  gameKey: 'visual-search-hunt',
-  sessionId: 'visual-search-test-session-001',
-  startedAt: '2026-05-23T09:00:00.000Z',
-  finishedAt: '2026-05-23T09:05:00.000Z',
-  rounds: [
-    {
-      round: 1,
-      targetsPresented: 10,
-      hits: 8,
-      errors: 4,
-      missedTargets: 2,
-      timeMs: 28000,
-    },
-    {
-      round: 2,
-      targetsPresented: 10,
-      hits: 7,
-      errors: 5,
-      missedTargets: 3,
-      timeMs: 31000,
-    },
-    {
-      round: 3,
-      targetsPresented: 10,
-      hits: 9,
-      errors: 2,
-      missedTargets: 1,
-      timeMs: 26000,
-    },
-  ],
+type Props = {
+  scaleResult: VisualSearchScaleResult;
+  technicalReport: VisualSearchTechnicalReport;
 };
 
-export function VisualSearchEvaluationScreen(): JSX.Element {
-  const result = useMemo(() => {
-    return evaluateVisualSearchAssessment(mockSessionLog);
-  }, []);
-
-  const question = result.questions[0];
-
+export function VisualSearchEvaluationScreen({
+  scaleResult,
+  technicalReport,
+}: Props): JSX.Element {
   return (
-    <div style={{ padding: 16 }}>
-      <h1>Avaliação do Visual Search Hunt</h1>
+    <div style={{ padding: 24, maxWidth: 800, margin: '0 auto' }}>
+      {/* Régua Visual */}
+      <div style={{ marginBottom: 32, padding: 24, background: '#f5f5f5', borderRadius: 8 }}>
+        <h2 style={{ margin: '0 0 16px' }}>{scaleResult.emoji} {scaleResult.scaleName}</h2>
+        <p style={{ margin: '8px 0', fontSize: 18, fontWeight: 600 }}>
+          {scaleResult.label}
+        </p>
+        <p style={{ margin: '8px 0', fontSize: 14, color: '#666' }}>
+          {scaleResult.shortDescription}
+        </p>
+        <p style={{ margin: '16px 0 0', fontSize: 14, fontStyle: 'italic' }}>
+          <strong>Significado clínico:</strong> {scaleResult.clinicalMeaning}
+        </p>
+      </div>
 
-      <p>
-        <strong>Pergunta:</strong> {question.title}
-      </p>
+      <hr style={{ margin: '24px 0' }} />
 
-      <p>
-        <strong>Resposta:</strong> {question.answer}
-      </p>
+      {/* Leitura Técnica */}
+      <div>
+        <h3>Leitura Técnica</h3>
+        
+        <p>
+          <strong>Pergunta:</strong> {technicalReport.question}
+        </p>
+        
+        <p>
+          <strong>Resposta:</strong> {technicalReport.answer === 'sim' ? 'Sim' : 'Não'}
+        </p>
+        
+        <p>
+          <strong>Padrão dominante:</strong> {technicalReport.dominantPattern}
+        </p>
+        
+        <p>
+          <strong>Gravidade:</strong> {technicalReport.severity}
+        </p>
+        
+        <p>
+          <strong>Resumo:</strong> {technicalReport.summary}
+        </p>
+        
+        <p>
+          <strong>Interpretação:</strong> {technicalReport.interpretation}
+        </p>
 
-      <p>
-        <strong>Viés predominante:</strong> {question.bias}
-      </p>
-
-      <p>
-        <strong>Gravidade:</strong> {question.severity}
-      </p>
-
-      <p>
-        <strong>Resumo:</strong> {question.summary}
-      </p>
-
-      <p>
-        <strong>Interpretação:</strong> {question.clinicalMeaning}
-      </p>
-
-      <hr />
-
-      <h2>Evidências</h2>
-
-      <ul>
-        <li>Total de alvos: {question.evidence.totalTargets}</li>
-        <li>Total de acertos: {question.evidence.totalHits}</li>
-        <li>Total de erros: {question.evidence.totalErrors}</li>
-        <li>Total de omissões: {question.evidence.totalMissedTargets}</li>
-        <li>Taxa de omissão: {question.evidence.omissionRate.toFixed(2)}</li>
-        <li>
-          Taxa de comissão: {question.evidence.commissionRateProxy.toFixed(2)}
-        </li>
-        <li>Taxa de acurácia: {question.evidence.accuracyRate.toFixed(2)}</li>
-      </ul>
-
-      <h2>Rodadas</h2>
-
-      <ul>
-        {question.evidence.rounds.map((round) => (
-          <li key={round.round}>
-            Rodada {round.round}: viés {round.bias}, omissão{' '}
-            {round.omissionRate.toFixed(2)}, comissão{' '}
-            {round.commissionRateProxy.toFixed(2)}, acurácia{' '}
-            {round.accuracyRate.toFixed(2)}
-          </li>
-        ))}
-      </ul>
+        {/* Evidências */}
+        <h4 style={{ marginTop: 24 }}>Evidências</h4>
+        <ul style={{ fontSize: 14, color: '#666' }}>
+          <li>Total de alvos: {technicalReport.evidence.totalTargets}</li>
+          <li>Acertos: {technicalReport.evidence.totalHits}</li>
+          <li>Erros: {technicalReport.evidence.totalErrors}</li>
+          <li>Omissões: {technicalReport.evidence.totalMissedTargets}</li>
+          <li>Taxa de omissão: {(technicalReport.evidence.omissionRate * 100).toFixed(1)}%</li>
+          <li>Taxa de comissão: {(technicalReport.evidence.commissionRate * 100).toFixed(1)}%</li>
+          <li>Acurácia: {(technicalReport.evidence.accuracyRate * 100).toFixed(1)}%</li>
+          {technicalReport.evidence.dPrime !== null && (
+            <li>d' (Sensibilidade): {technicalReport.evidence.dPrime.toFixed(2)}</li>
+          )}
+        </ul>
+      </div>
     </div>
   );
 }

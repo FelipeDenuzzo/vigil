@@ -1177,7 +1177,10 @@ export default function VisualSearchHunt({
               Sessão encerrada e pronta para integração com o log e avaliação detalhada.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <Button onClick={() => navigate('/treinar/seletiva/visual-search/evaluation')}>
+              <Button onClick={() => {
+                const sessionId = sessionLogRef.current?.sessionId || '';
+                navigate(`/treinar/seletiva/visual-search/evaluation?sessionId=${sessionId}`);
+              }}>
                 Ver Avaliação
               </Button>
               <Button onClick={() => restartTraining()}>
