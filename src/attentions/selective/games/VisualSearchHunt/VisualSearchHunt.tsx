@@ -995,10 +995,13 @@ export default function VisualSearchHunt({
                 <img
                   src={SHAPE_IMAGE[targetShape][targetColor]}
                   alt={`${targetShape} ${targetColor}`}
+                  loading="eager"
+                  decoding="sync"
                   style={{ width: 78, height: 78, objectFit: 'contain' }}
                   onError={(event) => {
                     const img = event.currentTarget;
-                    img.style.display = 'none';
+                    img.style.opacity = '0';
+                    img.style.pointerEvents = 'none';
                     const fallback = img.nextElementSibling as HTMLDivElement | null;
                     if (fallback) fallback.style.display = 'block';
                   }}
@@ -1091,6 +1094,8 @@ export default function VisualSearchHunt({
                       src={SHAPE_IMAGE[tile.shape][tile.color]}
                       alt=""
                       aria-hidden="true"
+                      loading="eager"
+                      decoding="sync"
                       style={{
                         width: '72%',
                         height: '72%',
@@ -1098,7 +1103,8 @@ export default function VisualSearchHunt({
                       }}
                       onError={(event) => {
                         const img = event.currentTarget;
-                        img.style.display = 'none';
+                        img.style.opacity = '0';
+                        img.style.pointerEvents = 'none';
                         const fallback = img.nextElementSibling as HTMLDivElement | null;
                         if (fallback) fallback.style.display = 'block';
                       }}
