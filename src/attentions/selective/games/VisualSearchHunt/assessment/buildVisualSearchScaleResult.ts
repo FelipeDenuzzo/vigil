@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/assessment/buildVisualSearchScaleResult.ts
-// Atualizado em: 24/05/2026 às 16:01 (BRT)
+// Atualizado em: 24/05/2026 às 16:16 (BRT)
 
 import { calculateVisualSearchMetrics } from './calculateVisualSearchMetrics';
 import type {
@@ -17,7 +17,6 @@ function clamp(value: number, min = 0, max = 100) {
 }
 
 function calculateEagleScore(m: VisualSearchMetrics): number {
-  // caso extremo: nenhum acerto em nenhuma fase → score 0 direto
   if (m.totalHits === 0 && m.totalErrors === 0) return 0;
 
   let score = 100;
@@ -32,9 +31,7 @@ function calculateEagleScore(m: VisualSearchMetrics): number {
     score -= 20;
   }
 
-  // penalidade por varredura errática
   if (m.meanOrganizationIndex !== null && m.meanOrganizationIndex < 40) score -= 5;
-  // penalidade por assimetria espacial pronunciada
   if (m.meanSpatialAsymmetryIndex !== null && m.meanSpatialAsymmetryIndex > 50) score -= 5;
   return clamp(Math.round(score));
 }
@@ -229,7 +226,15 @@ function getMarkerLabel(score: number): string {
   return 'Águia Cega';
 }
 
-function getShortDescription(score: number): string {
+// Retorna texto condizente com as taxas reais, não apenas com o score numérico
+function getShortDescription(score: number, m: VisualSearchMetrics): string {
+  const { omissionRate, commissionRate } = m;
+  if (omissionRate >= 0.4 && commissionRate >= 0.25)
+    return 'Há dificuldade relevante para identificar alvos e filtrar distratores.';
+  if (omissionRate >= 0.4)
+    return 'Há perda expressiva de alvos ao longo da sessão.';
+  if (commissionRate >= 0.25)
+    return 'Há tendência relevante de cliques impulsivos em distratores.';
   if (score >= 80) return 'Ótimo filtro visual entre alvo e distratores.';
   if (score >= 60) return 'Boa capacidade de filtrar, com pequenas oscilações.';
   if (score >= 40) return 'Há instabilidade moderada na filtragem visual.';
@@ -237,7 +242,14 @@ function getShortDescription(score: number): string {
   return 'Há forte dificuldade para manter o foco no alvo visual.';
 }
 
-function getClinicalMeaning(score: number): string {
+function getClinicalMeaning(score: number, m: VisualSearchMetrics): string {
+  const { omissionRate, commissionRate } = m;
+  if (omissionRate >= 0.4 && commissionRate >= 0.25)
+    return 'Sugere comprometimento da atenção seletiva, com dificuldade tanto para localizar alvos quanto para inibir respostas a distratores.';
+  if (omissionRate >= 0.4)
+    return 'Sugere dificuldade de rastreio visual ou lentidão no processamento, com muitos alvos não identificados.';
+  if (commissionRate >= 0.25)
+    return 'Sugere prejuízo no controle inibitório, com tendência a responder a estímulos irrelevantes.';
   if (score >= 80) return 'Sugere atenção seletiva preservada e boa inibição de respostas impulsivas.';
   if (score >= 60) return 'Sugere atenção seletiva funcional, com oscilações leves diante de estímulos competitivos.';
   if (score >= 40) return 'Sugere dificuldade moderada para sustentar o filtro atencional ao longo da tarefa.';
@@ -280,8 +292,8 @@ export function buildVisualSearchScaleResult(
       spatialAsymmetry,
       speedConsistency
     },
-    shortDescription: getShortDescription(score),
-    clinicalMeaning: getClinicalMeaning(score),
+    shortDescription: getShortDescription(score, m),
+    clinicalMeaning: getClinicalMeaning(score, m),
     summary:
       `${score}/100 na régua Olho de Águia. ` +
       `Omissões ${(m.omissionRate * 100).toFixed(0)}% | ` +
