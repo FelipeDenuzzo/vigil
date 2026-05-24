@@ -1,3 +1,6 @@
+// src/attentions/selective/games/VisualSearchHunt/useVisualSearchEvaluation.ts
+// Atualizado em: 24/05/2026 às 15:30 (BRT)
+
 import { getAllSessions } from "../../../../shared/storage";
 import type { SessionLog } from "../../../../shared/types";
 import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
