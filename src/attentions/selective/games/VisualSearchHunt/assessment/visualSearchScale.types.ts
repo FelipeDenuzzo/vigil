@@ -2,10 +2,33 @@
 
 import type { AssessmentBias, AssessmentSeverity } from '../../../assessment/assessment.types';
 
-/** Nível da escala visual (1-4) */
+// ─── Primitivos de avaliação ────────────────────────────────────────────────
+
 export type VisualSearchScaleLevel = 1 | 2 | 3 | 4;
 
-/** Definição de um nível da escala visual */
+export type SubscaleStatus = 'nao' | 'parcial' | 'sim';
+export type SubscaleSeverity = 'minimo' | 'leve' | 'moderado' | 'importante';
+export type EngagementStatus = 'adequado' | 'insuficiente';
+
+export type VisualSearchDominantPattern =
+  | 'adequado'
+  | 'omissao'
+  | 'comissao'
+  | 'misto'
+  | 'tendencia_omissao'
+  | 'tendencia_comissao';
+
+export type VisualSearchDPrimeBand =
+  | 'alta'
+  | 'funcional'
+  | 'reduzida'
+  | 'fraca'
+  | 'indisponivel';
+
+export type ScanPattern = 'row-wise' | 'column-wise' | 'mixed';
+
+// ─── Definição da escala visual ─────────────────────────────────────────────
+
 export interface VisualSearchScaleDefinition {
   level: VisualSearchScaleLevel;
   id: string;
@@ -16,42 +39,48 @@ export interface VisualSearchScaleDefinition {
   clinicalMeaning: string;
 }
 
-/** Resultado da escala visual com interpretação clínica */
+// ─── Resultado de cada subescala ────────────────────────────────────────────
+
+export type SubscaleResult = {
+  status: SubscaleStatus;
+  severity: SubscaleSeverity;
+  notes?: string;
+};
+
+// ─── Resultado composto da escala ───────────────────────────────────────────
+
 export type VisualSearchScaleResult = {
-  scaleName: "Olho de Águia";
-  clinicalName: "Controle Inibitório e Atenção Seletiva";
+  scaleName: 'Olho de Águia';
+  clinicalName: 'Controle Inibitório e Atenção Seletiva';
 
   score: number;
   positionPercent: number;
 
-  leftLabel: "Águia Cega";
-  rightLabel: "Super Águia";
+  leftLabel: 'Águia Cega';
+  rightLabel: 'Super Águia';
 
   markerLabel: string;
   emoji: string;
   colorToken: string;
 
-  answer: "sim" | "nao";
+  engagementStatus: EngagementStatus;
+  answer: 'sim' | 'parcial' | 'nao' | 'insuficiente';
   dominantPattern: VisualSearchDominantPattern;
   dPrimeBand: VisualSearchDPrimeBand;
+
+  subscales: {
+    selectiveAttention: SubscaleResult;
+    visualScanning: SubscaleResult;
+    spatialAsymmetry: SubscaleResult;
+    speedConsistency: SubscaleResult;
+  };
 
   shortDescription: string;
   clinicalMeaning: string;
   summary: string;
 };
 
-export type VisualSearchDominantPattern =
-  | "adequado"
-  | "omissao"
-  | "comissao"
-  | "misto";
-
-export type VisualSearchDPrimeBand =
-  | "alta"
-  | "funcional"
-  | "reduzida"
-  | "fraca"
-  | "indisponivel";
+// ─── Inputs de métricas ─────────────────────────────────────────────────────
 
 export type VisualSearchRoundMetricsInput = {
   round: number;
@@ -61,6 +90,18 @@ export type VisualSearchRoundMetricsInput = {
   missedTargets: number;
   durationMs?: number;
   distractorOpportunities?: number;
+  reactionTimes?: number[];
+  // varredura visual
+  systematicMoves?: number;
+  erraticMoves?: number;
+  organizationIndex?: number;
+  scanPattern?: ScanPattern;
+  // assimetria espacial
+  leftSideClicks?: number;
+  rightSideClicks?: number;
+  leftSideTargetMisses?: number;
+  rightSideTargetMisses?: number;
+  spatialAsymmetryIndex?: number;
 };
 
 export type VisualSearchSessionMetricsInput = {
@@ -70,6 +111,8 @@ export type VisualSearchSessionMetricsInput = {
   completedAt?: string;
   rounds: VisualSearchRoundMetricsInput[];
 };
+
+// ─── Métricas por rodada (calculadas) ───────────────────────────────────────
 
 export type VisualSearchRoundMetrics = {
   round: number;
@@ -81,14 +124,30 @@ export type VisualSearchRoundMetrics = {
   commissionRate: number;
   accuracyRate: number;
   dominantPattern: VisualSearchDominantPattern;
+  // tempo
+  meanReactionTimeMs?: number;
+  durationMs?: number;
+  // varredura
+  organizationIndex?: number;
+  scanPattern?: ScanPattern;
+  erraticMoves?: number;
+  systematicMoves?: number;
+  // assimetria
+  spatialAsymmetryIndex?: number;
+  leftSideTargetMisses?: number;
+  rightSideTargetMisses?: number;
 };
 
+// ─── Métricas globais da sessão ─────────────────────────────────────────────
+
 export type VisualSearchMetrics = {
+  // desempenho básico
   totalTargets: number;
   totalHits: number;
   totalErrors: number;
   totalMissedTargets: number;
   totalDistractorOpportunities: number | null;
+  totalRounds: number;
 
   omissionRate: number;
   commissionRate: number;
@@ -101,24 +160,51 @@ export type VisualSearchMetrics = {
 
   dominantPattern: VisualSearchDominantPattern;
   hasRelevantDifficulty: boolean;
+  engagementStatus: EngagementStatus;
+
+  // tempo / velocidade
+  meanReactionTimeMs: number | null;
+  reactionTimeStdDev: number | null;
+  totalDurationMs: number;
+
+  // varredura visual (médias da sessão)
+  meanOrganizationIndex: number | null;
+  meanSystematicMoves: number | null;
+  meanErraticMoves: number | null;
+  predominantScanPattern: ScanPattern | null;
+
+  // assimetria espacial (totais da sessão)
+  totalLeftClicks: number | null;
+  totalRightClicks: number | null;
+  totalLeftMisses: number | null;
+  totalRightMisses: number | null;
+  meanSpatialAsymmetryIndex: number | null;
 
   rounds: VisualSearchRoundMetrics[];
 };
 
-/** Relatório técnico detalhado */
+// ─── Relatório técnico ───────────────────────────────────────────────────────
+
 export type VisualSearchTechnicalReport = {
   title: string;
   question: string;
-  answer: "sim" | "nao";
+  answer: 'sim' | 'parcial' | 'nao' | 'insuficiente';
   dominantPattern: VisualSearchDominantPattern;
-  severity: "minimo" | "leve" | "moderado" | "importante";
+  severity: SubscaleSeverity;
   summary: string;
   interpretation: string;
+  subscalesSummary: {
+    selectiveAttention: string;
+    visualScanning: string;
+    spatialAsymmetry: string;
+    speedConsistency: string;
+  };
   evidence: {
     totalTargets: number;
     totalHits: number;
     totalErrors: number;
     totalMissedTargets: number;
+    totalRounds: number;
     omissionRate: number;
     commissionRate: number;
     accuracyRate: number;
@@ -126,6 +212,13 @@ export type VisualSearchTechnicalReport = {
     falseAlarmRate: number | null;
     dPrime: number | null;
     dPrimeBand: VisualSearchDPrimeBand;
+    meanReactionTimeMs: number | null;
+    reactionTimeStdDev: number | null;
+    meanOrganizationIndex: number | null;
+    predominantScanPattern: ScanPattern | null;
+    meanSpatialAsymmetryIndex: number | null;
+    totalLeftMisses: number | null;
+    totalRightMisses: number | null;
     score: number;
   };
 };
