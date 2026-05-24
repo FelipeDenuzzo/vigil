@@ -1,8 +1,8 @@
 import { getAllSessions } from "../../../../shared/storage";
-import type { SessionLog, RoundLog, ClickEvent } from "../../../../shared/types";
+import type { SessionLog } from "../../../../shared/types";
 import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
 import { buildVisualSearchTechnicalReport } from "./assessment/buildVisualSearchTechnicalReport";
-import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
+import type { VisualSearchSessionMetricsInput, VisualSearchScaleResult, VisualSearchTechnicalReport } from "./assessment/visualSearchScale.types";
 
 export interface RoundEvaluation {
   roundIndex: number;
@@ -75,21 +75,21 @@ export interface EvaluationReport {
   history: SessionEvaluation[];
   trend: "improved" | "stable" | "declined" | "first_session";
   deltaScorePct: number | null;
-  scaleResult?: ReturnType<typeof buildVisualSearchScaleResult>;
-  technicalReport?: ReturnType<typeof buildVisualSearchTechnicalReport>;
+  scaleResult?: VisualSearchScaleResult;
+  technicalReport?: VisualSearchTechnicalReport;
 }
 
 const GAME_ID = "visual-search-hunt";
 const IES_MAX = 9999;
 const SCORE_BASE = 100_000;
 
-function sortClicks(clicks: ClickEvent[]): ClickEvent[] {
+function sortClicks(clicks: any[]): any[] {
   return [...clicks].sort((a, b) => a.timestamp - b.timestamp);
 }
 
-function getWrongCorrectionTimes(clicks: ClickEvent[]): number[] {
+function getWrongCorrectionTimes(clicks: any[]): number[] {
   const sorted = sortClicks(clicks);
-  const openWrongMarks: ClickEvent[] = [];
+  const openWrongMarks: any[] = [];
   const correctionTimes: number[] = [];
 
   for (const click of sorted) {
@@ -109,7 +109,7 @@ function getWrongCorrectionTimes(clicks: ClickEvent[]): number[] {
   return correctionTimes;
 }
 
-function evaluateRound(round: RoundLog): RoundEvaluation {
+function evaluateRound(round: any): RoundEvaluation {
   const clicks = sortClicks(round.clicks ?? []);
   const marks = clicks.filter((c) => c.action === "mark");
   const unmarks = clicks.filter((c) => c.action === "unmark");
@@ -130,7 +130,7 @@ function evaluateRound(round: RoundLog): RoundEvaluation {
   const reactionTimes = round.reactionTimes ?? [];
   const avgReactionMs =
     reactionTimes.length > 0
-      ? Math.round(reactionTimes.reduce((sum, value) => sum + value, 0) / reactionTimes.length)
+      ? Math.round(reactionTimes.reduce((sum: number, value: number) => sum + value, 0) / reactionTimes.length)
       : 0;
 
   const precision =
@@ -262,11 +262,11 @@ function evaluateRound(round: RoundLog): RoundEvaluation {
 function evaluateSession(log: SessionLog): SessionEvaluation {
   const rounds = log.rounds.map(evaluateRound);
 
-  const totalWeight = rounds.reduce((sum, round) => sum + round.totalTargets, 0);
+  const totalWeight = rounds.reduce((sum: number, round: RoundEvaluation) => sum + round.totalTargets, 0);
 
   const weightedIES =
     totalWeight > 0
-      ? rounds.reduce((sum, round) => sum + round.ies * round.totalTargets, 0) / totalWeight
+      ? rounds.reduce((sum: number, round: RoundEvaluation) => sum + round.ies * round.totalTargets, 0) / totalWeight
       : IES_MAX;
 
   const score =
@@ -275,7 +275,7 @@ function evaluateSession(log: SessionLog): SessionEvaluation {
       : 0;
 
   const totals = rounds.reduce(
-    (acc, round) => {
+    (acc: any, round: RoundEvaluation) => {
       acc.rawErrors += round.rawErrors;
       acc.correctedErrors += round.correctedErrors;
       acc.accidentalErrors += round.accidentalErrors;
@@ -296,7 +296,7 @@ function evaluateSession(log: SessionLog): SessionEvaluation {
 
   return {
     sessionId: log.sessionId,
-    completedAt: log.completedAt,
+    completedAt: log.completedAt || null,
     rounds,
     weightedIES,
     score,
@@ -318,7 +318,7 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
     gameId: currentLog.gameId,
     startedAt: currentLog.startedAt ? new Date(currentLog.startedAt).toISOString() : undefined,
     completedAt: currentLog.completedAt ? new Date(currentLog.completedAt).toISOString() : undefined,
-    rounds: (currentLog.rounds ?? []).map((round, idx) => ({
+    rounds: (currentLog.rounds ?? []).map((round: any, idx: number) => ({
       round: idx + 1,
       totalTargets: round.totalTargets ?? 0,
       hits: round.hits ?? 0,

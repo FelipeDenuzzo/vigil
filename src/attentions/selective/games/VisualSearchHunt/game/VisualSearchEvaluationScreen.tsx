@@ -1,6 +1,7 @@
 /* src/attentions/selective/games/VisualSearchHunt/game/VisualSearchEvaluationScreen.tsx */
 
 import type { VisualSearchScaleResult, VisualSearchTechnicalReport } from '../assessment/visualSearchScale.types';
+import { EagleScale } from '../EagleScale';
 
 type Props = {
   scaleResult: VisualSearchScaleResult;
@@ -14,18 +15,13 @@ export function VisualSearchEvaluationScreen({
   return (
     <div style={{ padding: 24, maxWidth: 800, margin: '0 auto' }}>
       {/* Régua Visual */}
-      <div style={{ marginBottom: 32, padding: 24, background: '#f5f5f5', borderRadius: 8 }}>
-        <h2 style={{ margin: '0 0 16px' }}>{scaleResult.emoji} {scaleResult.scaleName}</h2>
-        <p style={{ margin: '8px 0', fontSize: 18, fontWeight: 600 }}>
-          {scaleResult.label}
-        </p>
-        <p style={{ margin: '8px 0', fontSize: 14, color: '#666' }}>
-          {scaleResult.shortDescription}
-        </p>
-        <p style={{ margin: '16px 0 0', fontSize: 14, fontStyle: 'italic' }}>
-          <strong>Significado clínico:</strong> {scaleResult.clinicalMeaning}
-        </p>
-      </div>
+      <EagleScale
+        score={scaleResult.score}
+        positionPercent={scaleResult.positionPercent}
+        leftLabel={scaleResult.leftLabel}
+        rightLabel={scaleResult.rightLabel}
+        markerLabel={scaleResult.markerLabel}
+      />
 
       <hr style={{ margin: '24px 0' }} />
 

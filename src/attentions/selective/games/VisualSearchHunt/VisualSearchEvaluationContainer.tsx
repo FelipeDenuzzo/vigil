@@ -1,6 +1,7 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useVisualSearchEvaluation } from './useVisualSearchEvaluation';
-import { VisualSearchEvaluationScreen } from './game/VisualSearchEvaluationScreen';
+import { getSessionById } from '../../../../shared/storage';
+import { VisualSearchEvaluationScreen } from './VisualSearchEvaluationScreen';
 
 /**
  * Container que gerencia o fluxo de avaliação:
@@ -13,27 +14,34 @@ export function VisualSearchEvaluationContainer() {
   const sessionId = searchParams.get('sessionId') || '';
 
   const evaluation = useVisualSearchEvaluation(sessionId);
+  const navigate = useNavigate();
 
-  if (!evaluation) {
+  const sessionLog = getSessionById(sessionId);
+
+  if (!evaluation || !sessionLog) {
     return (
       <div style={{ padding: 24, textAlign: 'center' }}>
         <p>Carregando avaliação...</p>
       </div>
     );
   }
-
-  if (!evaluation.scaleResult || !evaluation.technicalReport) {
-    return (
-      <div style={{ padding: 24, textAlign: 'center' }}>
-        <p>Dados de avaliação indisponíveis.</p>
-      </div>
-    );
-  }
-
   return (
     <VisualSearchEvaluationScreen
-      scaleResult={evaluation.scaleResult}
-      technicalReport={evaluation.technicalReport}
+      sessionLog={{
+        sessionId: sessionLog.sessionId,
+        gameId: sessionLog.gameId,
+        startedAt: sessionLog.startedAt ? new Date(sessionLog.startedAt).toISOString() : undefined,
+        completedAt: sessionLog.completedAt ? new Date(sessionLog.completedAt).toISOString() : undefined,
+        rounds: (sessionLog.rounds ?? []).map((round: any, idx: number) => ({
+          round: idx + 1,
+          totalTargets: round.totalTargets ?? 0,
+          hits: round.hits ?? 0,
+          errors: round.errors ?? 0,
+          missedTargets: round.missedTargets ?? 0,
+        })),
+      }}
+      onRepeatTraining={() => navigate('/treinar/seletiva/visual-search')}
+      onBackToStart={() => navigate('/treinar/seletiva')}
     />
   );
 }

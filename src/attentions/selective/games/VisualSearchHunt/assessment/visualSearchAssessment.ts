@@ -123,10 +123,9 @@ function buildConfidence(
   evidence: QuestionEvidenceSummary
 ): number {
   if (bias === 'adequado') {
-    return clampConfidence(1 - Math.max(
-      evidence.omissionRate,
-      evidence.commissionRateProxy
-    ));
+    return clampConfidence(
+      1 - Math.max(evidence.omissionRate, evidence.commissionRateProxy)
+    );
   }
 
   if (bias === 'comissao') {
@@ -174,10 +173,49 @@ function buildQuestionResult(
   };
 }
 
+/**
+ * Score específico para o gráfico de evolução.
+ * Não usa round.accuracy do log, porque o log anexado mostra casos
+ * com accuracy 100 mesmo havendo missedTargets > 0.
+ */
+function buildRoundGraphScore(round: VisualSearchRoundLog): number {
+  const hitRate = safeDivide(round.hits, round.targetsPresented);
+  const omissionRate = safeDivide(round.missedTargets, round.targetsPresented);
+  const commissionRate = safeDivide(round.errors, round.targetsPresented);
+
+  const score =
+    hitRate -
+    omissionRate -
+    commissionRate * 0.75;
+
+  return Math.max(0, Math.min(100, Number((score * 100).toFixed(1))));
+}
+
+function buildGraphSeries(rounds: VisualSearchRoundLog[]) {
+  return rounds.map((round) => {
+    const omissionRate = safeDivide(round.missedTargets, round.targetsPresented);
+    const commissionRateProxy = safeDivide(round.errors, round.hits + round.errors);
+    const bias = classifyAssessmentBias(round.errors, round.missedTargets);
+
+    return {
+      round: round.round,
+      score: buildRoundGraphScore(round),
+      hits: round.hits,
+      errors: round.errors,
+      missedTargets: round.missedTargets,
+      targetsPresented: round.targetsPresented,
+      omissionRate,
+      commissionRateProxy,
+      bias,
+    };
+  });
+}
+
 export function evaluateVisualSearchAssessment(
   sessionLog: VisualSearchSessionLog
 ): VisualSearchAssessmentResult {
   const question = buildQuestionResult(sessionLog);
+  const graphSeries = buildGraphSeries(sessionLog.rounds);
 
   return {
     gameKey: 'visual-search-hunt',
@@ -185,5 +223,6 @@ export function evaluateVisualSearchAssessment(
     createdAt: new Date().toISOString(),
     version: visualSearchAssessmentConfig.version,
     questions: [question],
+    graphSeries,
   };
 }

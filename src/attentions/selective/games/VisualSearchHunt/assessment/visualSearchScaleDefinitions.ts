@@ -1,3 +1,5 @@
+// /Users/felipedenuzzo/VSCODE/Vigil/vigil/src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchScaleDefinitions.ts
+
 import type { VisualSearchScaleDefinition } from "./visualSearchScale.types";
 
 export const VISUAL_SEARCH_SCALE_NAME = "Olho de Águia" as const;

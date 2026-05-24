@@ -1,59 +1,57 @@
 /* src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchAssessment.types.ts */
 
 import type {
-  AssessmentQuestionResult,
+  AssessmentBias,
+  AssessmentSeverity,
   QuestionEvidenceSummary,
-  SelectiveAttentionAssessmentResult,
-  SelectiveAttentionRoundLog,
-  SelectiveAttentionSessionLog,
 } from '../../../assessment/assessment.types';
 
-export interface VisualSearchRoundLog extends SelectiveAttentionRoundLog {
-  distractorsPresented?: number;
-  targetLabel?: string;
-  distractorLabel?: string;
-}
+export type VisualSearchRoundLog = {
+  round: number;
+  level: number;
+  targetsPresented: number;
+  hits: number;
+  errors: number;
+  missedTargets: number;
+  durationMs?: number;
+  reactionTimes?: number[];
+};
 
-export interface VisualSearchSessionLog extends SelectiveAttentionSessionLog {
-  gameKey: 'visual-search-hunt';
+export type VisualSearchSessionLog = {
+  sessionId: string;
   rounds: VisualSearchRoundLog[];
-}
+};
 
-export interface VisualSearchAssessmentQuestionResult
-  extends AssessmentQuestionResult {
-  id: 'filter-distractors';
+export type VisualSearchAssessmentQuestionResult = {
+  id: string;
+  title: string;
+  answered: boolean;
+  answer: 'sim' | 'nao' | 'parcial';
+  severity: AssessmentSeverity;
+  bias: AssessmentBias;
+  confidence: number;
+  summary: string;
+  clinicalMeaning: string;
   evidence: QuestionEvidenceSummary;
-}
+};
 
-export interface VisualSearchAssessmentResult
-  extends SelectiveAttentionAssessmentResult {
-  gameKey: 'visual-search-hunt';
-  questions: VisualSearchAssessmentQuestionResult[];
-}
+export type VisualSearchAssessmentGraphPoint = {
+  round: number;
+  score: number;
+  hits: number;
+  errors: number;
+  missedTargets: number;
+  targetsPresented: number;
+  omissionRate: number;
+  commissionRateProxy: number;
+  bias: 'omissao' | 'comissao' | 'misto' | 'adequado';
+};
 
-export interface VisualSearchAssessmentThresholds {
-  commissionBiasRatio: number;
-  omissionBiasRatio: number;
-  mildRate: number;
-  moderateRate: number;
-  highRate: number;
-}
-
-export interface VisualSearchAssessmentConfig {
+export type VisualSearchAssessmentResult = {
+  gameKey: string;
+  sessionId: string;
+  createdAt: string;
   version: number;
-  questionTitle: string;
-  thresholds: VisualSearchAssessmentThresholds;
-}
-
-export interface VisualSearchAssessmentContext {
-  sessionLog: VisualSearchSessionLog;
-  config: VisualSearchAssessmentConfig;
-}
-
-export interface VisualSearchQuestionEvaluation {
-  question: VisualSearchAssessmentQuestionResult;
-}
-
-export type VisualSearchAssessmentEvaluator = (
-  sessionLog: VisualSearchSessionLog
-) => VisualSearchAssessmentResult;
+  questions: VisualSearchAssessmentQuestionResult[];
+  graphSeries: VisualSearchAssessmentGraphPoint[];
+};

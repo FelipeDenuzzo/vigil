@@ -1,3 +1,5 @@
+// src/attentions/selective/games/VisualSearchHunt/assessment/calculateVisualSearchMetrics.ts
+
 import type {
   VisualSearchDPrimeBand,
   VisualSearchDominantPattern,
@@ -17,42 +19,38 @@ function clampProbability(p: number, n: number): number {
   return Math.min(max, Math.max(min, p));
 }
 
-/**
- * Acklam approximation for inverse normal CDF.
- * Útil para calcular d-prime = z(hitRate) - z(falseAlarmRate).
- */
 function inverseNormalCDF(p: number): number {
   const a = [
-    -3.969683028665376e+01,
-    2.209460984245205e+02,
-    -2.759285104469687e+02,
-    1.38357751867269e+02,
-    -3.066479806614716e+01,
-    2.506628277459239e+00
+    -39.69683028665376,
+    220.9460984245205,
+    -275.9285104469687,
+    138.357751867269,
+    -30.66479806614716,
+    2.506628277459239
   ];
 
   const b = [
-    -5.447609879822406e+01,
-    1.615858368580409e+02,
-    -1.556989798598866e+02,
-    6.680131188771972e+01,
-    -1.328068155288572e+01
+    -54.47609879822406,
+    161.5858368580409,
+    -155.6989798598866,
+    66.80131188771972,
+    -13.28068155288572
   ];
 
   const c = [
-    -7.784894002430293e-03,
-    -3.223964580411365e-01,
-    -2.400758277161838e+00,
-    -2.549732539343734e+00,
-    4.374664141464968e+00,
-    2.938163982698783e+00
+    -0.007784894002430293,
+    -0.3223964580411365,
+    -2.400758277161838,
+    -2.549732539343734,
+    4.374664141464968,
+    2.938163982698783
   ];
 
   const d = [
-    7.784695709041462e-03,
-    3.224671290700398e-01,
-    2.445134137142996e+00,
-    3.754408661907416e+00
+    0.007784695709041462,
+    0.3224671290700398,
+    2.445134137142996,
+    3.754408661907416
   ];
 
   const plow = 0.02425;
@@ -91,11 +89,9 @@ function getDominantPattern(
   commissionRate: number
 ): VisualSearchDominantPattern {
   if (errors === 0 && missedTargets === 0) return "adequado";
-
   if (omissionRate <= 0.1 && commissionRate <= 0.1) return "adequado";
   if (missedTargets > errors * 1.2) return "omissao";
   if (errors > missedTargets * 1.2) return "comissao";
-
   return "misto";
 }
 
@@ -200,19 +196,15 @@ export function calculateVisualSearchMetrics(
     totalErrors,
     totalMissedTargets,
     totalDistractorOpportunities,
-
     omissionRate,
     commissionRate,
     accuracyRate,
-
     hitRate,
     falseAlarmRate,
     dPrime,
     dPrimeBand: getDPrimeBand(dPrime),
-
     dominantPattern,
     hasRelevantDifficulty,
-
     rounds
   };
 }

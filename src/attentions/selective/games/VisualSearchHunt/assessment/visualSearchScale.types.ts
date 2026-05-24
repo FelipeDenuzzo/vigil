@@ -1,3 +1,58 @@
+// src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchScale.types.ts
+
+import type { AssessmentBias, AssessmentSeverity } from '../../../assessment/assessment.types';
+
+/** Nível da escala visual (1-4) */
+export type VisualSearchScaleLevel = 1 | 2 | 3 | 4;
+
+/** Definição de um nível da escala visual */
+export interface VisualSearchScaleDefinition {
+  level: VisualSearchScaleLevel;
+  id: string;
+  label: string;
+  emoji: string;
+  colorToken: string;
+  shortDescription: string;
+  clinicalMeaning: string;
+}
+
+/** Resultado da escala visual com interpretação clínica */
+export type VisualSearchScaleResult = {
+  scaleName: "Olho de Águia";
+  clinicalName: "Controle Inibitório e Atenção Seletiva";
+
+  score: number;
+  positionPercent: number;
+
+  leftLabel: "Águia Cega";
+  rightLabel: "Super Águia";
+
+  markerLabel: string;
+  emoji: string;
+  colorToken: string;
+
+  answer: "sim" | "nao";
+  dominantPattern: VisualSearchDominantPattern;
+  dPrimeBand: VisualSearchDPrimeBand;
+
+  shortDescription: string;
+  clinicalMeaning: string;
+  summary: string;
+};
+
+export type VisualSearchDominantPattern =
+  | "adequado"
+  | "omissao"
+  | "comissao"
+  | "misto";
+
+export type VisualSearchDPrimeBand =
+  | "alta"
+  | "funcional"
+  | "reduzida"
+  | "fraca"
+  | "indisponivel";
+
 export type VisualSearchRoundMetricsInput = {
   round: number;
   totalTargets: number;
@@ -15,21 +70,6 @@ export type VisualSearchSessionMetricsInput = {
   completedAt?: string;
   rounds: VisualSearchRoundMetricsInput[];
 };
-
-export type VisualSearchDominantPattern =
-  | "adequado"
-  | "omissao"
-  | "comissao"
-  | "misto";
-
-export type VisualSearchDPrimeBand =
-  | "alta"
-  | "funcional"
-  | "reduzida"
-  | "fraca"
-  | "indisponivel";
-
-export type VisualSearchScaleLevel = 1 | 2 | 3 | 4;
 
 export type VisualSearchRoundMetrics = {
   round: number;
@@ -65,31 +105,7 @@ export type VisualSearchMetrics = {
   rounds: VisualSearchRoundMetrics[];
 };
 
-export type VisualSearchScaleDefinition = {
-  level: VisualSearchScaleLevel;
-  id: string;
-  label: string;
-  emoji: string;
-  colorToken: string;
-  shortDescription: string;
-  clinicalMeaning: string;
-};
-
-export type VisualSearchScaleResult = {
-  scaleName: "Olho de Águia";
-  clinicalName: "Controle Inibitório e Atenção Seletiva";
-  level: VisualSearchScaleLevel;
-  label: string;
-  emoji: string;
-  colorToken: string;
-  shortDescription: string;
-  clinicalMeaning: string;
-  answer: "sim" | "nao";
-  dominantPattern: VisualSearchDominantPattern;
-  dPrimeBand: VisualSearchDPrimeBand;
-  summary: string;
-};
-
+/** Relatório técnico detalhado */
 export type VisualSearchTechnicalReport = {
   title: string;
   question: string;
@@ -110,5 +126,6 @@ export type VisualSearchTechnicalReport = {
     falseAlarmRate: number | null;
     dPrime: number | null;
     dPrimeBand: VisualSearchDPrimeBand;
+    score: number;
   };
 };
