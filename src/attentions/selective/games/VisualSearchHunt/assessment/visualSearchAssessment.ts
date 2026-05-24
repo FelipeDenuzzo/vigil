@@ -1,4 +1,5 @@
 /* src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchAssessment.ts */
+/* Atualizado em: 24/05/2026 às 15:18 (BRT) */
 
 import {
   clampConfidence,
@@ -80,7 +81,7 @@ function buildEvidenceSummary(
   };
 }
 
-// ─── Resposta e significância clínica ──────────────────────────────────────────────
+// ─── Resposta e significância clínica ─────────────────────────────────────────
 
 function buildAnswer(
   bias: AssessmentBias,
@@ -151,7 +152,7 @@ function buildConfidence(
   );
 }
 
-// ─── Notas das subescalas (varredura, assimetria, velocidade) ─────────────────────
+// ─── Notas das subescalas (varredura, assimetria, velocidade) ──────────────────
 
 function buildSubscaleNotes(rounds: VisualSearchRoundLog[]): {
   selectiveAttention?: string;
@@ -224,7 +225,7 @@ function buildSubscaleNotes(rounds: VisualSearchRoundLog[]): {
   return notes;
 }
 
-// ─── Resultado da pergunta principal ─────────────────────────────────────────────────
+// ─── Resultado da pergunta principal ──────────────────────────────────────────
 
 function buildQuestionResult(
   sessionLog: VisualSearchSessionLog
@@ -263,7 +264,7 @@ function buildQuestionResult(
   };
 }
 
-// ─── Score por rodada (para gráfico) ───────────────────────────────────────────────
+// ─── Score por rodada (para gráfico) ──────────────────────────────────────────
 
 function buildRoundGraphScore(round: VisualSearchRoundLog): number {
   const hitRate = safeDivide(round.hits, round.targetsPresented);
@@ -299,7 +300,7 @@ function buildGraphSeries(
   });
 }
 
-// ─── Função exportada ────────────────────────────────────────────────────────────
+// ─── Função exportada ─────────────────────────────────────────────────────────
 
 export function evaluateVisualSearchAssessment(
   sessionLog: VisualSearchSessionLog
