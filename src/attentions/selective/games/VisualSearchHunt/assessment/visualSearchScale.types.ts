@@ -1,4 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchScale.types.ts
+// Atualizado em: 24/05/2026 às 15:25 (BRT)
 
 import type { AssessmentBias, AssessmentSeverity } from '../../../assessment/assessment.types';
 

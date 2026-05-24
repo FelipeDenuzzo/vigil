@@ -1,4 +1,5 @@
 /* src/attentions/selective/games/VisualSearchHunt/assessment/useVisualSearchAssessment.ts */
+/* Atualizado em: 24/05/2026 às 15:25 (BRT) */
 
 import { useCallback, useMemo, useState } from 'react';
 import {

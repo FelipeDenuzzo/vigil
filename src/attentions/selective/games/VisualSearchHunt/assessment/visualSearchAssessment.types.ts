@@ -1,4 +1,5 @@
 /* src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchAssessment.types.ts */
+/* Atualizado em: 24/05/2026 às 15:25 (BRT) */
 
 import type {
   AssessmentBias,
@@ -7,7 +8,7 @@ import type {
 } from '../../../assessment/assessment.types';
 import type { ScanPattern } from './visualSearchScale.types';
 
-// ─── Log de rodada ─────────────────────────────────────────────────────────
+// ─── Log de rodada ──────────────────────────────────────────────────────────
 
 export type VisualSearchRoundLog = {
   round: number;
@@ -31,14 +32,14 @@ export type VisualSearchRoundLog = {
   spatialAsymmetryIndex?: number;
 };
 
-// ─── Log de sessão ──────────────────────────────────────────────────────────
+// ─── Log de sessão ───────────────────────────────────────────────────────────
 
 export type VisualSearchSessionLog = {
   sessionId: string;
   rounds: VisualSearchRoundLog[];
 };
 
-// ─── Resultado de pergunta ─────────────────────────────────────────────────
+// ─── Resultado de pergunta ───────────────────────────────────────────────────
 
 export type VisualSearchAssessmentQuestionResult = {
   id: string;
@@ -60,7 +61,7 @@ export type VisualSearchAssessmentQuestionResult = {
   };
 };
 
-// ─── Ponto do gráfico de evolução ──────────────────────────────────────────────
+// ─── Ponto do gráfico de evolução ────────────────────────────────────────────
 
 export type VisualSearchAssessmentGraphPoint = {
   round: number;

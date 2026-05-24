@@ -1,4 +1,5 @@
-// /Users/felipedenuzzo/VSCODE/Vigil/vigil/src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchScaleDefinitions.ts
+// src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchScaleDefinitions.ts
+// Atualizado em: 24/05/2026 às 15:25 (BRT)
 
 import type { VisualSearchScaleDefinition } from "./visualSearchScale.types";
 
