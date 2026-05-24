@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchHunt.tsx
-// Atualizado em: 24/05/2026 às 15:38 (BRT)
+// Atualizado em: 24/05/2026 às 15:52 (BRT)
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -83,14 +83,6 @@ const COLOR_HEX: Record<Color, string> = {
   yellow: '#eab308',
 };
 
-/*
-  Preferência recomendada:
-  coloque seus arquivos dentro de public/formas/
-  Exemplo:
-  public/formas/circle-red.png
-  public/formas/square-blue.png
-  public/formas/triangle-green.png
-*/
 const SHAPE_IMAGE: Record<Shape, Record<Color, string>> = {
   circle: {
     red: '/formas/circulo_vermelho.png',
@@ -157,95 +149,16 @@ function getLevelConfig(level: number): {
   targetMax: number;
   timeSeconds: number;
 } {
-  if (level === 1) {
-    return {
-      mode: 'popout',
-      gridSize: 4,
-      targetMin: 3,
-      targetMax: 4,
-      timeSeconds: FIXED_TIME_SECONDS,
-    };
-  }
-
-  if (level === 2) {
-    return {
-      mode: 'popout',
-      gridSize: 4,
-      targetMin: 4,
-      targetMax: 5,
-      timeSeconds: FIXED_TIME_SECONDS,
-    };
-  }
-
-  if (level === 3) {
-    return {
-      mode: 'mixed',
-      gridSize: 5,
-      targetMin: 4,
-      targetMax: 6,
-      timeSeconds: FIXED_TIME_SECONDS,
-    };
-  }
-
-  if (level === 4) {
-    return {
-      mode: 'mixed',
-      gridSize: 5,
-      targetMin: 5,
-      targetMax: 7,
-      timeSeconds: FIXED_TIME_SECONDS,
-    };
-  }
-
-  if (level === 5) {
-    return {
-      mode: 'mixed',
-      gridSize: 6,
-      targetMin: 6,
-      targetMax: 8,
-      timeSeconds: FIXED_TIME_SECONDS,
-    };
-  }
-
-  if (level === 6) {
-    return {
-      mode: 'conjunction',
-      gridSize: 6,
-      targetMin: 6,
-      targetMax: 9,
-      timeSeconds: FIXED_TIME_SECONDS,
-    };
-  }
-
-  if (level === 7) {
-    return {
-      mode: 'conjunction',
-      gridSize: 7,
-      targetMin: 7,
-      targetMax: 10,
-      timeSeconds: FIXED_TIME_SECONDS,
-    };
-  }
-
-  if (level === 8) {
-    return {
-      mode: 'conjunction',
-      gridSize: 7,
-      targetMin: 8,
-      targetMax: 12,
-      timeSeconds: FIXED_TIME_SECONDS,
-    };
-  }
-
-  return {
-    mode: 'hard-conjunction',
-    gridSize: 8,
-    targetMin: 10,
-    targetMax: 14,
-    timeSeconds: FIXED_TIME_SECONDS,
-  };
+  if (level === 1) return { mode: 'popout', gridSize: 4, targetMin: 3, targetMax: 4, timeSeconds: FIXED_TIME_SECONDS };
+  if (level === 2) return { mode: 'popout', gridSize: 4, targetMin: 4, targetMax: 5, timeSeconds: FIXED_TIME_SECONDS };
+  if (level === 3) return { mode: 'mixed', gridSize: 5, targetMin: 4, targetMax: 6, timeSeconds: FIXED_TIME_SECONDS };
+  if (level === 4) return { mode: 'mixed', gridSize: 5, targetMin: 5, targetMax: 7, timeSeconds: FIXED_TIME_SECONDS };
+  if (level === 5) return { mode: 'mixed', gridSize: 6, targetMin: 6, targetMax: 8, timeSeconds: FIXED_TIME_SECONDS };
+  if (level === 6) return { mode: 'conjunction', gridSize: 6, targetMin: 6, targetMax: 9, timeSeconds: FIXED_TIME_SECONDS };
+  if (level === 7) return { mode: 'conjunction', gridSize: 7, targetMin: 7, targetMax: 10, timeSeconds: FIXED_TIME_SECONDS };
+  if (level === 8) return { mode: 'conjunction', gridSize: 7, targetMin: 8, targetMax: 12, timeSeconds: FIXED_TIME_SECONDS };
+  return { mode: 'hard-conjunction', gridSize: 8, targetMin: 10, targetMax: 14, timeSeconds: FIXED_TIME_SECONDS };
 }
-
 
 function buildTiles(targetShape: Shape, targetColor: Color, level: number) {
   const config = getLevelConfig(level);
@@ -263,7 +176,6 @@ function buildTiles(targetShape: Shape, targetColor: Color, level: number) {
 
   const otherShapes = SHAPES.filter((shape) => shape !== targetShape);
   const otherColors = COLORS.filter((color) => color !== targetColor);
-
   const distractors: Tile[] = [];
 
   for (let index = 0; index < totalCells - totalTargets; index += 1) {
@@ -276,57 +188,26 @@ function buildTiles(targetShape: Shape, targetColor: Color, level: number) {
       color = popByShape ? randomItem(COLORS) : randomItem(otherColors);
     } else if (config.mode === 'mixed') {
       const variant = index % 3;
-      if (variant === 0) {
-        shape = targetShape;
-        color = randomItem(otherColors);
-      } else if (variant === 1) {
-        shape = randomItem(otherShapes);
-        color = targetColor;
-      } else {
-        shape = randomItem(otherShapes);
-        color = randomItem(otherColors);
-      }
+      if (variant === 0) { shape = targetShape; color = randomItem(otherColors); }
+      else if (variant === 1) { shape = randomItem(otherShapes); color = targetColor; }
+      else { shape = randomItem(otherShapes); color = randomItem(otherColors); }
     } else {
       const variant = index % 4;
-      if (variant === 0) {
-        shape = targetShape;
-        color = randomItem(otherColors);
-      } else if (variant === 1) {
-        shape = randomItem(otherShapes);
-        color = targetColor;
-      } else {
-        shape = randomItem(otherShapes);
-        color = randomItem(otherColors);
-      }
+      if (variant === 0) { shape = targetShape; color = randomItem(otherColors); }
+      else if (variant === 1) { shape = randomItem(otherShapes); color = targetColor; }
+      else { shape = randomItem(otherShapes); color = randomItem(otherColors); }
     }
 
-    distractors.push({
-      id: `distractor-${index}`,
-      shape,
-      color,
-      isTarget: false,
-      selected: false,
-    });
+    distractors.push({ id: `distractor-${index}`, shape, color, isTarget: false, selected: false });
   }
 
-  return {
-    tiles: shuffle([...targets, ...distractors]),
-    totalTargets,
-    config,
-  };
+  return { tiles: shuffle([...targets, ...distractors]), totalTargets, config };
 }
 
-/**
- * Análise de padrão de busca visual organização e assimetria espacial.
- * Filtra cliques elegíveis (action === 'mark'), calcula distâncias e classifica movimento.
- */
 function analyzeVisualSearchOrganization(clickLog: VisualSearchClickLog[], gridSize: number, tiles: Tile[]) {
-  // cliques elegíveis para análise: apenas 'mark'
   const markClicks = clickLog.filter((c) => c.action === 'mark');
-
   type ScanPattern = 'chaotic' | 'row-wise' | 'column-wise' | 'mixed';
 
-  // métricas padrão (neutra)
   const result = {
     systematicMoves: 0,
     erraticMoves: 0,
@@ -339,87 +220,47 @@ function analyzeVisualSearchOrganization(clickLog: VisualSearchClickLog[], gridS
     spatialAsymmetryIndex: undefined as number | undefined,
   };
 
-  // se menos de 2 cliques, não é possível analisar padrão
-  if (markClicks.length < 2) {
-    return result;
-  }
+  if (markClicks.length < 2) return result;
 
-  // análise de movimento: calcular distâncias manhattan entre cliques consecutivos
   let horizontalMovements = 0;
   let verticalMovements = 0;
 
   for (let i = 1; i < markClicks.length; i += 1) {
     const prev = markClicks[i - 1];
     const curr = markClicks[i];
-
-    // ambos devem ter row/col definidos
-    if (prev.row === undefined || curr.row === undefined || prev.col === undefined || curr.col === undefined) {
-      continue;
-    }
-
+    if (prev.row === undefined || curr.row === undefined || prev.col === undefined || curr.col === undefined) continue;
     const rowDelta = Math.abs(curr.row - prev.row);
     const colDelta = Math.abs(curr.col - prev.col);
     const manhattan = rowDelta + colDelta;
-
-    // classificação: manhattan <= 2 = sistemático; > 2 = errático
-    if (manhattan <= 2) {
-      result.systematicMoves += 1;
-    } else {
-      result.erraticMoves += 1;
-    }
-
-    // contabilizar predominância de movimento
-    if (colDelta > rowDelta) {
-      horizontalMovements += 1;
-    } else if (rowDelta > colDelta) {
-      verticalMovements += 1;
-    }
+    if (manhattan <= 2) result.systematicMoves += 1;
+    else result.erraticMoves += 1;
+    if (colDelta > rowDelta) horizontalMovements += 1;
+    else if (rowDelta > colDelta) verticalMovements += 1;
   }
 
-  // organização: proporção de movimentos sistemáticos
   const totalComparableMoves = result.systematicMoves + result.erraticMoves;
   if (totalComparableMoves > 0) {
     result.organizationIndex = Number(((result.systematicMoves / totalComparableMoves) * 100).toFixed(2));
   }
 
-  // padrão dominante de varredura
-  if (result.organizationIndex !== undefined && result.organizationIndex < 30) {
-    result.scanPattern = 'chaotic';
-  } else if (horizontalMovements > verticalMovements * 1.5) {
-    result.scanPattern = 'row-wise';
-  } else if (verticalMovements > horizontalMovements * 1.5) {
-    result.scanPattern = 'column-wise';
-  } else if (result.organizationIndex !== undefined && result.organizationIndex >= 40) {
-    result.scanPattern = 'mixed';
-  } else {
-    result.scanPattern = 'chaotic';
-  }
+  if (result.organizationIndex !== undefined && result.organizationIndex < 30) result.scanPattern = 'chaotic';
+  else if (horizontalMovements > verticalMovements * 1.5) result.scanPattern = 'row-wise';
+  else if (verticalMovements > horizontalMovements * 1.5) result.scanPattern = 'column-wise';
+  else if (result.organizationIndex !== undefined && result.organizationIndex >= 40) result.scanPattern = 'mixed';
+  else result.scanPattern = 'chaotic';
 
-  // assimetria espacial: contar cliques por lado
   for (const click of markClicks) {
-    if (click.screenHalf === 'left') {
-      result.leftSideClicks += 1;
-    } else if (click.screenHalf === 'right') {
-      result.rightSideClicks += 1;
-    }
+    if (click.screenHalf === 'left') result.leftSideClicks += 1;
+    else if (click.screenHalf === 'right') result.rightSideClicks += 1;
   }
 
-  // calcular targets não encontrados por lado
   for (const tile of tiles) {
-    if (!tile.isTarget || tile.selected || tile.row === undefined || tile.col === undefined) {
-      continue;
-    }
-
-    // target não marcado (missed)
+    if (!tile.isTarget || tile.selected || tile.row === undefined || tile.col === undefined) continue;
     const centerCol = gridSize / 2;
-    if (tile.col < centerCol) {
-      result.leftSideTargetMisses += 1;
-    } else {
-      result.rightSideTargetMisses += 1;
-    }
+    if (tile.col < centerCol) result.leftSideTargetMisses += 1;
+    else result.rightSideTargetMisses += 1;
   }
 
-  // índice de assimetria baseado em cliques
   const totalSideClicks = result.leftSideClicks + result.rightSideClicks;
   if (totalSideClicks > 0) {
     const asymmetry = Math.abs(result.leftSideClicks - result.rightSideClicks) / totalSideClicks;
@@ -439,7 +280,6 @@ export default function VisualSearchHunt({
   const [level, setLevel] = useState(1);
   const [roundIndex, setRoundIndex] = useState(1);
   const [status, setStatus] = useState<RoundStatus>('instruction');
-
   const [targetShape, setTargetShape] = useState<Shape>('triangle');
   const [targetColor, setTargetColor] = useState<Color>('red');
   const [tiles, setTiles] = useState<Tile[]>([]);
@@ -448,7 +288,6 @@ export default function VisualSearchHunt({
   const [feedback, setFeedback] = useState<'mark' | 'unmark' | null>(null);
 
   const config = useMemo(() => getLevelConfig(level), [level]);
-
   const timerRef = useRef<number | null>(null);
   const roundStartRef = useRef<number>(0);
   const clickLogRef = useRef<VisualSearchClickLog[]>([]);
@@ -457,34 +296,22 @@ export default function VisualSearchHunt({
   const persistRoundLog = useCallback((result: RoundResult) => {
     try {
       if (!sessionLogRef.current) return;
-
       const startedAt = result.startedAt;
-      const endedAt = result.endedAt;
-
       const reactionTimes = clickLogRef.current
         .filter((c) => c.action === 'mark' && c.isTarget)
         .map((c) => c.timestampMs - startedAt);
-
-      const totalTargets = result.totalTargets;
       const totalSelections = result.hits + result.errors;
       const accuracy = totalSelections > 0 ? Number(((result.hits / totalSelections) * 100).toFixed(2)) : 0;
-
-      // análise de padrão de busca visual
-      const searchAnalysis = analyzeVisualSearchOrganization(
-        [...clickLogRef.current],
-        result.gridSize,
-        tiles,
-      );
-
+      const searchAnalysis = analyzeVisualSearchOrganization([...clickLogRef.current], result.gridSize, tiles);
       const roundLog: VisualSearchRoundLog = {
         roundIndex: result.roundIndex,
         level: result.level,
         startedAt,
-        endedAt,
+        endedAt: result.endedAt,
         completed: result.status === 'won',
         targetShape: result.targetShape as VisualSearchShape,
         targetColor: result.targetColor as VisualSearchColor,
-        totalTargets,
+        totalTargets: result.totalTargets,
         hits: result.hits,
         errors: result.errors,
         missedTargets: result.missedTargets,
@@ -495,7 +322,6 @@ export default function VisualSearchHunt({
         reactionTimes,
         clicks: [...clickLogRef.current],
         accuracy,
-        // métricas de análise de busca visual
         systematicMoves: searchAnalysis.systematicMoves,
         erraticMoves: searchAnalysis.erraticMoves,
         organizationIndex: searchAnalysis.organizationIndex,
@@ -506,19 +332,13 @@ export default function VisualSearchHunt({
         rightSideTargetMisses: searchAnalysis.rightSideTargetMisses,
         spatialAsymmetryIndex: searchAnalysis.spatialAsymmetryIndex,
       };
-
       sessionLogRef.current.rounds.push(roundLog);
       saveSession(sessionLogRef.current);
-    } catch (e) {
-      // não quebrar o jogo por causa do log
-    }
+    } catch (e) {}
   }, [tiles]);
 
   const clearTimer = useCallback(() => {
-    if (timerRef.current !== null) {
-      window.clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+    if (timerRef.current !== null) { window.clearInterval(timerRef.current); timerRef.current = null; }
   }, []);
 
   const showFeedback = useCallback((type: 'mark' | 'unmark') => {
@@ -530,14 +350,11 @@ export default function VisualSearchHunt({
     const nextShape = randomItem(SHAPES);
     const nextColor = randomItem(COLORS);
     const generated = buildTiles(nextShape, nextColor, level);
-
-    // adicionar row/col explícitos aos tiles com base na posição no array
     const tilesWithCoords = generated.tiles.map((tile, index) => ({
       ...tile,
       row: Math.floor(index / generated.config.gridSize),
       col: index % generated.config.gridSize,
     }));
-
     setTargetShape(nextShape);
     setTargetColor(nextColor);
     setTiles(tilesWithCoords);
@@ -546,114 +363,62 @@ export default function VisualSearchHunt({
     roundStartRef.current = 0;
   }, [level]);
 
-
   useEffect(() => {
-    if (status === 'instruction') {
-      generateRound();
-    }
+    if (status === 'instruction') generateRound();
   }, [status, generateRound]);
 
   const finishRound = useCallback(
     (resultStatus: 'won' | 'lost') => {
       clearTimer();
-
       const endedAt = Date.now();
       const startedAt = roundStartRef.current || endedAt;
-
-      const hits = tiles.filter((tile) => tile.selected && tile.isTarget).length;
-      const errors = tiles.filter((tile) => tile.selected && !tile.isTarget).length;
-      const missedTargets = tiles.filter((tile) => !tile.selected && tile.isTarget).length;
-      const totalTargets = tiles.filter((tile) => tile.isTarget).length;
-
+      const hits = tiles.filter((t) => t.selected && t.isTarget).length;
+      const errors = tiles.filter((t) => t.selected && !t.isTarget).length;
+      const missedTargets = tiles.filter((t) => !t.selected && t.isTarget).length;
+      const totalTargets = tiles.filter((t) => t.isTarget).length;
       const result: RoundResult = {
-        roundIndex,
-        level,
-        targetShape,
-        targetColor,
-        status: resultStatus,
-        hits,
-        errors,
-        missedTargets,
-        totalTargets,
+        roundIndex, level, targetShape, targetColor,
+        status: resultStatus, hits, errors, missedTargets, totalTargets,
         gridSize: config.gridSize,
         durationMs: endedAt - startedAt,
         timeLimitSeconds: FIXED_TIME_SECONDS,
         remainingTimeSeconds: Number(remainingTime.toFixed(1)),
-        startedAt,
-        endedAt,
+        startedAt, endedAt,
         clickEvents: [...clickLogRef.current],
       };
-
       setRoundResults((prev) => [...prev, result]);
-      // persist log específico do Visual Search
       try {
         if (!sessionLogRef.current) {
           const sStarted = Date.now();
           sessionLogRef.current = {
-            sessionId: `vsh-${sStarted}`,
-            gameId: 'visual-search-hunt',
-            attentionType: 'selective',
-            startedAt: sStarted,
-            sessionStatus: 'started',
-            schemaVersion: 1,
-            abandoned: false,
-            rounds: [],
+            sessionId: `vsh-${sStarted}`, gameId: 'visual-search-hunt', attentionType: 'selective',
+            startedAt: sStarted, sessionStatus: 'started', schemaVersion: 1, abandoned: false, rounds: [],
           };
           saveSession(sessionLogRef.current);
         }
-
         persistRoundLog(result);
-      } catch (e) {
-        // não bloquear o jogo
-      }
-
+      } catch (e) {}
       setStatus(resultStatus);
     },
-    [
-      clearTimer,
-      tiles,
-      roundIndex,
-      level,
-      targetShape,
-      targetColor,
-      config.gridSize,
-      remainingTime,
-    ],
+    [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime],
   );
 
   const startRound = useCallback(() => {
-    // iniciar sessão de log na primeira rodada
     if (!sessionLogRef.current) {
       const sStarted = Date.now();
       sessionLogRef.current = {
-        sessionId: `vsh-${sStarted}`,
-        gameId: 'visual-search-hunt',
-        attentionType: 'selective',
-        startedAt: sStarted,
-        sessionStatus: 'started',
-        schemaVersion: 1,
-        abandoned: false,
-        rounds: [],
+        sessionId: `vsh-${sStarted}`, gameId: 'visual-search-hunt', attentionType: 'selective',
+        startedAt: sStarted, sessionStatus: 'started', schemaVersion: 1, abandoned: false, rounds: [],
       };
-      try {
-        saveSession(sessionLogRef.current);
-      } catch {}
+      try { saveSession(sessionLogRef.current); } catch {}
     }
-
     setStatus('playing');
     roundStartRef.current = Date.now();
-
     clearTimer();
-
     timerRef.current = window.setInterval(() => {
       setRemainingTime((prev) => {
         const next = Number((prev - 0.1).toFixed(1));
-
-        if (next <= 0) {
-          window.setTimeout(() => finishRound('lost'), 0);
-          return 0;
-        }
-
+        if (next <= 0) { window.setTimeout(() => finishRound('lost'), 0); return 0; }
         return next;
       });
     }, 100);
@@ -662,112 +427,49 @@ export default function VisualSearchHunt({
   const handleTileClick = useCallback(
     (tile: Tile) => {
       if (status !== 'playing') return;
-
       const nextAction: ClickAction = tile.selected ? 'unmark' : 'mark';
-
-      // calcular screenHalf baseado em coluna e centro do grid
       let screenHalf: 'left' | 'right' | undefined;
-      if (tile.col !== undefined) {
-        const centerCol = config.gridSize / 2;
-        screenHalf = tile.col < centerCol ? 'left' : 'right';
-      }
-
+      if (tile.col !== undefined) screenHalf = tile.col < config.gridSize / 2 ? 'left' : 'right';
       const clickEvent: VisualSearchClickLog = {
-        timestampMs: Date.now(),
-        action: nextAction,
-        isTarget: tile.isTarget,
-        tileId: tile.id,
-        roundIndex,
-        phaseLevel: level,
-        clickedShape: tile.shape as VisualSearchShape,
-        clickedColor: tile.color as VisualSearchColor,
-        targetShape: targetShape as VisualSearchShape,
-        targetColor: targetColor as VisualSearchColor,
-        row: tile.row,
-        col: tile.col,
-        screenHalf,
+        timestampMs: Date.now(), action: nextAction, isTarget: tile.isTarget, tileId: tile.id,
+        roundIndex, phaseLevel: level,
+        clickedShape: tile.shape as VisualSearchShape, clickedColor: tile.color as VisualSearchColor,
+        targetShape: targetShape as VisualSearchShape, targetColor: targetColor as VisualSearchColor,
+        row: tile.row, col: tile.col, screenHalf,
       };
-
       clickLogRef.current.push(clickEvent);
-
-      if (nextAction === 'mark') {
-        onCorrectSound?.();
-        showFeedback('mark');
-      } else {
-        onErrorSound?.();
-        showFeedback('unmark');
-      }
-
-      setTiles((prev) =>
-        prev.map((item) =>
-          item.id === tile.id
-            ? { ...item, selected: !item.selected }
-            : item,
-        ),
-      );
+      if (nextAction === 'mark') { onCorrectSound?.(); showFeedback('mark'); }
+      else { onErrorSound?.(); showFeedback('unmark'); }
+      setTiles((prev) => prev.map((item) => item.id === tile.id ? { ...item, selected: !item.selected } : item));
     },
-    [
-      status,
-      roundIndex,
-      level,
-      targetShape,
-      targetColor,
-      config.gridSize,
-      onCorrectSound,
-      onErrorSound,
-      showFeedback,
-    ],
+    [status, roundIndex, level, targetShape, targetColor, config.gridSize, onCorrectSound, onErrorSound, showFeedback],
   );
 
   const goToNextRound = useCallback(() => {
     if (roundIndex >= MAX_PHASES) {
-      const totalHits = roundResults.reduce((sum, round) => sum + round.hits, 0);
-      const totalErrors = roundResults.reduce((sum, round) => sum + round.errors, 0);
-      const roundsWon = roundResults.filter((round) => round.status === 'won').length;
-      const roundsLost = roundResults.filter((round) => round.status === 'lost').length;
-      const totalSelections = totalHits + totalErrors;
-
+      const totalHits = roundResults.reduce((s, r) => s + r.hits, 0);
+      const totalErrors = roundResults.reduce((s, r) => s + r.errors, 0);
+      const roundsWon = roundResults.filter((r) => r.status === 'won').length;
+      const roundsLost = roundResults.filter((r) => r.status === 'lost').length;
       const startedAt = roundResults[0]?.startedAt ?? Date.now();
       const completedAt = Date.now();
-
+      const totalSelections = totalHits + totalErrors;
       const gameResult: GameResult = {
-        sessionId: `session-${startedAt}`,
-        gameId: 'visual-search-hunt',
-        attentionType: 'selective',
-
-        startedAt,
-        completedAt,
-
-        sessionStatus: 'completed',
-        abandoned: false,
-        completed: true,
-
-        totalRoundsPlanned: roundResults.length,
-        completedRounds: roundsWon + roundsLost,
+        sessionId: `session-${startedAt}`, gameId: 'visual-search-hunt', attentionType: 'selective',
+        startedAt, completedAt, sessionStatus: 'completed', abandoned: false, completed: true,
+        totalRoundsPlanned: roundResults.length, completedRounds: roundsWon + roundsLost,
         startedRounds: roundResults.length,
         lastRoundIndexReached: roundResults[roundResults.length - 1]?.roundIndex ?? roundIndex,
         lastLevelReached: roundResults[roundResults.length - 1]?.level ?? level,
-
         accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
       };
       try {
-        // marcar sessão como completa e salvar resultado resumido
-        if (sessionLogRef.current) {
-          sessionLogRef.current.completedAt = completedAt;
-          sessionLogRef.current.abandoned = false;
-          saveSession(sessionLogRef.current);
-        }
+        if (sessionLogRef.current) { sessionLogRef.current.completedAt = completedAt; sessionLogRef.current.abandoned = false; saveSession(sessionLogRef.current); }
         saveResult(gameResult);
-      } catch (e) {
-        // não bloquear o fluxo do jogo
-      }
-
-      // Não chamar onEnd aqui - deixar os botões da tela de finalização cuidarem da navegação
-      // para evitar erro React: "Cannot update a component while rendering a different component"
+      } catch (e) {}
       setStatus('finished');
       return;
     }
-
     setLevel((prev) => prev + 1);
     setRoundIndex((prev) => prev + 1);
     setStatus('instruction');
@@ -775,129 +477,72 @@ export default function VisualSearchHunt({
 
   const advanceRoundNow = useCallback(() => {
     clearTimer();
-
     const endedAt = Date.now();
     const startedAt = roundStartRef.current || endedAt;
-
-    const hits = tiles.filter((tile) => tile.selected && tile.isTarget).length;
-    const errors = tiles.filter((tile) => tile.selected && !tile.isTarget).length;
-    const missedTargets = tiles.filter((tile) => !tile.selected && tile.isTarget).length;
-    const totalTargets = tiles.filter((tile) => tile.isTarget).length;
-
+    const hits = tiles.filter((t) => t.selected && t.isTarget).length;
+    const errors = tiles.filter((t) => t.selected && !t.isTarget).length;
+    const missedTargets = tiles.filter((t) => !t.selected && t.isTarget).length;
+    const totalTargets = tiles.filter((t) => t.isTarget).length;
     const result: RoundResult = {
-      roundIndex,
-      level,
-      targetShape,
-      targetColor,
-      status: 'lost',
-      hits,
-      errors,
-      missedTargets,
-      totalTargets,
-      gridSize: config.gridSize,
-      durationMs: endedAt - startedAt,
-      timeLimitSeconds: FIXED_TIME_SECONDS,
-      remainingTimeSeconds: Number(remainingTime.toFixed(1)),
-      startedAt,
-      endedAt,
+      roundIndex, level, targetShape, targetColor, status: 'lost',
+      hits, errors, missedTargets, totalTargets, gridSize: config.gridSize,
+      durationMs: endedAt - startedAt, timeLimitSeconds: FIXED_TIME_SECONDS,
+      remainingTimeSeconds: Number(remainingTime.toFixed(1)), startedAt, endedAt,
       clickEvents: [...clickLogRef.current],
     };
-
-    // persistir esta rodada antes de atualizar o estado
     try {
       if (!sessionLogRef.current) {
         const sStarted = Date.now();
         sessionLogRef.current = {
-          sessionId: `vsh-${sStarted}`,
-          gameId: 'visual-search-hunt',
-          attentionType: 'selective',
-          startedAt: sStarted,
-          sessionStatus: 'started',
-          schemaVersion: 1,
-          abandoned: false,
-          rounds: [],
+          sessionId: `vsh-${sStarted}`, gameId: 'visual-search-hunt', attentionType: 'selective',
+          startedAt: sStarted, sessionStatus: 'started', schemaVersion: 1, abandoned: false, rounds: [],
         };
         saveSession(sessionLogRef.current);
       }
       persistRoundLog(result);
     } catch (e) {}
-
     setRoundResults((prev) => {
       const next = [...prev, result];
-
-      const totalHits = next.reduce((sum, r) => sum + r.hits, 0);
-      const totalErrors = next.reduce((sum, r) => sum + r.errors, 0);
+      const totalHits = next.reduce((s, r) => s + r.hits, 0);
+      const totalErrors = next.reduce((s, r) => s + r.errors, 0);
       const roundsWon = next.filter((r) => r.status === 'won').length;
       const roundsLost = next.filter((r) => r.status === 'lost').length;
       const totalSelections = totalHits + totalErrors;
-
       if (roundIndex >= MAX_PHASES) {
         const started = next[0]?.startedAt ?? Date.now();
         const completedAt = Date.now();
-
         const gameResult: GameResult = {
-          sessionId: `session-${started}`,
-          gameId: 'visual-search-hunt',
-          attentionType: 'selective',
-
-          startedAt: started,
-          completedAt,
-
-          sessionStatus: 'completed',
-          abandoned: false,
-          completed: true,
-
-          totalRoundsPlanned: next.length,
-          completedRounds: roundsWon + roundsLost,
-          startedRounds: next.length,
+          sessionId: `session-${started}`, gameId: 'visual-search-hunt', attentionType: 'selective',
+          startedAt: started, completedAt, sessionStatus: 'completed', abandoned: false, completed: true,
+          totalRoundsPlanned: next.length, completedRounds: roundsWon + roundsLost, startedRounds: next.length,
           lastRoundIndexReached: next[next.length - 1]?.roundIndex ?? roundIndex,
           lastLevelReached: next[next.length - 1]?.level ?? level,
-
           accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
         };
-
         try {
-          if (sessionLogRef.current) {
-            sessionLogRef.current.completedAt = completedAt;
-            sessionLogRef.current.abandoned = false;
-            saveSession(sessionLogRef.current);
-          }
+          if (sessionLogRef.current) { sessionLogRef.current.completedAt = completedAt; sessionLogRef.current.abandoned = false; saveSession(sessionLogRef.current); }
           saveResult(gameResult);
         } catch (e) {}
-
-        // Não chamar onEnd aqui - deixar os botões da tela de finalização cuidarem da navegação
-        // para evitar erro React: "Cannot update a component while rendering a different component"
         setStatus('finished');
       } else {
         setLevel((l) => l + 1);
         setRoundIndex((r) => r + 1);
         setStatus('instruction');
       }
-
       return next;
     });
   }, [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime, onEnd]);
 
-  useEffect(() => {
-    return () => clearTimer();
-  }, [clearTimer]);
+  useEffect(() => { return () => clearTimer(); }, [clearTimer]);
 
   const markSessionAbandoned = useCallback(() => {
     try {
       const now = Date.now();
       if (!sessionLogRef.current) {
         sessionLogRef.current = {
-          sessionId: `vsh-${now}`,
-          gameId: 'visual-search-hunt',
-          attentionType: 'selective',
-          startedAt: now,
-          sessionStatus: 'started',
-          schemaVersion: 1,
-          abandoned: true,
-          abandonedAtRound: roundIndex,
-          abandonedAtLevel: level,
-          completedAt: now,
-          rounds: [],
+          sessionId: `vsh-${now}`, gameId: 'visual-search-hunt', attentionType: 'selective',
+          startedAt: now, sessionStatus: 'started', schemaVersion: 1,
+          abandoned: true, abandonedAtRound: roundIndex, abandonedAtLevel: level, completedAt: now, rounds: [],
         };
       } else {
         sessionLogRef.current.abandoned = true;
@@ -905,36 +550,18 @@ export default function VisualSearchHunt({
         sessionLogRef.current.abandonedAtLevel = level;
         sessionLogRef.current.completedAt = now;
       }
-
       saveSession(sessionLogRef.current);
-    } catch (e) {
-      // não bloquear o fluxo
-    }
+    } catch (e) {}
   }, [level, roundIndex]);
 
   const restartTraining = useCallback(() => {
-    try {
-      // marcar sessão atual como abandonada para histórico
-      markSessionAbandoned();
-    } catch (e) {
-      // ignore
-    }
-
+    try { markSessionAbandoned(); } catch (e) {}
     clearTimer();
-    // resetar estados
-    setLevel(1);
-    setRoundIndex(1);
-    setStatus('instruction');
-    setTiles([]);
-    setRoundResults([]);
-    setRemainingTime(FIXED_TIME_SECONDS);
-    clickLogRef.current = [];
-    roundStartRef.current = 0;
-    // iniciar nova sessão quando começar a próxima rodada
-    sessionLogRef.current = null;
+    setLevel(1); setRoundIndex(1); setStatus('instruction');
+    setTiles([]); setRoundResults([]); setRemainingTime(FIXED_TIME_SECONDS);
+    clickLogRef.current = []; roundStartRef.current = 0; sessionLogRef.current = null;
   }, [clearTimer, markSessionAbandoned]);
 
-  // marcar sessão como abandonada se o componente desmontar antes de completar
   useEffect(() => {
     return () => {
       try {
@@ -945,9 +572,7 @@ export default function VisualSearchHunt({
           sessionLogRef.current.completedAt = Date.now();
           saveSession(sessionLogRef.current);
         }
-      } catch (e) {
-        // silencioso
-      }
+      } catch (e) {}
     };
   }, []);
 
@@ -958,79 +583,40 @@ export default function VisualSearchHunt({
     <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
 
       {/* TODO: remover banner após conferência */}
-      <div style={{
-        textAlign: 'center',
-        fontSize: 11,
-        color: '#9ca3af',
-        marginBottom: 8,
-        letterSpacing: '0.02em',
-      }}>
-        🔧 Última atualização: 24/05/2026 às 15:38 (BRT)
+      <div style={{ textAlign: 'center', fontSize: 11, color: '#9ca3af', marginBottom: 8, letterSpacing: '0.02em' }}>
+        🔧 Última atualização: 24/05/2026 às 15:52 (BRT)
       </div>
 
       {status === 'instruction' && (
         <Card>
           <div style={{ display: 'grid', gap: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button onClick={startRound}>
-                {`Começar — Fase ${roundIndex}`}
-              </Button>
+              <Button onClick={startRound}>{`Começar — Fase ${roundIndex}`}</Button>
             </div>
-
             <div style={{ textAlign: 'center' }}>
               <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
               <p style={{ marginTop: 10, marginBottom: 0 }}>
                 Encontre todos os{' '}
                 <span style={{ textTransform: 'uppercase', fontWeight: 700 }}>
                   {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
-                </span>
-                .
+                </span>.
               </p>
             </div>
-
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: 180,
-                borderRadius: 18,
-                border: 'none',
-                background: 'transparent',
-                boxShadow: 'none',
-              }}
-            >
-              <div
-                style={{
-                  width: 140,
-                  height: 140,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: '#ffffff',
-                  borderRadius: 12,
-                }}
-              >
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 180, borderRadius: 18, border: 'none', background: 'transparent', boxShadow: 'none' }}>
+              <div style={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: 12 }}>
                 <img
                   src={SHAPE_IMAGE[targetShape][targetColor]}
                   alt={`${targetShape} ${targetColor}`}
-                  loading="eager"
-                  decoding="sync"
+                  loading="eager" decoding="sync"
                   style={{ width: 78, height: 78, objectFit: 'contain' }}
                   onError={(event) => {
                     const img = event.currentTarget;
-                    img.style.opacity = '0';
-                    img.style.pointerEvents = 'none';
+                    img.style.opacity = '0'; img.style.pointerEvents = 'none';
                     const fallback = img.nextElementSibling as HTMLDivElement | null;
                     if (fallback) fallback.style.display = 'block';
                   }}
                 />
-                <div
-                  style={{
-                    display: 'none',
-                    ...getShapeFallbackStyle(targetShape, targetColor),
-                  }}
-                />
+                <div style={{ display: 'none', ...getShapeFallbackStyle(targetShape, targetColor) }} />
               </div>
             </div>
           </div>
@@ -1044,112 +630,34 @@ export default function VisualSearchHunt({
               <div style={{ textAlign: 'left', fontWeight: 700, color: '#111827' }}>
                 Encontre os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
               </div>
-
-              <div
-                style={{
-                  height: 10,
-                  width: '100%',
-                  borderRadius: 999,
-                  background: '#e5e7eb',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${Math.max(0, (remainingTime / FIXED_TIME_SECONDS) * 100)}%`,
-                    background: '#111827',
-                    transition: 'width 100ms linear',
-                  }}
-                />
+              <div style={{ height: 10, width: '100%', borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${Math.max(0, (remainingTime / FIXED_TIME_SECONDS) * 100)}%`, background: '#111827', transition: 'width 100ms linear' }} />
               </div>
-
-              <div>
-                <Button onClick={advanceRoundNow} style={{ width: '100%' }}>Avançar</Button>
-              </div>
+              <div><Button onClick={advanceRoundNow} style={{ width: '100%' }}>Avançar</Button></div>
             </div>
           </Card>
-
           <Card>
             <div style={{ position: 'relative' }}>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns,
-                  gap: 10,
-                  padding: 4,
-                  borderRadius: 18,
-                  border: `2px solid ${
-                    feedback === 'mark'
-                      ? '#22c55e'
-                      : feedback === 'unmark'
-                      ? '#f59e0b'
-                      : '#e5e7eb'
-                  }`,
-                  transition: 'border-color 120ms ease',
-                }}
-              >
+              <div style={{ display: 'grid', gridTemplateColumns, gap: 10, padding: 4, borderRadius: 18, border: `2px solid ${feedback === 'mark' ? '#22c55e' : feedback === 'unmark' ? '#f59e0b' : '#e5e7eb'}`, transition: 'border-color 120ms ease' }}>
                 {tiles.map((tile) => (
                   <button
-                    key={tile.id}
-                    type="button"
+                    key={tile.id} type="button"
                     onClick={() => handleTileClick(tile)}
                     aria-label={`${tile.shape} ${tile.color}`}
-                    style={{
-                      aspectRatio: '1 / 1',
-                      minHeight: 58,
-                      borderRadius: 14,
-                      border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb',
-                      background: tile.selected ? '#eff6ff' : '#ffffff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'relative',
-                      transition: 'all 120ms ease',
-                      zIndex: 20,
-                    }}
+                    style={{ aspectRatio: '1 / 1', minHeight: 58, borderRadius: 14, border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb', background: tile.selected ? '#eff6ff' : '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 120ms ease', zIndex: 20 }}
                   >
                     <img
-                      src={SHAPE_IMAGE[tile.shape][tile.color]}
-                      alt=""
-                      aria-hidden="true"
-                      loading="eager"
-                      decoding="sync"
-                      style={{
-                        width: '72%',
-                        height: '72%',
-                        objectFit: 'contain',
-                      }}
+                      src={SHAPE_IMAGE[tile.shape][tile.color]} alt="" aria-hidden="true" loading="eager" decoding="sync"
+                      style={{ width: '72%', height: '72%', objectFit: 'contain' }}
                       onError={(event) => {
                         const img = event.currentTarget;
-                        img.style.opacity = '0';
-                        img.style.pointerEvents = 'none';
+                        img.style.opacity = '0'; img.style.pointerEvents = 'none';
                         const fallback = img.nextElementSibling as HTMLDivElement | null;
                         if (fallback) fallback.style.display = 'block';
                       }}
                     />
-
-                    <div
-                      aria-hidden="true"
-                      style={{
-                        display: 'none',
-                        ...getShapeFallbackStyle(tile.shape, tile.color),
-                      }}
-                    />
-
-                    {tile.selected && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: 6,
-                          right: 6,
-                          width: 10,
-                          height: 10,
-                          borderRadius: 999,
-                          background: '#111827',
-                        }}
-                      />
-                    )}
+                    <div aria-hidden="true" style={{ display: 'none', ...getShapeFallbackStyle(tile.shape, tile.color) }} />
+                    {tile.selected && <span style={{ position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderRadius: 999, background: '#111827' }} />}
                   </button>
                 ))}
               </div>
@@ -1161,24 +669,11 @@ export default function VisualSearchHunt({
       {(status === 'won' || status === 'lost') && (
         <Card>
           <div style={{ display: 'grid', gap: 14 }}>
-            <h3 style={{ margin: 0, textAlign: 'center' }}>
-              {status === 'won' ? 'Fase concluída' : 'Tempo encerrado'}
-            </h3>
-
+            <h3 style={{ margin: 0, textAlign: 'center' }}>{status === 'won' ? 'Fase concluída' : 'Tempo encerrado'}</h3>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <Button onClick={goToNextRound}>
-                {roundIndex >= MAX_PHASES ? 'Finalizar' : `Fase ${nextPhaseNumber}`}
-              </Button>
-
-              <Button onClick={() => {
-                markSessionAbandoned();
-                navigate('/selective');
-              }}>
-                Sair
-              </Button>
-              <Button onClick={() => restartTraining()}>
-                Reiniciar
-              </Button>
+              <Button onClick={goToNextRound}>{roundIndex >= MAX_PHASES ? 'Finalizar' : `Fase ${nextPhaseNumber}`}</Button>
+              <Button onClick={() => { markSessionAbandoned(); navigate('/selective'); }}>Sair</Button>
+              <Button onClick={() => restartTraining()}>Reiniciar</Button>
             </div>
           </div>
         </Card>
@@ -1188,22 +683,11 @@ export default function VisualSearchHunt({
         <Card>
           <div style={{ display: 'grid', gap: 12 }}>
             <h3 style={{ margin: 0 }}>Treino finalizado</h3>
-            <p style={{ margin: 0 }}>
-              Sessão encerrada e pronta para integração com o log e avaliação detalhada.
-            </p>
+            <p style={{ margin: 0 }}>Sessão encerrada e pronta para integração com o log e avaliação detalhada.</p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <Button onClick={() => {
-                const sessionId = sessionLogRef.current?.sessionId || '';
-                navigate(`/treinar/seletiva/visual-search/evaluation?sessionId=${sessionId}`);
-              }}>
-                Ver Avaliação
-              </Button>
-              <Button onClick={() => restartTraining()}>
-                Recomeçar
-              </Button>
-              <Button onClick={() => navigate('/selective')}>
-                Voltar
-              </Button>
+              <Button onClick={() => { const sessionId = sessionLogRef.current?.sessionId || ''; navigate(`/treinar/seletiva/visual-search/evaluation?sessionId=${sessionId}`); }}>Ver Avaliação</Button>
+              <Button onClick={() => restartTraining()}>Recomeçar</Button>
+              <Button onClick={() => navigate('/selective')}>Voltar</Button>
             </div>
           </div>
         </Card>
