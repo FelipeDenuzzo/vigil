@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/assessment/buildVisualSearchScaleResult.ts
-// Atualizado em: 24/05/2026 às 15:52 (BRT)
+// Atualizado em: 24/05/2026 às 16:01 (BRT)
 
 import { calculateVisualSearchMetrics } from './calculateVisualSearchMetrics';
 import type {
@@ -17,6 +17,9 @@ function clamp(value: number, min = 0, max = 100) {
 }
 
 function calculateEagleScore(m: VisualSearchMetrics): number {
+  // caso extremo: nenhum acerto em nenhuma fase → score 0 direto
+  if (m.totalHits === 0 && m.totalErrors === 0) return 0;
+
   let score = 100;
   score -= m.omissionRate * 40;
   score -= m.commissionRate * 30;
@@ -26,7 +29,6 @@ function calculateEagleScore(m: VisualSearchMetrics): number {
     else if (m.dPrime < 1) score -= 10;
     else if (m.dPrime < 1.5) score -= 5;
   } else if (m.omissionRate >= 1.0) {
-    // dPrime incalculável por ausência total de respostas: penalidade máxima
     score -= 20;
   }
 
@@ -37,7 +39,7 @@ function calculateEagleScore(m: VisualSearchMetrics): number {
   return clamp(Math.round(score));
 }
 
-// ─── Subescala 1: Atenção Seletiva (Alvos vs Distratores) ──────────────────
+// ─── Subescala 1: Atenção Seletiva (Alvos vs Distratores) ────────────────────
 
 function evaluateSelectiveAttention(m: VisualSearchMetrics): SubscaleResult {
   if (m.engagementStatus === 'insuficiente') {
@@ -91,7 +93,7 @@ function evaluateSelectiveAttention(m: VisualSearchMetrics): SubscaleResult {
   };
 }
 
-// ─── Subescala 2: Organização da Varredura Visual ─────────────────────
+// ─── Subescala 2: Organização da Varredura Visual ───────────────────────────
 
 function evaluateVisualScanning(m: VisualSearchMetrics): SubscaleResult {
   if (m.engagementStatus === 'insuficiente') {
@@ -123,7 +125,7 @@ function evaluateVisualScanning(m: VisualSearchMetrics): SubscaleResult {
   };
 }
 
-// ─── Subescala 3: Assimetria Espacial ────────────────────────────
+// ─── Subescala 3: Assimetria Espacial ──────────────────────────────────────
 
 function evaluateSpatialAsymmetry(m: VisualSearchMetrics): SubscaleResult {
   if (m.engagementStatus === 'insuficiente') {
@@ -167,7 +169,7 @@ function evaluateSpatialAsymmetry(m: VisualSearchMetrics): SubscaleResult {
   };
 }
 
-// ─── Subescala 4: Velocidade e Consistência de Resposta ───────────────────
+// ─── Subescala 4: Velocidade e Consistência de Resposta ───────────────────────
 
 function evaluateSpeedConsistency(m: VisualSearchMetrics): SubscaleResult {
   if (m.engagementStatus === 'insuficiente') {
@@ -182,7 +184,6 @@ function evaluateSpeedConsistency(m: VisualSearchMetrics): SubscaleResult {
   }
 
   const cv = stdDev !== null ? stdDev / meanRT : null;
-
   const slow = meanRT > 4000;
   const inconsistent = cv !== null && cv > 0.5;
 
@@ -211,7 +212,7 @@ function evaluateSpeedConsistency(m: VisualSearchMetrics): SubscaleResult {
   };
 }
 
-// ─── Resposta global ──────────────────────────────────────────────────
+// ─── Resposta global ───────────────────────────────────────────────────────────
 
 function resolveGlobalAnswer(
   sa: SubscaleResult
@@ -244,7 +245,7 @@ function getClinicalMeaning(score: number): string {
   return 'Sugere prejuízo acentuado na discriminação de estímulos relevantes e no controle da resposta.';
 }
 
-// ─── Função principal ──────────────────────────────────────────────
+// ─── Função principal ──────────────────────────────────────────────────────────
 
 export function buildVisualSearchScaleResult(
   session: VisualSearchSessionMetricsInput
