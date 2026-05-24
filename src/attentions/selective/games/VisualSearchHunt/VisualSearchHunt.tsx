@@ -1,3 +1,6 @@
+// src/attentions/selective/games/VisualSearchHunt/VisualSearchHunt.tsx
+// Atualizado em: 24/05/2026 às 15:38 (BRT)
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../../shared/components/Button';
@@ -953,6 +956,18 @@ export default function VisualSearchHunt({
 
   return (
     <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
+
+      {/* TODO: remover banner após conferência */}
+      <div style={{
+        textAlign: 'center',
+        fontSize: 11,
+        color: '#9ca3af',
+        marginBottom: 8,
+        letterSpacing: '0.02em',
+      }}>
+        🔧 Última atualização: 24/05/2026 às 15:38 (BRT)
+      </div>
+
       {status === 'instruction' && (
         <Card>
           <div style={{ display: 'grid', gap: 20 }}>
