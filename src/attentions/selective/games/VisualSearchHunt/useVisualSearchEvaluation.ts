@@ -312,7 +312,8 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
 
   const current = evaluateSession(currentLog);
 
-  // Converter log para formato esperado pelas novas funções
+  // Converter log para formato esperado pelas funções de avaliação
+  // Inclui todos os campos de varredura visual, assimetria espacial e velocidade
   const sessionMetrics: VisualSearchSessionMetricsInput = {
     sessionId: currentLog.sessionId,
     gameId: currentLog.gameId,
@@ -324,6 +325,19 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
       hits: round.hits ?? 0,
       errors: round.errors ?? 0,
       missedTargets: round.missedTargets ?? 0,
+      durationMs: round.durationMs,
+      reactionTimes: Array.isArray(round.reactionTimes) ? round.reactionTimes : undefined,
+      // varredura visual
+      systematicMoves: round.systematicMoves,
+      erraticMoves: round.erraticMoves,
+      organizationIndex: round.organizationIndex,
+      scanPattern: round.scanPattern,
+      // assimetria espacial
+      leftSideClicks: round.leftSideClicks,
+      rightSideClicks: round.rightSideClicks,
+      leftSideTargetMisses: round.leftSideTargetMisses,
+      rightSideTargetMisses: round.rightSideTargetMisses,
+      spatialAsymmetryIndex: round.spatialAsymmetryIndex,
     })),
   };
 
