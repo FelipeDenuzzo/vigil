@@ -34,6 +34,32 @@ export function VisualSearchEvaluationContainer() {
             hits: round.hits ?? 0,
             errors: round.errors ?? 0,
             missedTargets: round.missedTargets ?? 0,
+            durationMs: round.durationMs,
+            reactionTimes: round.reactionTimes,
+            // cliques detalhados para análise de qualidade do erro e posição
+            clicks: Array.isArray(round.clicks)
+              ? round.clicks.map((c: any) => ({
+                  isTarget: c.isTarget ?? false,
+                  clickedShape: c.clickedShape ?? '',
+                  clickedColor: c.clickedColor ?? '',
+                  targetShape: c.targetShape ?? '',
+                  targetColor: c.targetColor ?? '',
+                  row: c.row ?? 0,
+                  col: c.col ?? 0,
+                  screenHalf: c.screenHalf ?? 'left',
+                }))
+              : undefined,
+            // varredura visual
+            systematicMoves: round.systematicMoves,
+            erraticMoves: round.erraticMoves,
+            organizationIndex: round.organizationIndex,
+            scanPattern: round.scanPattern,
+            // assimetria espacial
+            leftSideClicks: round.leftSideClicks,
+            rightSideClicks: round.rightSideClicks,
+            leftSideTargetMisses: round.leftSideTargetMisses,
+            rightSideTargetMisses: round.rightSideTargetMisses,
+            spatialAsymmetryIndex: round.spatialAsymmetryIndex,
           })),
         }}
         onRepeatTraining={() => navigate('/treinar/seletiva/visual-search')}
