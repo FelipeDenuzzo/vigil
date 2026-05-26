@@ -23,6 +23,19 @@ export type VisualSearchAssessmentConfig = {
   };
 };
 
+// ─── Log de clique individual ────────────────────────────────────────────────
+
+export type VisualSearchClickLog = {
+  isTarget: boolean;
+  clickedShape: string;
+  clickedColor: string;
+  targetShape: string;
+  targetColor: string;
+  row: number;
+  col: number;
+  screenHalf: 'left' | 'right';
+};
+
 // ─── Log de rodada ──────────────────────────────────────────────────────────
 
 export type VisualSearchRoundLog = {
@@ -34,6 +47,8 @@ export type VisualSearchRoundLog = {
   missedTargets: number;
   durationMs?: number;
   reactionTimes?: number[];
+  // cliques detalhados (qualidade do erro e posição)
+  clicks?: VisualSearchClickLog[];
   // varredura visual
   systematicMoves?: number;
   erraticMoves?: number;
