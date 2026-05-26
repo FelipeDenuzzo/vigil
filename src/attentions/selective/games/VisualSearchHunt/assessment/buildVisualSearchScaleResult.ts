@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/assessment/buildVisualSearchScaleResult.ts
-// Atualizado em: 24/05/2026 às 16:16 (BRT)
+// Atualizado em: 26/05/2026 às 18:00 (BRT)
 
 import { calculateVisualSearchMetrics } from './calculateVisualSearchMetrics';
 import type {
@@ -17,7 +17,9 @@ function clamp(value: number, min = 0, max = 100) {
 }
 
 function calculateEagleScore(m: VisualSearchMetrics): number {
-  if (m.totalHits === 0 && m.totalErrors === 0) return 0;
+  // Sem nenhum acerto e omissão total → sessão sem desempenho real
+  // Cobre: avançou sem clicar, clicou só em erros e não acertou nada
+  if (m.totalHits === 0 && m.omissionRate >= 1.0) return 0;
 
   let score = 100;
   score -= m.omissionRate * 40;
