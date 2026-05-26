@@ -1,12 +1,27 @@
 /* src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchAssessment.types.ts */
-/* Atualizado em: 24/05/2026 às 15:25 (BRT) */
+/* Atualizado em: 26/05/2026 */
 
 import type {
   AssessmentBias,
+  AssessmentQuestionId,
   AssessmentSeverity,
   QuestionEvidenceSummary,
 } from '../../../assessment/assessment.types';
 import type { ScanPattern } from './visualSearchScale.types';
+
+// ─── Config do assessment ────────────────────────────────────────────────────
+
+export type VisualSearchAssessmentConfig = {
+  version: number;
+  questionTitle: string;
+  thresholds: {
+    commissionBiasRatio: number;
+    omissionBiasRatio: number;
+    mildRate: number;
+    moderateRate: number;
+    highRate: number;
+  };
+};
 
 // ─── Log de rodada ──────────────────────────────────────────────────────────
 
@@ -35,14 +50,18 @@ export type VisualSearchRoundLog = {
 // ─── Log de sessão ───────────────────────────────────────────────────────────
 
 export type VisualSearchSessionLog = {
+  gameKey: string;
   sessionId: string;
+  startedAt: string;
+  finishedAt: string;
+  userId?: string;
   rounds: VisualSearchRoundLog[];
 };
 
 // ─── Resultado de pergunta ───────────────────────────────────────────────────
 
 export type VisualSearchAssessmentQuestionResult = {
-  id: string;
+  id: AssessmentQuestionId;
   title: string;
   answered: boolean;
   answer: 'sim' | 'nao' | 'parcial' | 'insuficiente';

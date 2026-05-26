@@ -1,7 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchScale.types.ts
-// Atualizado em: 24/05/2026 às 15:25 (BRT)
-
-import type { AssessmentBias, AssessmentSeverity } from '../../../assessment/assessment.types';
+// Atualizado em: 26/05/2026
 
 // ─── Primitivos de avaliação ────────────────────────────────────────────────
 
@@ -172,54 +170,12 @@ export type VisualSearchMetrics = {
   meanOrganizationIndex: number | null;
   meanSystematicMoves: number | null;
   meanErraticMoves: number | null;
-  predominantScanPattern: ScanPattern | null;
+  dominantScanPattern: ScanPattern | null;
 
-  // assimetria espacial (totais da sessão)
-  totalLeftClicks: number | null;
-  totalRightClicks: number | null;
-  totalLeftMisses: number | null;
-  totalRightMisses: number | null;
+  // assimetria espacial (médias da sessão)
   meanSpatialAsymmetryIndex: number | null;
+  hasSpatialAsymmetry: boolean;
 
+  // por rodada
   rounds: VisualSearchRoundMetrics[];
-};
-
-// ─── Relatório técnico ───────────────────────────────────────────────────────
-
-export type VisualSearchTechnicalReport = {
-  title: string;
-  question: string;
-  answer: 'sim' | 'parcial' | 'nao' | 'insuficiente';
-  dominantPattern: VisualSearchDominantPattern;
-  severity: SubscaleSeverity;
-  summary: string;
-  interpretation: string;
-  subscalesSummary: {
-    selectiveAttention: string;
-    visualScanning: string;
-    spatialAsymmetry: string;
-    speedConsistency: string;
-  };
-  evidence: {
-    totalTargets: number;
-    totalHits: number;
-    totalErrors: number;
-    totalMissedTargets: number;
-    totalRounds: number;
-    omissionRate: number;
-    commissionRate: number;
-    accuracyRate: number;
-    hitRate: number;
-    falseAlarmRate: number | null;
-    dPrime: number | null;
-    dPrimeBand: VisualSearchDPrimeBand;
-    meanReactionTimeMs: number | null;
-    reactionTimeStdDev: number | null;
-    meanOrganizationIndex: number | null;
-    predominantScanPattern: ScanPattern | null;
-    meanSpatialAsymmetryIndex: number | null;
-    totalLeftMisses: number | null;
-    totalRightMisses: number | null;
-    score: number;
-  };
 };
