@@ -1,100 +1,126 @@
 // src/assessment/visualSearch/buildVisualSearchScaleResult.ts
-// Produz o resultado em escala (score 0–100, faixa, resposta clínica resumida)
-// a partir de VisualSearchAnalysisInput (camada central).
+// Etapa 5 — Nível lúdico: Olho de Águia (score + nível 1–4 + emoji + colorToken)
+// Sem texto clínico — apenas resultado do "jogo"
 
-import { buildErrorProfile, buildSpatialProfile } from './calculateVisualSearchMetrics';
-import { getScoreBand, getErrorProfileLabel, getSpatialNeglectLabel, COMMISSION_THRESHOLD, OMISSION_THRESHOLD } from './visualSearchScaleDefinitions';
-import type { VisualSearchAnalysisInput } from './types';
+import { calculateVisualSearchMetrics } from './calculateVisualSearchMetrics';
+import type { VisualSearchScaleInput } from './types';
 
-// ─── Tipo de saída ────────────────────────────────────────────────────────────
+// ─── Tipos de saída ────────────────────────────────────────────────────────────
+
+export type EagleLevel = 1 | 2 | 3 | 4;
+export type EagleColorToken = 'success' | 'warning' | 'danger';
 
 export interface VisualSearchScaleResult {
-  score: number;          // 0–100
-  band: string;           // 'excelente' | 'bom' | 'regular' | 'fraco' | 'insuficiente'
-  bandLabel: string;      // versão legível da faixa
-  answer: string;         // resposta clínica resumida (1–2 frases)
-  errorProfileLabel: string;
-  spatialNeglectLabel: string;
-  commissionRate: number;
-  omissionRate: number;
-  dominantIssue: 'comissao' | 'omissao' | 'misto' | 'preservado';
+  scaleName: string;
+  emoji: string;
+  score: number;           // 0–100
+  positionPercent: number; // 0–100, posição na régua
+  level: EagleLevel;
+  levelLabel: string;      // ex: 'Águia Atenta'
+  leftLabel: string;
+  rightLabel: string;
+  markerLabel: string;
+  colorToken: EagleColorToken;
+  shortDescription: string; // 1–2 frases, sem jargão clínico
+  engagementStatus: 'suficiente' | 'insuficiente';
 }
 
-// ─── Cálculo de score ─────────────────────────────────────────────────────────
-// Penaliza comissão (peso 0.5) e omissão (peso 0.5), cada uma até 100%.
+// ─── Utilitários ───────────────────────────────────────────────────────────────
 
-function computeScore(
+function clamp(value: number, min = 0, max = 100): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function calculateEagleScore(
+  omissionRate: number,
   commissionRate: number,
-  omissionRate: number
+  dPrime: number | null,
+  orgIndex: number | null,
+  asymIndex: number | null
 ): number {
-  const commissionPenalty = Math.min(commissionRate, 1) * 50;
-  const omissionPenalty   = Math.min(omissionRate,   1) * 50;
-  return Math.max(0, Math.round(100 - commissionPenalty - omissionPenalty));
+  if (omissionRate >= 1.0) return 0;
+
+  let score = 100;
+  score -= omissionRate * 40;
+  score -= commissionRate * 30;
+
+  if (dPrime !== null) {
+    if (dPrime < 0.5) score -= 20;
+    else if (dPrime < 1) score -= 10;
+    else if (dPrime < 1.5) score -= 5;
+  } else if (omissionRate >= 1.0) {
+    score -= 20;
+  }
+
+  if (orgIndex !== null && orgIndex < 40) score -= 5;
+  if (asymIndex !== null && asymIndex > 50) score -= 5;
+
+  return clamp(Math.round(score));
 }
 
-// ─── Função principal ─────────────────────────────────────────────────────────
+function resolveLevel(score: number): EagleLevel {
+  if (score >= 75) return 4;
+  if (score >= 50) return 3;
+  if (score >= 25) return 2;
+  return 1;
+}
+
+const LEVEL_LABELS: Record<EagleLevel, string> = {
+  4: 'Super Águia',
+  3: 'Águia Atenta',
+  2: 'Águia em Ajuste',
+  1: 'Águia Cega',
+};
+
+function resolveColorToken(score: number): EagleColorToken {
+  if (score >= 60) return 'success';
+  if (score >= 35) return 'warning';
+  return 'danger';
+}
+
+function getShortDescription(score: number, omissionRate: number, commissionRate: number): string {
+  if (omissionRate >= 0.4 && commissionRate >= 0.25)
+    return 'Dificuldade para localizar alvos e para ignorar distratores ao mesmo tempo.';
+  if (omissionRate >= 0.4)
+    return 'Muitos alvos passaram despercebidos durante a sessão.';
+  if (commissionRate >= 0.25)
+    return 'Tendência a clicar em distratores com frequência.';
+  if (score >= 75) return 'Ótima identificação do alvo com poucos erros.';
+  if (score >= 50) return 'Boa performance, com pequenas oscilações no filtro visual.';
+  if (score >= 25) return 'Instabilidade moderada na separação entre alvo e distratores.';
+  return 'Dificuldade acentuada para manter o foco no alvo visual.';
+}
+
+// ─── Função principal ──────────────────────────────────────────────────────────
 
 export function buildVisualSearchScaleResult(
-  input: VisualSearchAnalysisInput
+  input: VisualSearchScaleInput
 ): VisualSearchScaleResult {
-  const errorProfile   = buildErrorProfile(input.roundClicks);
-  const spatialProfile = buildSpatialProfile(input.roundClicks);
+  const m = calculateVisualSearchMetrics(input);
 
-  // Totais brutos por rodada
-  let totalHits    = 0;
-  let totalErrors  = 0;
-  let totalTargets = 0;
-  let totalMissed  = 0;
+  const score = calculateEagleScore(
+    m.omissionRate,
+    m.commissionRate,
+    m.dPrime,
+    m.meanOrganizationIndex,
+    m.meanSpatialAsymmetryIndex
+  );
 
-  for (const { clicks } of input.roundClicks) {
-    for (const c of clicks) {
-      if (c.isTarget) totalHits++;
-      else totalErrors++;
-    }
-  }
-  // totalTargets estimado: acertos + alvos perdidos (via spatialProfile)
-  totalMissed  = spatialProfile.leftMisses + spatialProfile.rightMisses;
-  totalTargets = totalHits + totalMissed;
-
-  const commissionRate = totalHits + totalErrors > 0
-    ? totalErrors / (totalHits + totalErrors)
-    : 0;
-
-  const omissionRate = totalTargets > 0
-    ? totalMissed / totalTargets
-    : 0;
-
-  const score = computeScore(commissionRate, omissionRate);
-  const { band, label: bandLabel, description } = getScoreBand(score);
-
-  // Padrão dominante
-  const highCommission = commissionRate > COMMISSION_THRESHOLD;
-  const highOmission   = omissionRate   > OMISSION_THRESHOLD;
-  let dominantIssue: VisualSearchScaleResult['dominantIssue'] = 'preservado';
-  if (highCommission && highOmission) dominantIssue = 'misto';
-  else if (highCommission)            dominantIssue = 'comissao';
-  else if (highOmission)              dominantIssue = 'omissao';
-
-  // Resposta clínica
-  let answer: string;
-  if (dominantIssue === 'comissao')
-    answer = `Sinais de impulsividade na seleção de alvos. ${description}`;
-  else if (dominantIssue === 'omissao')
-    answer = `Tendência a perder alvos durante a varredura. ${description}`;
-  else if (dominantIssue === 'misto')
-    answer = `Instabilidade no filtro atencional: erros de comissão e omissão. ${description}`;
-  else
-    answer = `Atenção seletiva preservada. ${description}`;
+  const level = resolveLevel(score);
+  const levelLabel = LEVEL_LABELS[level];
 
   return {
+    scaleName: 'Olho de Águia',
+    emoji: '🦅',
     score,
-    band,
-    bandLabel,
-    answer,
-    errorProfileLabel: getErrorProfileLabel(errorProfile),
-    spatialNeglectLabel: getSpatialNeglectLabel(spatialProfile),
-    commissionRate: Number(commissionRate.toFixed(2)),
-    omissionRate:   Number(omissionRate.toFixed(2)),
-    dominantIssue,
+    positionPercent: score,
+    level,
+    levelLabel,
+    leftLabel: 'Águia Cega',
+    rightLabel: 'Super Águia',
+    markerLabel: levelLabel,
+    colorToken: resolveColorToken(score),
+    shortDescription: getShortDescription(score, m.omissionRate, m.commissionRate),
+    engagementStatus: m.engagementStatus,
   };
 }
