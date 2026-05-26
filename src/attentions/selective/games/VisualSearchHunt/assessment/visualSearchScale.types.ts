@@ -170,12 +170,56 @@ export type VisualSearchMetrics = {
   meanOrganizationIndex: number | null;
   meanSystematicMoves: number | null;
   meanErraticMoves: number | null;
-  dominantScanPattern: ScanPattern | null;
+  predominantScanPattern: ScanPattern | null;
 
-  // assimetria espacial (médias da sessão)
+  // assimetria espacial
   meanSpatialAsymmetryIndex: number | null;
   hasSpatialAsymmetry: boolean;
+  totalLeftClicks: number | null;
+  totalRightClicks: number | null;
+  totalLeftMisses: number | null;
+  totalRightMisses: number | null;
 
   // por rodada
   rounds: VisualSearchRoundMetrics[];
+};
+
+// ─── Relatório técnico ───────────────────────────────────────────────────────────
+
+export type VisualSearchTechnicalReport = {
+  title: string;
+  question: string;
+  answer: 'sim' | 'parcial' | 'nao' | 'insuficiente';
+  dominantPattern: VisualSearchDominantPattern;
+  severity: SubscaleSeverity;
+  summary: string;
+  interpretation: string;
+  subscalesSummary: {
+    selectiveAttention: string;
+    visualScanning: string;
+    spatialAsymmetry: string;
+    speedConsistency: string;
+  };
+  evidence: {
+    totalTargets: number;
+    totalHits: number;
+    totalErrors: number;
+    totalMissedTargets: number;
+    totalRounds: number;
+    omissionRate: number;
+    commissionRate: number;
+    accuracyRate: number;
+    hitRate: number;
+    falseAlarmRate: number | null;
+    dPrime: number | null;
+    dPrimeBand: VisualSearchDPrimeBand;
+    meanReactionTimeMs: number | null;
+    reactionTimeStdDev: number | null;
+    meanOrganizationIndex: number | null;
+    predominantScanPattern: ScanPattern | null;
+    meanSpatialAsymmetryIndex: number | null;
+    totalLeftMisses: number | null;
+    totalRightMisses: number | null;
+    score: number;
+  };
 };

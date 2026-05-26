@@ -64,7 +64,7 @@ export type VisualSearchAssessmentQuestionResult = {
   id: AssessmentQuestionId;
   title: string;
   answered: boolean;
-  answer: 'sim' | 'nao' | 'parcial' | 'insuficiente';
+  answer: 'sim' | 'nao' | 'parcial';
   severity: AssessmentSeverity;
   bias: AssessmentBias;
   confidence: number;
