@@ -36,6 +36,7 @@ export function VisualSearchEvaluationContainer() {
             missedTargets: round.missedTargets ?? 0,
             durationMs: round.durationMs,
             reactionTimes: round.reactionTimes,
+            gridSize: round.gridSize,
             // cliques detalhados para análise de qualidade do erro e posição
             clicks: Array.isArray(round.clicks)
               ? round.clicks.map((c: any) => ({

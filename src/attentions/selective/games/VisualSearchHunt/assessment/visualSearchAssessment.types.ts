@@ -47,6 +47,7 @@ export type VisualSearchRoundLog = {
   missedTargets: number;
   durationMs?: number;
   reactionTimes?: number[];
+  gridSize?: number;
   // cliques detalhados (qualidade do erro e posição)
   clicks?: VisualSearchClickLog[];
   // varredura visual
