@@ -18,7 +18,7 @@ export interface VisualSearchTechnicalReport {
 }
 
 function resolveProblemRegion(
-  input: VisualSearchAnalysisInput['roundClicks'],
+  _input: VisualSearchAnalysisInput['roundClicks'],
   spatialProfile: ReturnType<typeof calculateVisualSearchMetrics>['spatialProfile']
 ): VisualSearchTechnicalReport['problemRegion'] {
   const { byQuadrant } = spatialProfile;
