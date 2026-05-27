@@ -2,7 +2,8 @@
 
 import { EagleScale } from "./EagleScale";
 import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
-import { buildVisualSearchTechnicalReport as buildTechnicalReportCentral } from "../../../../assessment/visualSearch/buildVisualSearchTechnicalReport";
+import { buildVisualSearchTechnicalReport as buildGameReport } from "./assessment/buildVisualSearchTechnicalReport";
+import { buildVisualSearchTechnicalReport as buildCentralReport } from "../../../../assessment/visualSearch/buildVisualSearchTechnicalReport";
 import { adaptSessionToRoundClicks } from "../../../../assessment/visualSearch/adaptSessionToRoundClicks";
 import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
 
@@ -13,7 +14,7 @@ type Props = {
   onContinueTrail?: () => void;
 };
 
-const styles = {
+const s = {
   container: {
     padding: 16,
     display: "grid",
@@ -29,11 +30,43 @@ const styles = {
   sectionTitle: {
     marginBottom: 8,
     color: "#e8e9f0",
+    fontSize: 16,
+    fontWeight: 700,
+  } as const,
+  label: {
+    fontSize: 12,
+    color: "#8b8fa8",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.06em",
+    marginBottom: 2,
+  },
+  value: {
+    fontSize: 14,
+    color: "#e8e9f0",
+    marginBottom: 10,
+  },
+  subsection: {
+    background: "rgba(255,255,255,0.04)",
+    borderRadius: 10,
+    padding: "10px 12px",
+    marginBottom: 8,
+  } as const,
+  subsectionTitle: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#a0a4be",
+    marginBottom: 4,
+  } as const,
+  subsectionText: {
+    fontSize: 13,
+    color: "#c8cad8",
+    lineHeight: 1.5,
   } as const,
   strongLine: {
     marginTop: 12,
     fontWeight: 700,
     color: "#e8e9f0",
+    fontSize: 15,
   } as const,
   actions: {
     display: "grid",
@@ -87,18 +120,24 @@ export function VisualSearchEvaluationScreen({
   onBackToStart,
   onContinueTrail,
 }: Props) {
-  // Nível lúdico — builder do módulo do jogo (score, régua, shortDescription)
+  // Nível lúdico — régua e score
   const scaleResult = buildVisualSearchScaleResult(sessionLog);
 
-  // Parecer técnico — camada central (dominantErrorAttribute, problemRegion, spatialNeglect)
+  // Relatório do módulo do jogo — subscalesSummary detalhadas
+  const gameReport = buildGameReport(sessionLog);
+
+  // Relatório da camada central — análise por cliques (atributo, região, neglect)
   const roundClicks = adaptSessionToRoundClicks(sessionLog);
-  const technicalReport = buildTechnicalReportCentral(roundClicks);
+  const centralReport = buildCentralReport(roundClicks);
+
+  const hasCentralData = roundClicks.length > 0;
 
   return (
-    <div style={styles.container}>
-      {/* Nível 1: Régua lúdica */}
-      <section style={styles.section}>
-        <h2 style={styles.sectionTitle}>
+    <div style={s.container}>
+
+      {/* ── Nível 1: Régua lúdica ── */}
+      <section style={s.section}>
+        <h2 style={s.sectionTitle}>
           {scaleResult.emoji} {scaleResult.scaleName}
         </h2>
 
@@ -110,52 +149,75 @@ export function VisualSearchEvaluationScreen({
           markerLabel={scaleResult.markerLabel}
         />
 
-        <p style={styles.strongLine}>{scaleResult.shortDescription}</p>
-        <p>{scaleResult.clinicalMeaning}</p>
-        <p>{scaleResult.summary}</p>
+        <p style={s.strongLine}>{scaleResult.shortDescription}</p>
+        <p style={{ ...s.value, marginTop: 6 }}>{scaleResult.clinicalMeaning}</p>
+        <p style={s.value}>{scaleResult.summary}</p>
       </section>
 
-      {/* Nível 2: Parecer técnico — camada central */}
-      <section style={styles.section}>
-        <h3 style={styles.sectionTitle}>Leitura técnica</h3>
-        <p>
-          <strong>Resposta:</strong> {technicalReport.answer}
-        </p>
-        <p>
-          <strong>Atributo dominante:</strong> {technicalReport.dominantErrorAttribute}
-        </p>
-        <p>
-          <strong>Região de dificuldade:</strong> {technicalReport.problemRegion}
-        </p>
-        <p>
-          <strong>Negligência espacial:</strong> {technicalReport.spatialNeglect ? 'sim' : 'não'}
-        </p>
-        <p>
-          <strong>Gravidade:</strong> {technicalReport.severity}
-        </p>
-        <p>
-          <strong>Interpretação:</strong> {technicalReport.interpretation}
-        </p>
+      {/* ── Nível 2: Interpretação por subescalas (builder do jogo) ── */}
+      <section style={s.section}>
+        <h3 style={s.sectionTitle}>Análise por subescalas</h3>
+
+        <div style={s.subsection}>
+          <p style={s.subsectionTitle}>Atenção seletiva</p>
+          <p style={s.subsectionText}>{gameReport.subscalesSummary.selectiveAttention}</p>
+        </div>
+
+        <div style={s.subsection}>
+          <p style={s.subsectionTitle}>Varredura visual</p>
+          <p style={s.subsectionText}>{gameReport.subscalesSummary.visualScanning}</p>
+        </div>
+
+        <div style={s.subsection}>
+          <p style={s.subsectionTitle}>Assimetria espacial</p>
+          <p style={s.subsectionText}>{gameReport.subscalesSummary.spatialAsymmetry}</p>
+        </div>
+
+        <div style={s.subsection}>
+          <p style={s.subsectionTitle}>Velocidade e consistência</p>
+          <p style={s.subsectionText}>{gameReport.subscalesSummary.speedConsistency}</p>
+        </div>
       </section>
 
-      {/* Nível 3: Próximos passos */}
-      <section style={styles.section}>
-        <h3 style={styles.sectionTitle}>Próximos passos</h3>
+      {/* ── Nível 3: Análise por cliques — camada central (quando disponível) ── */}
+      {hasCentralData && (
+        <section style={s.section}>
+          <h3 style={s.sectionTitle}>Análise por cliques</h3>
 
-        <div style={styles.actions}>
-          <button
-            type="button"
-            onClick={onRepeatTraining}
-            style={styles.primaryButton}
-          >
+          <div style={s.subsection}>
+            <p style={s.subsectionTitle}>Atributo dominante nos erros</p>
+            <p style={s.subsectionText}>{centralReport.dominantErrorAttribute}</p>
+          </div>
+
+          <div style={s.subsection}>
+            <p style={s.subsectionTitle}>Região de dificuldade</p>
+            <p style={s.subsectionText}>{centralReport.problemRegion}</p>
+          </div>
+
+          <div style={s.subsection}>
+            <p style={s.subsectionTitle}>Negligência espacial</p>
+            <p style={s.subsectionText}>{centralReport.spatialNeglect ? 'Índice elevado — assimetria marcada na cobertura do campo visual.' : 'Sem indícios de negligência espacial.'}</p>
+          </div>
+
+          {centralReport.interpretation && (
+            <div style={s.subsection}>
+              <p style={s.subsectionTitle}>Interpretação</p>
+              <p style={s.subsectionText}>{centralReport.interpretation}</p>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── Nível 4: Próximos passos ── */}
+      <section style={s.section}>
+        <h3 style={s.sectionTitle}>Próximos passos</h3>
+
+        <div style={s.actions}>
+          <button type="button" onClick={onRepeatTraining} style={s.primaryButton}>
             Repetir o treino
           </button>
 
-          <button
-            type="button"
-            onClick={onBackToStart}
-            style={styles.secondaryButton}
-          >
+          <button type="button" onClick={onBackToStart} style={s.secondaryButton}>
             Voltar ao começo
           </button>
 
@@ -165,17 +227,17 @@ export function VisualSearchEvaluationScreen({
             disabled
             aria-disabled="true"
             title="Continuidade da trilha ainda não disponível"
-            style={styles.disabledButton}
+            style={s.disabledButton}
           >
             Seguir a trilha
           </button>
         </div>
 
-        <p style={styles.helperText}>
-          O botão "Seguir a trilha" ficará disponível quando a continuidade da
-          trilha for implementada.
+        <p style={s.helperText}>
+          O botão "Seguir a trilha" ficará disponível quando a continuidade da trilha for implementada.
         </p>
       </section>
+
     </div>
   );
 }
