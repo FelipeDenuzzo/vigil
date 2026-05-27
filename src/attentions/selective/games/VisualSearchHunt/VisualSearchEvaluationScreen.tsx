@@ -2,7 +2,8 @@
 
 import { EagleScale } from "./EagleScale";
 import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
-import { buildVisualSearchTechnicalReport } from "./assessment/buildVisualSearchTechnicalReport";
+import { buildVisualSearchTechnicalReport as buildTechnicalReportCentral } from "../../../../assessment/visualSearch/buildVisualSearchTechnicalReport";
+import { adaptSessionToRoundClicks } from "../../../../assessment/visualSearch/adaptSessionToRoundClicks";
 import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
 
 type Props = {
@@ -86,12 +87,16 @@ export function VisualSearchEvaluationScreen({
   onBackToStart,
   onContinueTrail,
 }: Props) {
-  console.debug('Rendering VisualSearchEvaluationScreen (new) sessionId=', sessionLog?.sessionId);
+  // Nível lúdico — builder do módulo do jogo (score, régua, shortDescription)
   const scaleResult = buildVisualSearchScaleResult(sessionLog);
-  const technicalReport = buildVisualSearchTechnicalReport(sessionLog);
+
+  // Parecer técnico — camada central (dominantErrorAttribute, problemRegion, spatialNeglect)
+  const roundClicks = adaptSessionToRoundClicks(sessionLog);
+  const technicalReport = buildTechnicalReportCentral(roundClicks);
 
   return (
     <div style={styles.container}>
+      {/* Nível 1: Régua lúdica */}
       <section style={styles.section}>
         <h2 style={styles.sectionTitle}>
           {scaleResult.emoji} {scaleResult.scaleName}
@@ -110,25 +115,30 @@ export function VisualSearchEvaluationScreen({
         <p>{scaleResult.summary}</p>
       </section>
 
+      {/* Nível 2: Parecer técnico — camada central */}
       <section style={styles.section}>
         <h3 style={styles.sectionTitle}>Leitura técnica</h3>
         <p>
           <strong>Resposta:</strong> {technicalReport.answer}
         </p>
         <p>
-          <strong>Perfil:</strong> {technicalReport.dominantPattern}
+          <strong>Atributo dominante:</strong> {technicalReport.dominantErrorAttribute}
+        </p>
+        <p>
+          <strong>Região de dificuldade:</strong> {technicalReport.problemRegion}
+        </p>
+        <p>
+          <strong>Negligência espacial:</strong> {technicalReport.spatialNeglect ? 'sim' : 'não'}
         </p>
         <p>
           <strong>Gravidade:</strong> {technicalReport.severity}
-        </p>
-        <p>
-          <strong>Resumo:</strong> {technicalReport.summary}
         </p>
         <p>
           <strong>Interpretação:</strong> {technicalReport.interpretation}
         </p>
       </section>
 
+      {/* Nível 3: Próximos passos */}
       <section style={styles.section}>
         <h3 style={styles.sectionTitle}>Próximos passos</h3>
 
@@ -162,7 +172,7 @@ export function VisualSearchEvaluationScreen({
         </div>
 
         <p style={styles.helperText}>
-          O botão “Seguir a trilha” ficará disponível quando a continuidade da
+          O botão "Seguir a trilha" ficará disponível quando a continuidade da
           trilha for implementada.
         </p>
       </section>

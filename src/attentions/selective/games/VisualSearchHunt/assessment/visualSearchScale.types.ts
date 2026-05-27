@@ -1,6 +1,8 @@
 // src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchScale.types.ts
 // Atualizado em: 26/05/2026
 
+import type { VisualSearchClickLog } from './visualSearchAssessment.types';
+
 // ─── Primitivos de avaliação ────────────────────────────────────────────────
 
 export type VisualSearchScaleLevel = 1 | 2 | 3 | 4;
@@ -51,29 +53,23 @@ export type SubscaleResult = {
 export type VisualSearchScaleResult = {
   scaleName: 'Olho de Águia';
   clinicalName: 'Controle Inibitório e Atenção Seletiva';
-
   score: number;
   positionPercent: number;
-
   leftLabel: 'Águia Cega';
   rightLabel: 'Super Águia';
-
   markerLabel: string;
   emoji: string;
   colorToken: string;
-
   engagementStatus: EngagementStatus;
   answer: 'sim' | 'parcial' | 'nao' | 'insuficiente';
   dominantPattern: VisualSearchDominantPattern;
   dPrimeBand: VisualSearchDPrimeBand;
-
   subscales: {
     selectiveAttention: SubscaleResult;
     visualScanning: SubscaleResult;
     spatialAsymmetry: SubscaleResult;
     speedConsistency: SubscaleResult;
   };
-
   shortDescription: string;
   clinicalMeaning: string;
   summary: string;
@@ -90,6 +86,9 @@ export type VisualSearchRoundMetricsInput = {
   durationMs?: number;
   distractorOpportunities?: number;
   reactionTimes?: number[];
+  gridSize?: number;
+  // cliques detalhados — necessários para análise de qualidade do erro e posição espacial
+  clicks?: VisualSearchClickLog[];
   // varredura visual
   systematicMoves?: number;
   erraticMoves?: number;
@@ -123,15 +122,12 @@ export type VisualSearchRoundMetrics = {
   commissionRate: number;
   accuracyRate: number;
   dominantPattern: VisualSearchDominantPattern;
-  // tempo
   meanReactionTimeMs?: number;
   durationMs?: number;
-  // varredura
   organizationIndex?: number;
   scanPattern?: ScanPattern;
   erraticMoves?: number;
   systematicMoves?: number;
-  // assimetria
   spatialAsymmetryIndex?: number;
   leftSideTargetMisses?: number;
   rightSideTargetMisses?: number;
@@ -140,48 +136,42 @@ export type VisualSearchRoundMetrics = {
 // ─── Métricas globais da sessão ─────────────────────────────────────────────
 
 export type VisualSearchMetrics = {
-  // desempenho básico
   totalTargets: number;
   totalHits: number;
   totalErrors: number;
   totalMissedTargets: number;
   totalDistractorOpportunities: number | null;
   totalRounds: number;
-
   omissionRate: number;
   commissionRate: number;
   accuracyRate: number;
-
   hitRate: number;
   falseAlarmRate: number | null;
   dPrime: number | null;
   dPrimeBand: VisualSearchDPrimeBand;
-
   dominantPattern: VisualSearchDominantPattern;
   hasRelevantDifficulty: boolean;
   engagementStatus: EngagementStatus;
-
-  // tempo / velocidade
   meanReactionTimeMs: number | null;
   reactionTimeStdDev: number | null;
   totalDurationMs: number;
-
-  // varredura visual (médias da sessão)
   meanOrganizationIndex: number | null;
   meanSystematicMoves: number | null;
   meanErraticMoves: number | null;
   predominantScanPattern: ScanPattern | null;
-
-  // assimetria espacial
   meanSpatialAsymmetryIndex: number | null;
   hasSpatialAsymmetry: boolean;
   totalLeftClicks: number | null;
   totalRightClicks: number | null;
   totalLeftMisses: number | null;
   totalRightMisses: number | null;
-
-  // por rodada
   rounds: VisualSearchRoundMetrics[];
+  // perfis de qualidade de erro e espacial (camada central)
+  shapeErrorRate?: number;
+  colorErrorRate?: number;
+  doubleErrorRate?: number;
+  quadrantErrorMap?: Record<string, number>;
+  spatialNeglectIndex?: number;
 };
 
 // ─── Relatório técnico ───────────────────────────────────────────────────────────
