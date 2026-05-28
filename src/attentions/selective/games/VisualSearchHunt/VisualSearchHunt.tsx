@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchHunt.tsx
-// Atualizado em: 27/05/2026 às 22:58 (BRT)
+// Atualizado em: 28/05/2026 às 20:02 (BRT)
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -584,7 +584,7 @@ export default function VisualSearchHunt({
 
       {/* TODO: remover banner após conferência */}
       <div style={{ textAlign: 'center', fontSize: 11, color: '#9ca3af', marginBottom: 8, letterSpacing: '0.02em' }}>
-        🔧 Última atualização: 27/05/2026 às 22:58 (BRT)
+        🔧 Última atualização: 28/05/2026 às 20:02 (BRT)
       </div>
 
       {status === 'instruction' && (
