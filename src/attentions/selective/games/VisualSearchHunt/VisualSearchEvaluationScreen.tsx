@@ -1,10 +1,9 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationScreen.tsx
+// Atualizado em: 28/05/2026
 
 import { EagleScale } from "./EagleScale";
 import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
-import { buildVisualSearchTechnicalReport as buildGameReport } from "./assessment/buildVisualSearchTechnicalReport";
-import { buildVisualSearchTechnicalReport as buildCentralReport } from "../../../../assessment/visualSearch/buildVisualSearchTechnicalReport";
-import { adaptSessionToRoundClicks } from "../../../../assessment/visualSearch/adaptSessionToRoundClicks";
+import { buildVisualSearchTechnicalReport } from "./assessment/buildVisualSearchTechnicalReport";
 import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
 
 type Props = {
@@ -68,6 +67,30 @@ const s = {
     color: "#e8e9f0",
     fontSize: 15,
   } as const,
+  tagList: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: 8,
+    marginTop: 4,
+  } as const,
+  tag: {
+    background: "rgba(108,142,245,0.15)",
+    border: "1px solid rgba(108,142,245,0.3)",
+    borderRadius: 20,
+    padding: "4px 12px",
+    fontSize: 12,
+    color: "#a0b4f8",
+  } as const,
+  redFlagBox: {
+    background: "rgba(255,80,80,0.08)",
+    border: "1px solid rgba(255,80,80,0.25)",
+    borderRadius: 10,
+    padding: "10px 12px",
+    marginBottom: 8,
+    fontSize: 13,
+    color: "#f08080",
+    lineHeight: 1.5,
+  } as const,
   actions: {
     display: "grid",
     gap: 12,
@@ -120,22 +143,13 @@ export function VisualSearchEvaluationScreen({
   onBackToStart,
   onContinueTrail,
 }: Props) {
-  // Nível lúdico — régua e score
   const scaleResult = buildVisualSearchScaleResult(sessionLog);
-
-  // Relatório do módulo do jogo — subscalesSummary detalhadas
-  const gameReport = buildGameReport(sessionLog);
-
-  // Relatório da camada central — análise por cliques (atributo, região, neglect)
-  const roundClicks = adaptSessionToRoundClicks(sessionLog);
-  const centralReport = buildCentralReport(roundClicks);
-
-  const hasCentralData = roundClicks.length > 0;
+  const report = buildVisualSearchTechnicalReport(sessionLog);
 
   return (
     <div style={s.container}>
 
-      {/* ── Nível 1: Régua lúdica ── */}
+      {/* ── Régua lúdica ── */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>
           {scaleResult.emoji} {scaleResult.scaleName}
@@ -150,65 +164,55 @@ export function VisualSearchEvaluationScreen({
         />
 
         <p style={s.strongLine}>{scaleResult.shortDescription}</p>
-        <p style={{ ...s.value, marginTop: 6 }}>{scaleResult.clinicalMeaning}</p>
-        <p style={s.value}>{scaleResult.summary}</p>
+        <p style={{ ...s.value, marginTop: 6 }}>{report.interpretation}</p>
       </section>
 
-      {/* ── Nível 2: Interpretação por subescalas (builder do jogo) ── */}
+      {/* ── Análise por subescalas ── */}
       <section style={s.section}>
-        <h3 style={s.sectionTitle}>Análise por subescalas</h3>
+        <h3 style={s.sectionTitle}>Como foi seu treino</h3>
 
         <div style={s.subsection}>
           <p style={s.subsectionTitle}>Atenção seletiva</p>
-          <p style={s.subsectionText}>{gameReport.subscalesSummary.selectiveAttention}</p>
+          <p style={s.subsectionText}>{report.subscalesSummary.selectiveAttention}</p>
         </div>
 
         <div style={s.subsection}>
           <p style={s.subsectionTitle}>Varredura visual</p>
-          <p style={s.subsectionText}>{gameReport.subscalesSummary.visualScanning}</p>
+          <p style={s.subsectionText}>{report.subscalesSummary.visualScanning}</p>
         </div>
 
         <div style={s.subsection}>
-          <p style={s.subsectionTitle}>Assimetria espacial</p>
-          <p style={s.subsectionText}>{gameReport.subscalesSummary.spatialAsymmetry}</p>
+          <p style={s.subsectionTitle}>Distribuição espacial</p>
+          <p style={s.subsectionText}>{report.subscalesSummary.spatialAsymmetry}</p>
         </div>
 
         <div style={s.subsection}>
-          <p style={s.subsectionTitle}>Velocidade e consistência</p>
-          <p style={s.subsectionText}>{gameReport.subscalesSummary.speedConsistency}</p>
+          <p style={s.subsectionTitle}>Velocidade e ritmo</p>
+          <p style={s.subsectionText}>{report.subscalesSummary.speedConsistency}</p>
         </div>
       </section>
 
-      {/* ── Nível 3: Análise por cliques — camada central (quando disponível) ── */}
-      {hasCentralData && (
+      {/* ── Indicadores positivos ── */}
+      {report.positiveIndicators.length > 0 && (
         <section style={s.section}>
-          <h3 style={s.sectionTitle}>Análise por cliques</h3>
-
-          <div style={s.subsection}>
-            <p style={s.subsectionTitle}>Atributo dominante nos erros</p>
-            <p style={s.subsectionText}>{centralReport.dominantErrorAttribute}</p>
+          <h3 style={s.sectionTitle}>Pontos fortes identificados</h3>
+          <div style={s.tagList}>
+            {report.positiveIndicators.map((tag) => (
+              <span key={tag} style={s.tag}>{tag}</span>
+            ))}
           </div>
-
-          <div style={s.subsection}>
-            <p style={s.subsectionTitle}>Região de dificuldade</p>
-            <p style={s.subsectionText}>{centralReport.problemRegion}</p>
-          </div>
-
-          <div style={s.subsection}>
-            <p style={s.subsectionTitle}>Negligência espacial</p>
-            <p style={s.subsectionText}>{centralReport.spatialNeglect ? 'Índice elevado — assimetria marcada na cobertura do campo visual.' : 'Sem indícios de negligência espacial.'}</p>
-          </div>
-
-          {centralReport.interpretation && (
-            <div style={s.subsection}>
-              <p style={s.subsectionTitle}>Interpretação</p>
-              <p style={s.subsectionText}>{centralReport.interpretation}</p>
-            </div>
-          )}
         </section>
       )}
 
-      {/* ── Nível 4: Próximos passos ── */}
+      {/* ── Sinal de alerta (somente quando presente) ── */}
+      {report.redFlag && (
+        <section style={s.section}>
+          <h3 style={{ ...s.sectionTitle, color: "#f08080" }}>⚠️ Ponto de atenção</h3>
+          <div style={s.redFlagBox}>{report.redFlag}</div>
+        </section>
+      )}
+
+      {/* ── Próximos passos ── */}
       <section style={s.section}>
         <h3 style={s.sectionTitle}>Próximos passos</h3>
 

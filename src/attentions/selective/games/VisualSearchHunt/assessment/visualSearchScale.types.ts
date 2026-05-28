@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/assessment/visualSearchScale.types.ts
-// Atualizado em: 26/05/2026
+// Atualizado em: 28/05/2026
 
 import type { VisualSearchClickLog } from './visualSearchAssessment.types';
 
@@ -87,14 +87,11 @@ export type VisualSearchRoundMetricsInput = {
   distractorOpportunities?: number;
   reactionTimes?: number[];
   gridSize?: number;
-  // cliques detalhados — necessários para análise de qualidade do erro e posição espacial
   clicks?: VisualSearchClickLog[];
-  // varredura visual
   systematicMoves?: number;
   erraticMoves?: number;
   organizationIndex?: number;
   scanPattern?: ScanPattern;
-  // assimetria espacial
   leftSideClicks?: number;
   rightSideClicks?: number;
   leftSideTargetMisses?: number;
@@ -166,7 +163,6 @@ export type VisualSearchMetrics = {
   totalLeftMisses: number | null;
   totalRightMisses: number | null;
   rounds: VisualSearchRoundMetrics[];
-  // perfis de qualidade de erro e espacial (camada central)
   shapeErrorRate?: number;
   colorErrorRate?: number;
   doubleErrorRate?: number;
@@ -184,6 +180,8 @@ export type VisualSearchTechnicalReport = {
   severity: SubscaleSeverity;
   summary: string;
   interpretation: string;
+  positiveIndicators: string[];
+  redFlag: string | null;
   subscalesSummary: {
     selectiveAttention: string;
     visualScanning: string;
