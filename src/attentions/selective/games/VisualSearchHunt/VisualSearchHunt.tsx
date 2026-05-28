@@ -1,5 +1,4 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchHunt.tsx
-// Atualizado em: 28/05/2026 às 20:22 (BRT)
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -101,6 +100,23 @@ const SHAPE_IMAGE: Record<Shape, Record<Color, string>> = {
     yellow: '/formas/triangulo_amarelo.png',
   },
 };
+
+// Keyframes injetados uma vez no <head> para o fade da imagem do alvo
+const TARGET_FADE_STYLE_ID = 'vsh-target-fade-style';
+if (typeof document !== 'undefined' && !document.getElementById(TARGET_FADE_STYLE_ID)) {
+  const style = document.createElement('style');
+  style.id = TARGET_FADE_STYLE_ID;
+  style.textContent = `
+    @keyframes vshTargetFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .vsh-target-fade {
+      animation: vshTargetFadeIn 220ms ease 180ms both;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 function randomItem<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
@@ -598,11 +614,6 @@ export default function VisualSearchHunt({
   return (
     <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
 
-      {/* TODO: remover banner após conferência */}
-      <div style={{ textAlign: 'center', fontSize: 11, color: '#9ca3af', marginBottom: 8, letterSpacing: '0.02em' }}>
-        🔧 Última atualização: 28/05/2026 às 20:22 (BRT)
-      </div>
-
       {status === 'instruction' && (
         <Card>
           <div style={{ display: 'grid', gap: 20 }}>
@@ -618,7 +629,12 @@ export default function VisualSearchHunt({
                 </span>.
               </p>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 180, borderRadius: 18, border: 'none', background: 'transparent', boxShadow: 'none' }}>
+            {/* key garante que a animação recomece a cada nova rodada */}
+            <div
+              key={`target-${roundIndex}`}
+              className="vsh-target-fade"
+              style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 180, borderRadius: 18, border: 'none', background: 'transparent', boxShadow: 'none' }}
+            >
               <div style={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: 12 }}>
                 <img
                   src={SHAPE_IMAGE[targetShape][targetColor]}
