@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchHunt.tsx
-// Atualizado em: 28/05/2026 às 20:09 (BRT)
+// Atualizado em: 28/05/2026 às 20:22 (BRT)
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -284,6 +284,10 @@ export default function VisualSearchHunt({
   const clickLogRef = useRef<VisualSearchClickLog[]>([]);
   const sessionLogRef = useRef<VisualSearchSessionLog | null>(null);
 
+  // Impede que generateRound execute mais de uma vez por rodada.
+  // Sem essa guarda, uma re-render durante 'instruction' recriaria o alvo.
+  const roundGeneratedRef = useRef(false);
+
   // Ref que mantém sempre a versão mais atual de generateRound,
   // permitindo que o useEffect dependa apenas de `status` e não dispare duas vezes.
   const generateRoundRef = useRef<(() => void) | null>(null);
@@ -342,6 +346,10 @@ export default function VisualSearchHunt({
   }, []);
 
   const generateRound = useCallback(() => {
+    // Guarda contra dupla execução na mesma rodada
+    if (roundGeneratedRef.current) return;
+    roundGeneratedRef.current = true;
+
     const nextShape = randomItem(SHAPES);
     const nextColor = randomItem(COLORS);
     const generated = buildTiles(nextShape, nextColor, level);
@@ -366,6 +374,7 @@ export default function VisualSearchHunt({
   // como dependência direta — elimina o duplo disparo causado pela recriação do callback.
   useEffect(() => {
     if (status === 'instruction') {
+      roundGeneratedRef.current = false; // libera a guarda para a nova rodada
       generateRoundRef.current?.();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -565,6 +574,7 @@ export default function VisualSearchHunt({
     setLevel(1); setRoundIndex(1); setStatus('instruction');
     setTiles([]); setRoundResults([]); setRemainingTime(FIXED_TIME_SECONDS);
     clickLogRef.current = []; roundStartRef.current = 0; sessionLogRef.current = null;
+    roundGeneratedRef.current = false;
   }, [clearTimer, markSessionAbandoned]);
 
   useEffect(() => {
@@ -590,7 +600,7 @@ export default function VisualSearchHunt({
 
       {/* TODO: remover banner após conferência */}
       <div style={{ textAlign: 'center', fontSize: 11, color: '#9ca3af', marginBottom: 8, letterSpacing: '0.02em' }}>
-        🔧 Última atualização: 28/05/2026 às 20:09 (BRT)
+        🔧 Última atualização: 28/05/2026 às 20:22 (BRT)
       </div>
 
       {status === 'instruction' && (
