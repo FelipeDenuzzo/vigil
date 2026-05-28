@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchHunt.tsx
-// Atualizado em: 28/05/2026 às 20:02 (BRT)
+// Atualizado em: 28/05/2026 às 20:09 (BRT)
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -30,8 +30,6 @@ type Tile = {
   row?: number;
   col?: number;
 };
-
-
 
 type RoundResult = {
   roundIndex: number;
@@ -123,15 +121,8 @@ function getShapeFallbackStyle(shape: Shape, color: Color): React.CSSProperties 
     height: '68%',
     backgroundColor: COLOR_HEX[color],
   };
-
-  if (shape === 'circle') {
-    return { ...base, borderRadius: 999 };
-  }
-
-  if (shape === 'square') {
-    return { ...base, borderRadius: 8 };
-  }
-
+  if (shape === 'circle') return { ...base, borderRadius: 999 };
+  if (shape === 'square') return { ...base, borderRadius: 8 };
   return {
     width: 0,
     height: 0,
@@ -293,6 +284,10 @@ export default function VisualSearchHunt({
   const clickLogRef = useRef<VisualSearchClickLog[]>([]);
   const sessionLogRef = useRef<VisualSearchSessionLog | null>(null);
 
+  // Ref que mantém sempre a versão mais atual de generateRound,
+  // permitindo que o useEffect dependa apenas de `status` e não dispare duas vezes.
+  const generateRoundRef = useRef<(() => void) | null>(null);
+
   const persistRoundLog = useCallback((result: RoundResult) => {
     try {
       if (!sessionLogRef.current) return;
@@ -355,6 +350,7 @@ export default function VisualSearchHunt({
       row: Math.floor(index / generated.config.gridSize),
       col: index % generated.config.gridSize,
     }));
+    // Alvo fixado em state — não será alterado durante o jogo
     setTargetShape(nextShape);
     setTargetColor(nextColor);
     setTiles(tilesWithCoords);
@@ -363,9 +359,17 @@ export default function VisualSearchHunt({
     roundStartRef.current = 0;
   }, [level]);
 
+  // Mantém a ref sempre atualizada com a versão corrente de generateRound
+  generateRoundRef.current = generateRound;
+
+  // Dispara APENAS quando status muda para 'instruction', sem depender de generateRound
+  // como dependência direta — elimina o duplo disparo causado pela recriação do callback.
   useEffect(() => {
-    if (status === 'instruction') generateRound();
-  }, [status, generateRound]);
+    if (status === 'instruction') {
+      generateRoundRef.current?.();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   const finishRound = useCallback(
     (resultStatus: 'won' | 'lost') => {
@@ -400,7 +404,7 @@ export default function VisualSearchHunt({
       } catch (e) {}
       setStatus(resultStatus);
     },
-    [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime],
+    [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime, persistRoundLog],
   );
 
   const startRound = useCallback(() => {
@@ -434,6 +438,7 @@ export default function VisualSearchHunt({
         timestampMs: Date.now(), action: nextAction, isTarget: tile.isTarget, tileId: tile.id,
         roundIndex, phaseLevel: level,
         clickedShape: tile.shape as VisualSearchShape, clickedColor: tile.color as VisualSearchColor,
+        // targetShape e targetColor lidos do state: valores fixados no início da rodada
         targetShape: targetShape as VisualSearchShape, targetColor: targetColor as VisualSearchColor,
         row: tile.row, col: tile.col, screenHalf,
       };
@@ -473,7 +478,7 @@ export default function VisualSearchHunt({
     setLevel((prev) => prev + 1);
     setRoundIndex((prev) => prev + 1);
     setStatus('instruction');
-  }, [roundIndex, roundResults, onEnd]);
+  }, [roundIndex, roundResults, onEnd, level]);
 
   const advanceRoundNow = useCallback(() => {
     clearTimer();
@@ -531,7 +536,7 @@ export default function VisualSearchHunt({
       }
       return next;
     });
-  }, [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime, onEnd]);
+  }, [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime, persistRoundLog, onEnd]);
 
   useEffect(() => { return () => clearTimer(); }, [clearTimer]);
 
@@ -574,6 +579,7 @@ export default function VisualSearchHunt({
         }
       } catch (e) {}
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const gridTemplateColumns = `repeat(${config.gridSize}, minmax(0, 1fr))`;
@@ -584,7 +590,7 @@ export default function VisualSearchHunt({
 
       {/* TODO: remover banner após conferência */}
       <div style={{ textAlign: 'center', fontSize: 11, color: '#9ca3af', marginBottom: 8, letterSpacing: '0.02em' }}>
-        🔧 Última atualização: 28/05/2026 às 20:02 (BRT)
+        🔧 Última atualização: 28/05/2026 às 20:09 (BRT)
       </div>
 
       {status === 'instruction' && (
