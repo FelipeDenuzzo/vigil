@@ -10,7 +10,7 @@ import type {
   VisualSearchTechnicalReport,
 } from './visualSearchScale.types';
 
-// ─── Severidade global ────────────────────────────────────────────────────────
+// ─── Severidade global ──────────────────────────────────────────────────────────────────────────
 
 function getSeverity(omissionRate: number, commissionRate: number): SubscaleSeverity {
   const maxRate = Math.max(omissionRate, commissionRate);
@@ -20,7 +20,7 @@ function getSeverity(omissionRate: number, commissionRate: number): SubscaleSeve
   return 'importante';
 }
 
-// ─── Indicadores positivos ────────────────────────────────────────────────────
+// ─── Indicadores positivos ──────────────────────────────────────────────────────────────────────
 
 function resolvePositiveIndicators(
   severity: SubscaleSeverity,
@@ -42,14 +42,25 @@ function resolvePositiveIndicators(
   return [];
 }
 
-// ─── Sinal de alerta ──────────────────────────────────────────────────────────
+// ─── Sinal de alerta ──────────────────────────────────────────────────────────────────────────────
 
+// Negligência espacial: exige alvos perdidos E concentrados em um lado (>= 75%).
+// Assimetria de cliques isolada não é evidência de negligência — reflete apenas
+// onde os alvos estavam distribuídos na grade.
 function resolveRedFlag(
-  hasSpatialAsymmetry: boolean,
+  totalLeftMisses: number | null,
+  totalRightMisses: number | null,
   dominantPattern: string,
   commissionRate: number
 ): string | null {
-  if (hasSpatialAsymmetry) return banco.sinaisDeAlerta.assimetriaEspacial;
+  const leftMisses  = totalLeftMisses  ?? 0;
+  const rightMisses = totalRightMisses ?? 0;
+  const totalMisses = leftMisses + rightMisses;
+  const hasSpatialNeglect =
+    totalMisses >= 3 &&
+    (leftMisses / totalMisses >= 0.75 || rightMisses / totalMisses >= 0.75);
+
+  if (hasSpatialNeglect) return banco.sinaisDeAlerta.assimetriaEspacial;
   if (dominantPattern === 'misto' && commissionRate >= 0.3)
     return banco.sinaisDeAlerta.colapsoDeConjuncao;
   if (commissionRate >= 0.5)
@@ -57,7 +68,7 @@ function resolveRedFlag(
   return null;
 }
 
-// ─── Subescala: Atenção seletiva ──────────────────────────────────────────────
+// ─── Subescala: Atenção seletiva ─────────────────────────────────────────────────────────────────
 
 function buildSelectiveAttentionInterpretation(params: {
   dominantPattern: string;
@@ -85,7 +96,7 @@ function buildSelectiveAttentionInterpretation(params: {
   return `${banco.frasesDeInterpretacao[0]} ${dSentence}`;
 }
 
-// ─── Subescala: Varredura visual ──────────────────────────────────────────────
+// ─── Subescala: Varredura visual ────────────────────────────────────────────────────────────────
 
 function buildScanningInterpretation(
   orgIndex: number | null,
@@ -101,7 +112,7 @@ function buildScanningInterpretation(
   return `Varredura predominantemente errática (índice ${orgIndex.toFixed(0)}/100). ${banco.frasesDeInterpretacao[6]}`;
 }
 
-// ─── Subescala: Assimetria espacial ──────────────────────────────────────────
+// ─── Subescala: Assimetria espacial ──────────────────────────────────────────────────────────────────
 
 function buildAsymmetryInterpretation(
   asymIdx: number | null,
@@ -120,7 +131,7 @@ function buildAsymmetryInterpretation(
   return `Distribuição espacial equilibrada (assimetria ${asymIdx.toFixed(0)}).`;
 }
 
-// ─── Subescala: Velocidade e consistência ─────────────────────────────────────
+// ─── Subescala: Velocidade e consistência ─────────────────────────────────────────────────────
 
 function buildSpeedInterpretation(
   meanRT: number | null,
@@ -139,7 +150,7 @@ function buildSpeedInterpretation(
   return `Tempo de resposta adequado: média ${rtLabel}${cvLabel}.`;
 }
 
-// ─── Função principal ─────────────────────────────────────────────────────────
+// ─── Função principal ───────────────────────────────────────────────────────────────────────────────
 
 export function buildVisualSearchTechnicalReport(
   session: VisualSearchSessionMetricsInput
@@ -172,7 +183,14 @@ export function buildVisualSearchTechnicalReport(
   );
 
   const positiveIndicators = resolvePositiveIndicators(severity, m.commissionRate);
-  const redFlag = resolveRedFlag(m.hasSpatialAsymmetry, m.dominantPattern, m.commissionRate);
+
+  // Aviso de negligência espacial: passa misseds por lado, não hasSpatialAsymmetry
+  const redFlag = resolveRedFlag(
+    m.totalLeftMisses,
+    m.totalRightMisses,
+    m.dominantPattern,
+    m.commissionRate
+  );
 
   return {
     title: 'Avaliação do Visual Search Hunt',
