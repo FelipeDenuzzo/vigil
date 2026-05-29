@@ -19,12 +19,12 @@ export const SelectiveHub: React.FC = () => {
     <div
       className="container"
       style={{
-        paddingTop: 'var(--space-12)',
+        paddingTop: activeGame ? 'var(--space-4)' : 'var(--space-12)',
         paddingBottom: 'var(--space-12)',
       }}
     >
       {activeGame === 'visual-search-hunt' ? (
-        <div style={{ paddingTop: 'var(--space-4)' }}>
+        <div>
           <Button
             variant="ghost"
             onClick={() => setActiveGame(null)}
