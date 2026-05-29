@@ -600,11 +600,12 @@ export default function VisualSearchHunt({
   const gridTemplateColumns = `repeat(${config.gridSize}, minmax(0, 1fr))`;
   const nextPhaseNumber = roundIndex + 1;
 
-  const tileGap = config.gridSize <= 5 ? 6 : config.gridSize <= 6 ? 5 : 3;
-  const tileMinHeight = config.gridSize <= 4 ? 44 : config.gridSize <= 5 ? 38 : config.gridSize <= 6 ? 32 : 26;
+  // Gap e tamanho mínimo dos tiles reduzidos para caber na tela sem scroll
+  const tileGap = config.gridSize <= 5 ? 4 : config.gridSize <= 6 ? 3 : 2;
+  const tileMinHeight = config.gridSize <= 4 ? 36 : config.gridSize <= 5 ? 30 : config.gridSize <= 6 ? 26 : 22;
 
   return (
-    <div style={{ maxWidth: 460, margin: '0 auto', padding: 12 }}>
+    <div style={{ maxWidth: 420, margin: '0 auto', padding: 8 }}>
 
       {status === 'instruction' && (
         <Card>
@@ -624,14 +625,14 @@ export default function VisualSearchHunt({
             <div
               key={`target-${roundIndex}`}
               className="vsh-target-fade"
-              style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 140, borderRadius: 18, border: 'none', background: 'transparent', boxShadow: 'none' }}
+              style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120, borderRadius: 18, border: 'none', background: 'transparent', boxShadow: 'none' }}
             >
-              <div style={{ width: 110, height: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: 12 }}>
+              <div style={{ width: 96, height: 96, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: 12 }}>
                 <img
                   src={SHAPE_IMAGE[targetShape][targetColor]}
                   alt={`${targetShape} ${targetColor}`}
                   loading="eager" decoding="sync"
-                  style={{ width: 68, height: 68, objectFit: 'contain' }}
+                  style={{ width: 60, height: 60, objectFit: 'contain' }}
                   onError={(event) => {
                     const img = event.currentTarget;
                     img.style.opacity = '0'; img.style.pointerEvents = 'none';
@@ -647,13 +648,13 @@ export default function VisualSearchHunt({
       )}
 
       {status === 'playing' && (
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div style={{ display: 'grid', gap: 8 }}>
           <Card>
-            <div style={{ display: 'grid', gap: 10 }}>
+            <div style={{ display: 'grid', gap: 8 }}>
               <div style={{ textAlign: 'left', fontWeight: 700, color: '#111827' }}>
                 Encontre os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
               </div>
-              <div style={{ height: 8, width: '100%', borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
+              <div style={{ height: 6, width: '100%', borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${Math.max(0, (remainingTime / FIXED_TIME_SECONDS) * 100)}%`, background: '#111827', transition: 'width 100ms linear' }} />
               </div>
               <div><Button onClick={advanceRoundNow} style={{ width: '100%' }}>Avançar</Button></div>
@@ -666,8 +667,8 @@ export default function VisualSearchHunt({
                   display: 'grid',
                   gridTemplateColumns,
                   gap: tileGap,
-                  padding: 4,
-                  borderRadius: 14,
+                  padding: 3,
+                  borderRadius: 12,
                   border: `2px solid ${
                     feedback === 'mark' ? '#22c55e' : feedback === 'unmark' ? '#f59e0b' : '#e5e7eb'
                   }`,
@@ -682,7 +683,7 @@ export default function VisualSearchHunt({
                     style={{
                       aspectRatio: '1 / 1',
                       minHeight: tileMinHeight,
-                      borderRadius: 10,
+                      borderRadius: 8,
                       border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb',
                       background: tile.selected ? '#93c5fd' : '#ffffff',
                       display: 'flex',
