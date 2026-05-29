@@ -601,7 +601,16 @@ export default function VisualSearchHunt({
   const nextPhaseNumber = roundIndex + 1;
 
   const tileGap = config.gridSize <= 5 ? 6 : config.gridSize <= 6 ? 5 : 3;
-  const tileMinHeight = config.gridSize <= 4 ? 44 : config.gridSize <= 5 ? 38 : config.gridSize <= 6 ? 32 : 26;
+
+  // Altura máxima do grid calculada com base no gridSize:
+  // cada tile fica limitado por esse teto, evitando scroll.
+  // Valores calibrados para caber na tela sem scroll em mobile (375px+).
+  const gridMaxHeight =
+    config.gridSize <= 4 ? 280
+    : config.gridSize <= 5 ? 300
+    : config.gridSize <= 6 ? 320
+    : config.gridSize <= 7 ? 340
+    : 360;
 
   return (
     <div style={{ maxWidth: 460, margin: '0 auto', padding: 12 }}>
@@ -667,6 +676,8 @@ export default function VisualSearchHunt({
                   gridTemplateColumns,
                   gap: tileGap,
                   padding: 3,
+                  maxHeight: gridMaxHeight,
+                  overflow: 'hidden',
                   borderRadius: 12,
                   border: `2px solid ${
                     feedback === 'mark' ? '#22c55e' : feedback === 'unmark' ? '#f59e0b' : '#e5e7eb'
@@ -681,7 +692,6 @@ export default function VisualSearchHunt({
                     aria-label={`${tile.shape} ${tile.color}`}
                     style={{
                       aspectRatio: '1 / 1',
-                      minHeight: tileMinHeight,
                       borderRadius: 8,
                       border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb',
                       background: tile.selected ? '#93c5fd' : '#ffffff',
