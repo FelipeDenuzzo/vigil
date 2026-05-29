@@ -600,12 +600,11 @@ export default function VisualSearchHunt({
   const gridTemplateColumns = `repeat(${config.gridSize}, minmax(0, 1fr))`;
   const nextPhaseNumber = roundIndex + 1;
 
-  // Gap e tamanho mínimo dos tiles reduzidos para caber na tela sem scroll
-  const tileGap = config.gridSize <= 5 ? 4 : config.gridSize <= 6 ? 3 : 2;
-  const tileMinHeight = config.gridSize <= 4 ? 36 : config.gridSize <= 5 ? 30 : config.gridSize <= 6 ? 26 : 22;
+  const tileGap = config.gridSize <= 5 ? 6 : config.gridSize <= 6 ? 5 : 3;
+  const tileMinHeight = config.gridSize <= 4 ? 44 : config.gridSize <= 5 ? 38 : config.gridSize <= 6 ? 32 : 26;
 
   return (
-    <div style={{ maxWidth: 420, margin: '0 auto', padding: 8 }}>
+    <div style={{ maxWidth: 460, margin: '0 auto', padding: 12 }}>
 
       {status === 'instruction' && (
         <Card>
@@ -627,12 +626,12 @@ export default function VisualSearchHunt({
               className="vsh-target-fade"
               style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120, borderRadius: 18, border: 'none', background: 'transparent', boxShadow: 'none' }}
             >
-              <div style={{ width: 96, height: 96, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: 12 }}>
+              <div style={{ width: 110, height: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: 12 }}>
                 <img
                   src={SHAPE_IMAGE[targetShape][targetColor]}
                   alt={`${targetShape} ${targetColor}`}
                   loading="eager" decoding="sync"
-                  style={{ width: 60, height: 60, objectFit: 'contain' }}
+                  style={{ width: 70, height: 70, objectFit: 'contain' }}
                   onError={(event) => {
                     const img = event.currentTarget;
                     img.style.opacity = '0'; img.style.pointerEvents = 'none';
@@ -648,7 +647,7 @@ export default function VisualSearchHunt({
       )}
 
       {status === 'playing' && (
-        <div style={{ display: 'grid', gap: 8 }}>
+        <div style={{ display: 'grid', gap: 10 }}>
           <Card>
             <div style={{ display: 'grid', gap: 8 }}>
               <div style={{ textAlign: 'left', fontWeight: 700, color: '#111827' }}>
