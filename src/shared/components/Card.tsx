@@ -13,14 +13,17 @@ export const Card: React.FC<CardProps> = ({ children, accent, interactive, style
     <div
       onClick={onClick}
       style={{
-        background: 'var(--color-surface)',
-        border: '1px solid var(--color-border)',
+        background: accent
+          ? `color-mix(in srgb, ${accent} 10%, var(--color-surface))`
+          : 'var(--color-surface)',
+        border: accent
+          ? `1px solid color-mix(in srgb, ${accent} 45%, transparent)`
+          : '1px solid var(--color-border)',
         borderRadius: 'var(--radius-xl)',
         padding: 'var(--space-6)',
         boxShadow: 'var(--shadow-sm)',
         transition: interactive ? 'box-shadow var(--transition), transform var(--transition)' : undefined,
         cursor: interactive ? 'pointer' : undefined,
-        outline: accent ? `2px solid ${accent}22` : undefined,
         ...style,
       }}
       onMouseEnter={e => {
