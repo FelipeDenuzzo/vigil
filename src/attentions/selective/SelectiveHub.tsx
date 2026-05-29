@@ -23,82 +23,84 @@ export const SelectiveHub: React.FC = () => {
         paddingBottom: 'var(--space-12)',
       }}
     >
-      <header style={{ marginBottom: 'var(--space-8)' }}>
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/treinar')}
-          style={{ marginBottom: 'var(--space-4)' }}
-        >
-          ← Voltar
-        </Button>
+      {activeGame === 'visual-search-hunt' ? (
+        <div style={{ paddingTop: 'var(--space-4)' }}>
+          <Button
+            variant="ghost"
+            onClick={() => setActiveGame(null)}
+            style={{ marginBottom: 'var(--space-4)' }}
+          >
+            ← Voltar
+          </Button>
 
-        <h1 style={{ fontSize: 'var(--text-2xl)', color: 'var(--color-selective)' }}>
-          Atenção Seletiva
-        </h1>
-
-        <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
-          Esta modalidade treina sua capacidade de se concentrar em um único estímulo,
-          ignorando distrações e informações irrelevantes ao redor.
-        </p>
-      </header>
-
-      <section>
-        {activeGame === 'visual-search-hunt' ? (
-          <div style={{ paddingTop: 'var(--space-4)' }}>
+          <VisualSearchHunt onEnd={handleEnd} />
+        </div>
+      ) : (
+        <>
+          <header style={{ marginBottom: 'var(--space-8)' }}>
             <Button
               variant="ghost"
-              onClick={() => setActiveGame(null)}
+              onClick={() => navigate('/treinar')}
               style={{ marginBottom: 'var(--space-4)' }}
             >
               ← Voltar
             </Button>
 
-            <VisualSearchHunt onEnd={handleEnd} />
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: 'var(--space-6)',
-              }}
-            >
-              <Card
-                interactive
-                accent="var(--color-selective)"
-                onClick={() => setActiveGame('visual-search-hunt')}
-              >
-                <p
-                  style={{
-                    fontSize: 'var(--text-lg)',
-                    fontWeight: 600,
-                    marginBottom: 'var(--space-2)',
-                  }}
-                >
-                  🔍 Caça ao Alvo
-                </p>
+            <h1 style={{ fontSize: 'var(--text-2xl)', color: 'var(--color-selective)' }}>
+              Atenção Seletiva
+            </h1>
 
-                <p
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    color: 'var(--color-text-muted)',
-                  }}
+            <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+              Esta modalidade treina sua capacidade de se concentrar em um único estímulo,
+              ignorando distrações e informações irrelevantes ao redor.
+            </p>
+          </header>
+
+          <section>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: 'var(--space-6)',
+                }}
+              >
+                <Card
+                  interactive
+                  accent="var(--color-selective)"
+                  onClick={() => setActiveGame('visual-search-hunt')}
                 >
-                  Encontre todas as figuras que correspondem ao alvo antes que o tempo acabe.
-                  Cuidado com as distrações.
+                  <p
+                    style={{
+                      fontSize: 'var(--text-lg)',
+                      fontWeight: 600,
+                      marginBottom: 'var(--space-2)',
+                    }}
+                  >
+                    🔍 Caça ao Alvo
+                  </p>
+
+                  <p
+                    style={{
+                      fontSize: 'var(--text-sm)',
+                      color: 'var(--color-text-muted)',
+                    }}
+                  >
+                    Encontre todas as figuras que correspondem ao alvo antes que o tempo acabe.
+                    Cuidado com as distrações.
+                  </p>
+                </Card>
+              </div>
+
+              <Card style={{ textAlign: 'center', padding: 'var(--space-12) var(--space-6)' }}>
+                <p style={{ color: 'var(--color-text-muted)' }}>
+                  Novos exercícios de atenção seletiva serão adicionados aqui.
                 </p>
               </Card>
             </div>
-
-            <Card style={{ textAlign: 'center', padding: 'var(--space-12) var(--space-6)' }}>
-              <p style={{ color: 'var(--color-text-muted)' }}>
-                Novos exercícios de atenção seletiva serão adicionados aqui.
-              </p>
-            </Card>
-          </div>
-        )}
-      </section>
+          </section>
+        </>
+      )}
     </div>
   );
 };
