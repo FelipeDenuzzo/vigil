@@ -605,11 +605,11 @@ export default function VisualSearchHunt({
 
   // Gap e tamanho mínimo dos tiles escalam inversamente ao gridSize
   // para que o grid caiba na tela sem precisar rolar.
-  const tileGap = config.gridSize <= 5 ? 8 : config.gridSize <= 6 ? 6 : 4;
-  const tileMinHeight = config.gridSize <= 4 ? 52 : config.gridSize <= 5 ? 46 : config.gridSize <= 6 ? 40 : 34;
+  const tileGap = config.gridSize <= 5 ? 6 : config.gridSize <= 6 ? 5 : 3;
+  const tileMinHeight = config.gridSize <= 4 ? 44 : config.gridSize <= 5 ? 38 : config.gridSize <= 6 ? 32 : 26;
 
   return (
-    <div style={{ maxWidth: 520, margin: '0 auto', padding: 12 }}>
+    <div style={{ maxWidth: 460, margin: '0 auto', padding: 12 }}>
 
       {status === 'instruction' && (
         <Card>
