@@ -301,11 +301,9 @@ export default function VisualSearchHunt({
   const sessionLogRef = useRef<VisualSearchSessionLog | null>(null);
 
   // Impede que generateRound execute mais de uma vez por rodada.
-  // Sem essa guarda, uma re-render durante 'instruction' recriaria o alvo.
   const roundGeneratedRef = useRef(false);
 
-  // Ref que mantém sempre a versão mais atual de generateRound,
-  // permitindo que o useEffect dependa apenas de `status` e não dispare duas vezes.
+  // Ref que mantém sempre a versão mais atual de generateRound.
   const generateRoundRef = useRef<(() => void) | null>(null);
 
   const persistRoundLog = useCallback((result: RoundResult) => {
@@ -362,7 +360,6 @@ export default function VisualSearchHunt({
   }, []);
 
   const generateRound = useCallback(() => {
-    // Guarda contra dupla execução na mesma rodada
     if (roundGeneratedRef.current) return;
     roundGeneratedRef.current = true;
 
@@ -374,7 +371,6 @@ export default function VisualSearchHunt({
       row: Math.floor(index / generated.config.gridSize),
       col: index % generated.config.gridSize,
     }));
-    // Alvo fixado em state — não será alterado durante o jogo
     setTargetShape(nextShape);
     setTargetColor(nextColor);
     setTiles(tilesWithCoords);
@@ -383,14 +379,11 @@ export default function VisualSearchHunt({
     roundStartRef.current = 0;
   }, [level]);
 
-  // Mantém a ref sempre atualizada com a versão corrente de generateRound
   generateRoundRef.current = generateRound;
 
-  // Dispara APENAS quando status muda para 'instruction', sem depender de generateRound
-  // como dependência direta — elimina o duplo disparo causado pela recriação do callback.
   useEffect(() => {
     if (status === 'instruction') {
-      roundGeneratedRef.current = false; // libera a guarda para a nova rodada
+      roundGeneratedRef.current = false;
       generateRoundRef.current?.();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -463,7 +456,6 @@ export default function VisualSearchHunt({
         timestampMs: Date.now(), action: nextAction, isTarget: tile.isTarget, tileId: tile.id,
         roundIndex, phaseLevel: level,
         clickedShape: tile.shape as VisualSearchShape, clickedColor: tile.color as VisualSearchColor,
-        // targetShape e targetColor lidos do state: valores fixados no início da rodada
         targetShape: targetShape as VisualSearchShape, targetColor: targetColor as VisualSearchColor,
         row: tile.row, col: tile.col, screenHalf,
       };
@@ -611,36 +603,40 @@ export default function VisualSearchHunt({
   const gridTemplateColumns = `repeat(${config.gridSize}, minmax(0, 1fr))`;
   const nextPhaseNumber = roundIndex + 1;
 
+  // Gap e tamanho mínimo dos tiles escalam inversamente ao gridSize
+  // para que o grid caiba na tela sem precisar rolar.
+  const tileGap = config.gridSize <= 5 ? 8 : config.gridSize <= 6 ? 6 : 4;
+  const tileMinHeight = config.gridSize <= 4 ? 52 : config.gridSize <= 5 ? 46 : config.gridSize <= 6 ? 40 : 34;
+
   return (
-    <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
+    <div style={{ maxWidth: 520, margin: '0 auto', padding: 12 }}>
 
       {status === 'instruction' && (
         <Card>
-          <div style={{ display: 'grid', gap: 20 }}>
+          <div style={{ display: 'grid', gap: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Button onClick={startRound}>{`Começar — Fase ${roundIndex}`}</Button>
             </div>
             <div style={{ textAlign: 'center' }}>
               <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
-              <p style={{ marginTop: 10, marginBottom: 0 }}>
+              <p style={{ marginTop: 8, marginBottom: 0 }}>
                 Encontre todos os{' '}
                 <span style={{ textTransform: 'uppercase', fontWeight: 700 }}>
                   {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
                 </span>.
               </p>
             </div>
-            {/* key garante que a animação recomece a cada nova rodada */}
             <div
               key={`target-${roundIndex}`}
               className="vsh-target-fade"
-              style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 180, borderRadius: 18, border: 'none', background: 'transparent', boxShadow: 'none' }}
+              style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 140, borderRadius: 18, border: 'none', background: 'transparent', boxShadow: 'none' }}
             >
-              <div style={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: 12 }}>
+              <div style={{ width: 110, height: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: 12 }}>
                 <img
                   src={SHAPE_IMAGE[targetShape][targetColor]}
                   alt={`${targetShape} ${targetColor}`}
                   loading="eager" decoding="sync"
-                  style={{ width: 78, height: 78, objectFit: 'contain' }}
+                  style={{ width: 68, height: 68, objectFit: 'contain' }}
                   onError={(event) => {
                     const img = event.currentTarget;
                     img.style.opacity = '0'; img.style.pointerEvents = 'none';
@@ -656,13 +652,13 @@ export default function VisualSearchHunt({
       )}
 
       {status === 'playing' && (
-        <div style={{ display: 'grid', gap: 16 }}>
+        <div style={{ display: 'grid', gap: 10 }}>
           <Card>
-            <div style={{ display: 'grid', gap: 14 }}>
+            <div style={{ display: 'grid', gap: 10 }}>
               <div style={{ textAlign: 'left', fontWeight: 700, color: '#111827' }}>
                 Encontre os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
               </div>
-              <div style={{ height: 10, width: '100%', borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
+              <div style={{ height: 8, width: '100%', borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${Math.max(0, (remainingTime / FIXED_TIME_SECONDS) * 100)}%`, background: '#111827', transition: 'width 100ms linear' }} />
               </div>
               <div><Button onClick={advanceRoundNow} style={{ width: '100%' }}>Avançar</Button></div>
@@ -670,13 +666,37 @@ export default function VisualSearchHunt({
           </Card>
           <Card>
             <div style={{ position: 'relative' }}>
-              <div style={{ display: 'grid', gridTemplateColumns, gap: 10, padding: 4, borderRadius: 18, border: `2px solid ${feedback === 'mark' ? '#22c55e' : feedback === 'unmark' ? '#f59e0b' : '#e5e7eb'}`, transition: 'border-color 120ms ease' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns,
+                  gap: tileGap,
+                  padding: 4,
+                  borderRadius: 14,
+                  border: `2px solid ${
+                    feedback === 'mark' ? '#22c55e' : feedback === 'unmark' ? '#f59e0b' : '#e5e7eb'
+                  }`,
+                  transition: 'border-color 120ms ease',
+                }}
+              >
                 {tiles.map((tile) => (
                   <button
                     key={tile.id} type="button"
                     onClick={() => handleTileClick(tile)}
                     aria-label={`${tile.shape} ${tile.color}`}
-                    style={{ aspectRatio: '1 / 1', minHeight: 58, borderRadius: 14, border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb', background: tile.selected ? '#eff6ff' : '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 120ms ease', zIndex: 20 }}
+                    style={{
+                      aspectRatio: '1 / 1',
+                      minHeight: tileMinHeight,
+                      borderRadius: 10,
+                      border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb',
+                      background: tile.selected ? '#eff6ff' : '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      transition: 'all 120ms ease',
+                      zIndex: 20,
+                    }}
                   >
                     <img
                       src={SHAPE_IMAGE[tile.shape][tile.color]} alt="" aria-hidden="true" loading="eager" decoding="sync"
@@ -689,7 +709,7 @@ export default function VisualSearchHunt({
                       }}
                     />
                     <div aria-hidden="true" style={{ display: 'none', ...getShapeFallbackStyle(tile.shape, tile.color) }} />
-                    {tile.selected && <span style={{ position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderRadius: 999, background: '#111827' }} />}
+                    {tile.selected && <span style={{ position: 'absolute', top: 4, right: 4, width: 8, height: 8, borderRadius: 999, background: '#111827' }} />}
                   </button>
                 ))}
               </div>
