@@ -300,10 +300,7 @@ export default function VisualSearchHunt({
   const clickLogRef = useRef<VisualSearchClickLog[]>([]);
   const sessionLogRef = useRef<VisualSearchSessionLog | null>(null);
 
-  // Impede que generateRound execute mais de uma vez por rodada.
   const roundGeneratedRef = useRef(false);
-
-  // Ref que mantém sempre a versão mais atual de generateRound.
   const generateRoundRef = useRef<(() => void) | null>(null);
 
   const persistRoundLog = useCallback((result: RoundResult) => {
@@ -603,8 +600,6 @@ export default function VisualSearchHunt({
   const gridTemplateColumns = `repeat(${config.gridSize}, minmax(0, 1fr))`;
   const nextPhaseNumber = roundIndex + 1;
 
-  // Gap e tamanho mínimo dos tiles escalam inversamente ao gridSize
-  // para que o grid caiba na tela sem precisar rolar.
   const tileGap = config.gridSize <= 5 ? 6 : config.gridSize <= 6 ? 5 : 3;
   const tileMinHeight = config.gridSize <= 4 ? 44 : config.gridSize <= 5 ? 38 : config.gridSize <= 6 ? 32 : 26;
 
@@ -689,7 +684,7 @@ export default function VisualSearchHunt({
                       minHeight: tileMinHeight,
                       borderRadius: 10,
                       border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb',
-                      background: tile.selected ? '#eff6ff' : '#ffffff',
+                      background: tile.selected ? '#93c5fd' : '#ffffff',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -709,7 +704,6 @@ export default function VisualSearchHunt({
                       }}
                     />
                     <div aria-hidden="true" style={{ display: 'none', ...getShapeFallbackStyle(tile.shape, tile.color) }} />
-                    {tile.selected && <span style={{ position: 'absolute', top: 4, right: 4, width: 8, height: 8, borderRadius: 999, background: '#111827' }} />}
                   </button>
                 ))}
               </div>
