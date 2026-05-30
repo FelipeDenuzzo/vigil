@@ -24,7 +24,17 @@ export const SelectiveHub: React.FC = () => {
       }}
     >
       {activeGame === 'visual-search-hunt' ? (
-        <VisualSearchHunt onEnd={handleEnd} />
+        <div>
+          <Button
+            variant="ghost"
+            onClick={() => setActiveGame(null)}
+            style={{ marginBottom: 'var(--space-4)' }}
+          >
+            ← Voltar
+          </Button>
+
+          <VisualSearchHunt onEnd={handleEnd} />
+        </div>
       ) : (
         <>
           <header style={{ marginBottom: 'var(--space-8)' }}>
