@@ -288,33 +288,6 @@ function analyzeVisualSearchOrganization(clickLog: VisualSearchClickLog[], gridS
   return result;
 }
 
-const SCAN_PATTERN_LABEL: Record<SearchAnalysis['scanPattern'], string> = {
-  'chaotic': 'Aleatório',
-  'row-wise': 'Por linhas',
-  'column-wise': 'Por colunas',
-  'mixed': 'Misto',
-};
-
-const SCAN_PATTERN_COLOR: Record<SearchAnalysis['scanPattern'], string> = {
-  'chaotic': '#dc2626',
-  'row-wise': '#0369a1',
-  'column-wise': '#7c3aed',
-  'mixed': '#d97706',
-};
-
-const SHAPE_LABEL_SINGULAR: Record<Shape, string> = {
-  circle: 'círculo',
-  square: 'quadrado',
-  triangle: 'triângulo',
-};
-
-const COLOR_LABEL_SINGULAR: Record<Color, string> = {
-  red: 'vermelho',
-  blue: 'azul',
-  green: 'verde',
-  yellow: 'amarelo',
-};
-
 export default function VisualSearchHunt({
   onCorrectSound,
   onErrorSound,
@@ -502,35 +475,47 @@ export default function VisualSearchHunt({
     [status, roundIndex, level, targetShape, targetColor, config.gridSize, onCorrectSound, onErrorSound, showFeedback],
   );
 
+  const finishSession = useCallback((results: RoundResult[]) => {
+    const totalHits = results.reduce((s, r) => s + r.hits, 0);
+    const totalErrors = results.reduce((s, r) => s + r.errors, 0);
+    const roundsWon = results.filter((r) => r.status === 'won').length;
+    const roundsLost = results.filter((r) => r.status === 'lost').length;
+    const startedAt = results[0]?.startedAt ?? Date.now();
+    const completedAt = Date.now();
+    const totalSelections = totalHits + totalErrors;
+    const sessionId = sessionLogRef.current?.sessionId ?? `vsh-${startedAt}`;
+    const gameResult: GameResult = {
+      sessionId,
+      gameId: 'visual-search-hunt',
+      attentionType: 'selective',
+      startedAt, completedAt, sessionStatus: 'completed', abandoned: false, completed: true,
+      totalRoundsPlanned: results.length, completedRounds: roundsWon + roundsLost,
+      startedRounds: results.length,
+      lastRoundIndexReached: results[results.length - 1]?.roundIndex ?? roundIndex,
+      lastLevelReached: results[results.length - 1]?.level ?? level,
+      accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
+    };
+    try {
+      if (sessionLogRef.current) {
+        sessionLogRef.current.completedAt = completedAt;
+        sessionLogRef.current.abandoned = false;
+        saveSession(sessionLogRef.current);
+      }
+      saveResult(gameResult);
+    } catch (e) {}
+    onEnd?.(gameResult);
+    navigate(`/treinar/seletiva/visual-search/resultado?sessionId=${sessionId}`);
+  }, [roundIndex, level, onEnd, navigate]);
+
   const goToNextRound = useCallback(() => {
     if (roundIndex >= MAX_PHASES) {
-      const totalHits = roundResults.reduce((s, r) => s + r.hits, 0);
-      const totalErrors = roundResults.reduce((s, r) => s + r.errors, 0);
-      const roundsWon = roundResults.filter((r) => r.status === 'won').length;
-      const roundsLost = roundResults.filter((r) => r.status === 'lost').length;
-      const startedAt = roundResults[0]?.startedAt ?? Date.now();
-      const completedAt = Date.now();
-      const totalSelections = totalHits + totalErrors;
-      const gameResult: GameResult = {
-        sessionId: `session-${startedAt}`, gameId: 'visual-search-hunt', attentionType: 'selective',
-        startedAt, completedAt, sessionStatus: 'completed', abandoned: false, completed: true,
-        totalRoundsPlanned: roundResults.length, completedRounds: roundsWon + roundsLost,
-        startedRounds: roundResults.length,
-        lastRoundIndexReached: roundResults[roundResults.length - 1]?.roundIndex ?? roundIndex,
-        lastLevelReached: roundResults[roundResults.length - 1]?.level ?? level,
-        accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
-      };
-      try {
-        if (sessionLogRef.current) { sessionLogRef.current.completedAt = completedAt; sessionLogRef.current.abandoned = false; saveSession(sessionLogRef.current); }
-        saveResult(gameResult);
-      } catch (e) {}
-      setStatus('finished');
+      finishSession(roundResults);
       return;
     }
     setLevel((prev) => prev + 1);
     setRoundIndex((prev) => prev + 1);
     setStatus('instruction');
-  }, [roundIndex, roundResults, onEnd, level]);
+  }, [roundIndex, roundResults, finishSession]);
 
   const advanceRoundNow = useCallback(() => {
     clearTimer();
@@ -560,27 +545,8 @@ export default function VisualSearchHunt({
     } catch (e) {}
     setRoundResults((prev) => {
       const next = [...prev, result];
-      const totalHits = next.reduce((s, r) => s + r.hits, 0);
-      const totalErrors = next.reduce((s, r) => s + r.errors, 0);
-      const roundsWon = next.filter((r) => r.status === 'won').length;
-      const roundsLost = next.filter((r) => r.status === 'lost').length;
-      const totalSelections = totalHits + totalErrors;
       if (roundIndex >= MAX_PHASES) {
-        const started = next[0]?.startedAt ?? Date.now();
-        const completedAt = Date.now();
-        const gameResult: GameResult = {
-          sessionId: `session-${started}`, gameId: 'visual-search-hunt', attentionType: 'selective',
-          startedAt: started, completedAt, sessionStatus: 'completed', abandoned: false, completed: true,
-          totalRoundsPlanned: next.length, completedRounds: roundsWon + roundsLost, startedRounds: next.length,
-          lastRoundIndexReached: next[next.length - 1]?.roundIndex ?? roundIndex,
-          lastLevelReached: next[next.length - 1]?.level ?? level,
-          accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
-        };
-        try {
-          if (sessionLogRef.current) { sessionLogRef.current.completedAt = completedAt; sessionLogRef.current.abandoned = false; saveSession(sessionLogRef.current); }
-          saveResult(gameResult);
-        } catch (e) {}
-        setStatus('finished');
+        finishSession(next);
       } else {
         setLevel((l) => l + 1);
         setRoundIndex((r) => r + 1);
@@ -588,7 +554,7 @@ export default function VisualSearchHunt({
       }
       return next;
     });
-  }, [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime, persistRoundLog, onEnd]);
+  }, [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime, persistRoundLog, finishSession]);
 
   useEffect(() => { return () => clearTimer(); }, [clearTimer]);
 
@@ -637,7 +603,6 @@ export default function VisualSearchHunt({
 
   const gridTemplateColumns = `repeat(${config.gridSize}, minmax(0, 1fr))`;
   const nextPhaseNumber = roundIndex + 1;
-
   const tileGap = config.gridSize <= 5 ? 6 : config.gridSize <= 6 ? 5 : 3;
 
   return (
@@ -705,7 +670,6 @@ export default function VisualSearchHunt({
                   gap: tileGap,
                   padding: 3,
                   borderRadius: 8,
-                  /* ── FIX UX: limita a grade a 72vh para caber na tela sem scroll ── */
                   width: '100%',
                   maxHeight: '72vh',
                   aspectRatio: '1 / 1',
@@ -808,7 +772,7 @@ export default function VisualSearchHunt({
                 </div>
               </div>
               {isLast ? (
-                <Button onClick={() => setStatus('finished')}>Ver resultado final</Button>
+                <Button onClick={() => finishSession(roundResults)}>Ver resultado final</Button>
               ) : (
                 <Button onClick={goToNextRound}>{`Próxima fase — ${nextPhaseNumber} de ${MAX_PHASES}`}</Button>
               )}
@@ -823,170 +787,6 @@ export default function VisualSearchHunt({
         );
       })()}
 
-      {status === 'finished' && (() => {
-        const totalHits = roundResults.reduce((s, r) => s + r.hits, 0);
-        const totalErrors = roundResults.reduce((s, r) => s + r.errors, 0);
-        const totalMissed = roundResults.reduce((s, r) => s + r.missedTargets, 0);
-        const roundsWon = roundResults.filter((r) => r.status === 'won').length;
-        const totalSelections = totalHits + totalErrors;
-        const accuracy = totalSelections > 0 ? Math.round((totalHits / totalSelections) * 100) : 0;
-
-        const allClicks: VisualSearchClickLog[] = roundResults.flatMap((r) => r.clickEvents);
-        const totalLeftClicks = allClicks.filter((c) => c.action === 'mark' && c.screenHalf === 'left').length;
-        const totalRightClicks = allClicks.filter((c) => c.action === 'mark' && c.screenHalf === 'right').length;
-        const totalSideClicks = totalLeftClicks + totalRightClicks;
-        const globalAsymmetry = totalSideClicks > 0
-          ? Math.round((Math.abs(totalLeftClicks - totalRightClicks) / totalSideClicks) * 100)
-          : 0;
-
-        const scanPatternCounts: Record<string, number> = {};
-        for (const r of roundResults) {
-          const analysis = analyzeVisualSearchOrganization(r.clickEvents, r.gridSize, []);
-          const p = analysis.scanPattern;
-          scanPatternCounts[p] = (scanPatternCounts[p] ?? 0) + 1;
-        }
-        const dominantPattern = Object.entries(scanPatternCounts).sort((a, b) => b[1] - a[1])[0]?.[0] as SearchAnalysis['scanPattern'] | undefined;
-
-        const avgDurationSec = roundResults.length > 0
-          ? Math.round(roundResults.reduce((s, r) => s + r.durationMs, 0) / roundResults.length / 1000)
-          : 0;
-
-        return (
-          <Card>
-            <div style={{ display: 'grid', gap: 20 }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 40 }}>🏁</div>
-                <h2 style={{ margin: '8px 0 0' }}>Treino concluído!</h2>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '10px 4px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#16a34a' }}>{totalHits}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>acertos totais</div>
-                </div>
-                <div style={{ background: '#fef2f2', borderRadius: 10, padding: '10px 4px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#dc2626' }}>{totalErrors}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>erros totais</div>
-                </div>
-                <div style={{ background: '#fafafa', borderRadius: 10, padding: '10px 4px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#374151' }}>{totalMissed}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>alvos perdidos</div>
-                </div>
-                <div style={{ background: '#f0f9ff', borderRadius: 10, padding: '10px 4px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#0369a1' }}>{roundsWon}/{roundResults.length}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>fases vencidas</div>
-                </div>
-                <div style={{ background: '#fafafa', borderRadius: 10, padding: '10px 4px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#374151' }}>{accuracy}%</div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>precisão geral</div>
-                </div>
-                <div style={{ background: '#fafafa', borderRadius: 10, padding: '10px 4px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#374151' }}>{avgDurationSec}s</div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>tempo médio/fase</div>
-                </div>
-              </div>
-
-              <div style={{ background: '#f8fafc', borderRadius: 10, padding: '12px 14px', display: 'grid', gap: 8 }}>
-                <div style={{ fontWeight: 700, fontSize: 13, color: '#374151', marginBottom: 2 }}>Análise de varredura</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: '#6b7280' }}>Padrão predominante</span>
-                  <span style={{ fontWeight: 600, color: '#111827' }}>
-                    {dominantPattern ? SCAN_PATTERN_LABEL[dominantPattern] : '—'}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: '#6b7280' }}>Cliques à esquerda</span>
-                  <span style={{ fontWeight: 600, color: '#111827' }}>{totalLeftClicks}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: '#6b7280' }}>Cliques à direita</span>
-                  <span style={{ fontWeight: 600, color: '#111827' }}>{totalRightClicks}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: '#6b7280' }}>Índice de assimetria</span>
-                  <span style={{ fontWeight: 600, color: '#111827' }}>{globalAsymmetry}%</span>
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 13, color: '#374151', marginBottom: 8 }}>Detalhes por fase</div>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                    <thead>
-                      <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                        <th style={{ textAlign: 'left', padding: '4px 6px', color: '#6b7280', fontWeight: 600 }}>Fase</th>
-                        <th style={{ textAlign: 'center', padding: '4px 6px', color: '#6b7280', fontWeight: 600 }}>Alvo</th>
-                        <th style={{ textAlign: 'center', padding: '4px 6px', color: '#16a34a', fontWeight: 600 }}>✓</th>
-                        <th style={{ textAlign: 'center', padding: '4px 6px', color: '#dc2626', fontWeight: 600 }}>✗</th>
-                        <th style={{ textAlign: 'center', padding: '4px 6px', color: '#6b7280', fontWeight: 600 }}>Perdidos</th>
-                        <th style={{ textAlign: 'center', padding: '4px 6px', color: '#6b7280', fontWeight: 600 }}>Tempo</th>
-                        <th style={{ textAlign: 'center', padding: '4px 6px', color: '#6b7280', fontWeight: 600 }}>Varredura</th>
-                        <th style={{ textAlign: 'center', padding: '4px 6px', color: '#6b7280', fontWeight: 600 }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {roundResults.map((r) => {
-                        const rowAnalysis = analyzeVisualSearchOrganization(r.clickEvents, r.gridSize, []);
-                        const timeUsed = Math.round((r.durationMs) / 1000);
-                        return (
-                          <tr key={r.roundIndex} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '5px 6px', fontWeight: 600, color: '#374151' }}>{r.roundIndex}</td>
-                            <td style={{ padding: '5px 6px', textAlign: 'center' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                                <div style={{
-                                  width: 10, height: 10, borderRadius: r.targetShape === 'circle' ? 999 : r.targetShape === 'square' ? 2 : 0,
-                                  background: r.targetShape === 'triangle' ? 'transparent' : COLOR_HEX[r.targetColor],
-                                  borderLeft: r.targetShape === 'triangle' ? '5px solid transparent' : undefined,
-                                  borderRight: r.targetShape === 'triangle' ? '5px solid transparent' : undefined,
-                                  borderBottom: r.targetShape === 'triangle' ? `10px solid ${COLOR_HEX[r.targetColor]}` : undefined,
-                                  flexShrink: 0,
-                                }} />
-                                <span style={{ fontSize: 11, color: '#374151' }}>
-                                  {SHAPE_LABEL_SINGULAR[r.targetShape]} {COLOR_LABEL_SINGULAR[r.targetColor]}
-                                </span>
-                              </div>
-                            </td>
-                            <td style={{ padding: '5px 6px', textAlign: 'center', color: '#16a34a', fontWeight: 700 }}>{r.hits}</td>
-                            <td style={{ padding: '5px 6px', textAlign: 'center', color: '#dc2626', fontWeight: 700 }}>{r.errors}</td>
-                            <td style={{ padding: '5px 6px', textAlign: 'center', color: '#374151' }}>{r.missedTargets}</td>
-                            <td style={{ padding: '5px 6px', textAlign: 'center', color: '#374151' }}>{timeUsed}s</td>
-                            <td style={{ padding: '5px 6px', textAlign: 'center' }}>
-                              <span style={{
-                                display: 'inline-block', borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 600,
-                                color: SCAN_PATTERN_COLOR[rowAnalysis.scanPattern],
-                                background: `${SCAN_PATTERN_COLOR[rowAnalysis.scanPattern]}18`,
-                              }}>
-                                {SCAN_PATTERN_LABEL[rowAnalysis.scanPattern]}
-                              </span>
-                            </td>
-                            <td style={{ padding: '5px 6px', textAlign: 'center' }}>
-                              <span style={{
-                                display: 'inline-block', borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 600,
-                                background: r.status === 'won' ? '#dcfce7' : '#fee2e2',
-                                color: r.status === 'won' ? '#16a34a' : '#dc2626',
-                              }}>
-                                {r.status === 'won' ? '✓' : '✗'}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <Button onClick={restartTraining}>Treinar novamente</Button>
-              <button
-                onClick={() => navigate('/')}
-                style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer', textDecoration: 'underline', textAlign: 'center' }}
-              >
-                Voltar ao início
-              </button>
-            </div>
-          </Card>
-        );
-      })()}
     </div>
   );
 }
