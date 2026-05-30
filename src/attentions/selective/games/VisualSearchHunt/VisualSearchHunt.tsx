@@ -295,6 +295,13 @@ const SCAN_PATTERN_LABEL: Record<SearchAnalysis['scanPattern'], string> = {
   'mixed': 'Misto',
 };
 
+const SCAN_PATTERN_COLOR: Record<SearchAnalysis['scanPattern'], string> = {
+  'chaotic': '#dc2626',
+  'row-wise': '#0369a1',
+  'column-wise': '#7c3aed',
+  'mixed': '#d97706',
+};
+
 const SHAPE_LABEL_SINGULAR: Record<Shape, string> = {
   circle: 'círculo',
   square: 'quadrado',
@@ -915,6 +922,7 @@ export default function VisualSearchHunt({
                         <th style={{ textAlign: 'center', padding: '4px 6px', color: '#dc2626', fontWeight: 600 }}>✗</th>
                         <th style={{ textAlign: 'center', padding: '4px 6px', color: '#6b7280', fontWeight: 600 }}>Perdidos</th>
                         <th style={{ textAlign: 'center', padding: '4px 6px', color: '#6b7280', fontWeight: 600 }}>Tempo</th>
+                        <th style={{ textAlign: 'center', padding: '4px 6px', color: '#6b7280', fontWeight: 600 }}>Varredura</th>
                         <th style={{ textAlign: 'center', padding: '4px 6px', color: '#6b7280', fontWeight: 600 }}>Status</th>
                       </tr>
                     </thead>
@@ -944,6 +952,15 @@ export default function VisualSearchHunt({
                             <td style={{ padding: '5px 6px', textAlign: 'center', color: '#dc2626', fontWeight: 700 }}>{r.errors}</td>
                             <td style={{ padding: '5px 6px', textAlign: 'center', color: '#374151' }}>{r.missedTargets}</td>
                             <td style={{ padding: '5px 6px', textAlign: 'center', color: '#374151' }}>{timeUsed}s</td>
+                            <td style={{ padding: '5px 6px', textAlign: 'center' }}>
+                              <span style={{
+                                display: 'inline-block', borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 600,
+                                color: SCAN_PATTERN_COLOR[rowAnalysis.scanPattern],
+                                background: `${SCAN_PATTERN_COLOR[rowAnalysis.scanPattern]}18`,
+                              }}>
+                                {SCAN_PATTERN_LABEL[rowAnalysis.scanPattern]}
+                              </span>
+                            </td>
                             <td style={{ padding: '5px 6px', textAlign: 'center' }}>
                               <span style={{
                                 display: 'inline-block', borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 600,
