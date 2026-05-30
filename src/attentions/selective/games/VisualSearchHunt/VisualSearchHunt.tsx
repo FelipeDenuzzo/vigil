@@ -667,6 +667,7 @@ export default function VisualSearchHunt({
                   gap: tileGap,
                   padding: 3,
                   borderRadius: 8,
+                  aspectRatio: '1 / 1',
                 }}
               >
                 {tiles.map((tile) => {
