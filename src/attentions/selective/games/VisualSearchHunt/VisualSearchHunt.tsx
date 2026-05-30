@@ -112,7 +112,7 @@ if (typeof document !== 'undefined' && !document.getElementById(TARGET_FADE_STYL
       to   { opacity: 1; }
     }
     .vsh-target-fade {
-      animation: vshTargetFadeIn 220ms ease 180ms both;
+      animation: vshTargetFadeIn 600ms ease 120ms both;
     }
   `;
   document.head.appendChild(style);
@@ -678,76 +678,160 @@ export default function VisualSearchHunt({
                   padding: 3,
                   maxHeight: gridMaxHeight,
                   overflow: 'hidden',
-                  borderRadius: 12,
-                  border: `2px solid ${
-                    feedback === 'mark' ? '#22c55e' : feedback === 'unmark' ? '#f59e0b' : '#e5e7eb'
-                  }`,
-                  transition: 'border-color 120ms ease',
+                  borderRadius: 8,
                 }}
               >
-                {tiles.map((tile) => (
-                  <button
-                    key={tile.id} type="button"
-                    onClick={() => handleTileClick(tile)}
-                    aria-label={`${tile.shape} ${tile.color}`}
-                    style={{
-                      aspectRatio: '1 / 1',
-                      borderRadius: 8,
-                      border: tile.selected ? '3px solid #111827' : '1px solid #e5e7eb',
-                      background: tile.selected ? '#93c5fd' : '#ffffff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'relative',
-                      transition: 'all 120ms ease',
-                      zIndex: 20,
-                    }}
-                  >
-                    <img
-                      src={SHAPE_IMAGE[tile.shape][tile.color]} alt="" aria-hidden="true" loading="eager" decoding="sync"
-                      style={{ width: '72%', height: '72%', objectFit: 'contain' }}
-                      onError={(event) => {
-                        const img = event.currentTarget;
-                        img.style.opacity = '0'; img.style.pointerEvents = 'none';
-                        const fallback = img.nextElementSibling as HTMLDivElement | null;
-                        if (fallback) fallback.style.display = 'block';
+                {tiles.map((tile) => {
+                  const isSelected = tile.selected;
+                  return (
+                    <button
+                      key={tile.id}
+                      onClick={() => handleTileClick(tile)}
+                      style={{
+                        aspectRatio: '1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: 6,
+                        border: isSelected ? '2px solid #111827' : '2px solid transparent',
+                        background: isSelected ? '#f0fdf4' : '#f9fafb',
+                        cursor: 'pointer',
+                        padding: 0,
+                        transition: 'border-color 80ms, background 80ms',
+                        position: 'relative',
+                        overflow: 'hidden',
                       }}
-                    />
-                    <div aria-hidden="true" style={{ display: 'none', ...getShapeFallbackStyle(tile.shape, tile.color) }} />
-                  </button>
-                ))}
+                      aria-label={`${tile.shape} ${tile.color}${isSelected ? ' selecionado' : ''}`}
+                    >
+                      <img
+                        src={SHAPE_IMAGE[tile.shape][tile.color]}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        style={{ width: '62%', height: '62%', objectFit: 'contain', display: 'block' }}
+                        onError={(e) => {
+                          const img = e.currentTarget;
+                          img.style.display = 'none';
+                          const fb = img.nextElementSibling as HTMLElement | null;
+                          if (fb) fb.style.display = 'flex';
+                        }}
+                      />
+                      <div
+                        style={{
+                          display: 'none',
+                          width: '100%',
+                          height: '100%',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          position: 'absolute',
+                          inset: 0,
+                        }}
+                      >
+                        <div style={getShapeFallbackStyle(tile.shape, tile.color)} />
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
+              {feedback && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: 8,
+                    pointerEvents: 'none',
+                    background: feedback === 'mark' ? 'rgba(34,197,94,0.13)' : 'rgba(239,68,68,0.13)',
+                    transition: 'background 80ms',
+                  }}
+                />
+              )}
             </div>
           </Card>
         </div>
       )}
 
-      {(status === 'won' || status === 'lost') && (
-        <Card>
-          <div style={{ display: 'grid', gap: 14 }}>
-            <h3 style={{ margin: 0, textAlign: 'center' }}>{status === 'won' ? 'Fase concluída' : 'Tempo encerrado'}</h3>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <Button onClick={goToNextRound}>{roundIndex >= MAX_PHASES ? 'Finalizar' : `Fase ${nextPhaseNumber}`}</Button>
-              <Button onClick={() => { markSessionAbandoned(); navigate('/selective'); }}>Sair</Button>
-              <Button onClick={() => restartTraining()}>Reiniciar</Button>
+      {(status === 'won' || status === 'lost') && (() => {
+        const last = roundResults[roundResults.length - 1];
+        const hits = last?.hits ?? 0;
+        const errors = last?.errors ?? 0;
+        const missed = last?.missedTargets ?? 0;
+        const isWon = status === 'won';
+        const isLast = roundIndex >= MAX_PHASES;
+        return (
+          <Card>
+            <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
+              <div style={{ fontSize: 40 }}>{isWon ? '🎯' : '⏱️'}</div>
+              <h2 style={{ margin: 0 }}>{isWon ? 'Fase concluída!' : 'Tempo esgotado'}</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '10px 4px' }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#16a34a' }}>{hits}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>acertos</div>
+                </div>
+                <div style={{ background: '#fef2f2', borderRadius: 10, padding: '10px 4px' }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#dc2626' }}>{errors}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>erros</div>
+                </div>
+                <div style={{ background: '#fafafa', borderRadius: 10, padding: '10px 4px' }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#374151' }}>{missed}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>perdidos</div>
+                </div>
+              </div>
+              {isLast ? (
+                <Button onClick={() => setStatus('finished')}>Ver resultado final</Button>
+              ) : (
+                <Button onClick={goToNextRound}>{`Próxima fase — ${nextPhaseNumber} de ${MAX_PHASES}`}</Button>
+              )}
+              <button
+                onClick={restartTraining}
+                style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Recomeçar do início
+              </button>
             </div>
-          </div>
-        </Card>
-      )}
+          </Card>
+        );
+      })()}
 
-      {status === 'finished' && (
-        <Card>
-          <div style={{ display: 'grid', gap: 12 }}>
-            <h3 style={{ margin: 0 }}>Treino finalizado</h3>
-            <p style={{ margin: 0 }}>Sessão encerrada e pronta para integração com o log e avaliação detalhada.</p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <Button onClick={() => { const sessionId = sessionLogRef.current?.sessionId || ''; navigate(`/treinar/seletiva/visual-search/evaluation?sessionId=${sessionId}`); }}>Ver Avaliação</Button>
-              <Button onClick={() => restartTraining()}>Recomeçar</Button>
-              <Button onClick={() => navigate('/selective')}>Voltar</Button>
+      {status === 'finished' && (() => {
+        const totalHits = roundResults.reduce((s, r) => s + r.hits, 0);
+        const totalErrors = roundResults.reduce((s, r) => s + r.errors, 0);
+        const roundsWon = roundResults.filter((r) => r.status === 'won').length;
+        const totalSelections = totalHits + totalErrors;
+        const accuracy = totalSelections > 0 ? Math.round((totalHits / totalSelections) * 100) : 0;
+        return (
+          <Card>
+            <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
+              <div style={{ fontSize: 40 }}>🏁</div>
+              <h2 style={{ margin: 0 }}>Treino concluído!</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '10px 4px' }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#16a34a' }}>{totalHits}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>acertos totais</div>
+                </div>
+                <div style={{ background: '#fef2f2', borderRadius: 10, padding: '10px 4px' }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#dc2626' }}>{totalErrors}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>erros totais</div>
+                </div>
+                <div style={{ background: '#f0f9ff', borderRadius: 10, padding: '10px 4px' }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#0369a1' }}>{roundsWon}/{roundResults.length}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>fases vencidas</div>
+                </div>
+                <div style={{ background: '#fafafa', borderRadius: 10, padding: '10px 4px' }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#374151' }}>{accuracy}%</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>precisão</div>
+                </div>
+              </div>
+              <Button onClick={restartTraining}>Treinar novamente</Button>
+              <button
+                onClick={() => navigate('/')}
+                style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Voltar ao início
+              </button>
             </div>
-          </div>
-        </Card>
-      )}
+          </Card>
+        );
+      })()}
     </div>
   );
 }
