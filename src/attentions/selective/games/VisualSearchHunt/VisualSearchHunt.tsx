@@ -684,7 +684,7 @@ export default function VisualSearchHunt({
       )}
 
       {status === 'playing' && (
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div style={{ display: 'grid', gap: 8 }}>
           <Card>
             <div style={{ display: 'grid', gap: 8 }}>
               <div style={{ textAlign: 'left', fontWeight: 700, color: '#111827' }}>
@@ -705,7 +705,11 @@ export default function VisualSearchHunt({
                   gap: tileGap,
                   padding: 3,
                   borderRadius: 8,
+                  /* ── FIX UX: limita a grade a 72vh para caber na tela sem scroll ── */
+                  width: '100%',
+                  maxHeight: '72vh',
                   aspectRatio: '1 / 1',
+                  overflow: 'hidden',
                 }}
               >
                 {tiles.map((tile) => {
@@ -827,7 +831,6 @@ export default function VisualSearchHunt({
         const totalSelections = totalHits + totalErrors;
         const accuracy = totalSelections > 0 ? Math.round((totalHits / totalSelections) * 100) : 0;
 
-        // Análise agregada de todos os cliques da sessão
         const allClicks: VisualSearchClickLog[] = roundResults.flatMap((r) => r.clickEvents);
         const totalLeftClicks = allClicks.filter((c) => c.action === 'mark' && c.screenHalf === 'left').length;
         const totalRightClicks = allClicks.filter((c) => c.action === 'mark' && c.screenHalf === 'right').length;
@@ -836,7 +839,6 @@ export default function VisualSearchHunt({
           ? Math.round((Math.abs(totalLeftClicks - totalRightClicks) / totalSideClicks) * 100)
           : 0;
 
-        // Padrão de varredura mais frequente entre as fases
         const scanPatternCounts: Record<string, number> = {};
         for (const r of roundResults) {
           const analysis = analyzeVisualSearchOrganization(r.clickEvents, r.gridSize, []);
@@ -845,7 +847,6 @@ export default function VisualSearchHunt({
         }
         const dominantPattern = Object.entries(scanPatternCounts).sort((a, b) => b[1] - a[1])[0]?.[0] as SearchAnalysis['scanPattern'] | undefined;
 
-        // Tempo médio por fase (em segundos)
         const avgDurationSec = roundResults.length > 0
           ? Math.round(roundResults.reduce((s, r) => s + r.durationMs, 0) / roundResults.length / 1000)
           : 0;
@@ -858,7 +859,6 @@ export default function VisualSearchHunt({
                 <h2 style={{ margin: '8px 0 0' }}>Treino concluído!</h2>
               </div>
 
-              {/* Resumo geral */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '10px 4px', textAlign: 'center' }}>
                   <div style={{ fontSize: 22, fontWeight: 700, color: '#16a34a' }}>{totalHits}</div>
@@ -886,7 +886,6 @@ export default function VisualSearchHunt({
                 </div>
               </div>
 
-              {/* Análise de varredura */}
               <div style={{ background: '#f8fafc', borderRadius: 10, padding: '12px 14px', display: 'grid', gap: 8 }}>
                 <div style={{ fontWeight: 700, fontSize: 13, color: '#374151', marginBottom: 2 }}>Análise de varredura</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
@@ -909,7 +908,6 @@ export default function VisualSearchHunt({
                 </div>
               </div>
 
-              {/* Tabela por fase */}
               <div>
                 <div style={{ fontWeight: 700, fontSize: 13, color: '#374151', marginBottom: 8 }}>Detalhes por fase</div>
                 <div style={{ overflowX: 'auto' }}>
