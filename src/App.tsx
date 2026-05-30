@@ -18,6 +18,7 @@ export default function App() {
         <Route path="/treinar" element={<SelectAttention />} />
         <Route path="/treinar/seletiva" element={<SelectiveHub />} />
         <Route path="/treinar/seletiva/visual-search" element={<VisualSearchPlay />} />
+        <Route path="/treinar/seletiva/visual-search/resultado" element={<VisualSearchEvaluationContainer />} />
         <Route path="/treinar/seletiva/visual-search/evaluation" element={<VisualSearchEvaluationContainer />} />
         <Route path="/treinar/sustentada" element={<SustainedHub />} />
         <Route path="/treinar/alternada" element={<AlternatingHub />} />
