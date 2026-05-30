@@ -602,16 +602,6 @@ export default function VisualSearchHunt({
 
   const tileGap = config.gridSize <= 5 ? 6 : config.gridSize <= 6 ? 5 : 3;
 
-  // Altura máxima do grid calculada com base no gridSize:
-  // cada tile fica limitado por esse teto, evitando scroll.
-  // Valores calibrados para caber na tela sem scroll em mobile (375px+).
-  const gridMaxHeight =
-    config.gridSize <= 4 ? 280
-    : config.gridSize <= 5 ? 300
-    : config.gridSize <= 6 ? 320
-    : config.gridSize <= 7 ? 340
-    : 360;
-
   return (
     <div style={{ maxWidth: 460, margin: '0 auto', padding: 12 }}>
 
@@ -676,8 +666,6 @@ export default function VisualSearchHunt({
                   gridTemplateColumns,
                   gap: tileGap,
                   padding: 3,
-                  maxHeight: gridMaxHeight,
-                  overflow: 'hidden',
                   borderRadius: 8,
                 }}
               >
