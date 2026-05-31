@@ -117,9 +117,19 @@ if (typeof document !== 'undefined' && !document.getElementById(TARGET_FADE_STYL
     .vsh-tile-selected-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.18);
+      background: rgba(22, 163, 74, 0.28);
       pointer-events: none;
       border-radius: 4px;
+    }
+    .vsh-tile-check {
+      position: absolute;
+      top: 2px;
+      right: 3px;
+      font-size: 11px;
+      line-height: 1;
+      color: #15803d;
+      font-weight: 900;
+      pointer-events: none;
     }
   `;
   document.head.appendChild(style);
@@ -695,14 +705,16 @@ export default function VisualSearchHunt({
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: 6,
-                        border: isSelected ? '2px solid #d1d5db' : '2px solid #e5e7eb',
-                        background: isSelected ? '#f3f4f6' : '#f9fafb',
+                        border: isSelected ? '3px solid #15803d' : '2px solid #e5e7eb',
+                        background: isSelected ? '#dcfce7' : '#f9fafb',
                         cursor: 'pointer',
                         padding: 0,
                         transition: 'border-color 80ms, background 80ms, box-shadow 80ms',
                         position: 'relative',
                         overflow: 'hidden',
-                        boxShadow: 'none',
+                        boxShadow: isSelected
+                          ? 'inset 0 0 0 1px #86efac, 0 0 0 2px rgba(22,163,74,0.18)'
+                          : 'none',
                       }}
                       aria-label={`${tile.shape} ${tile.color}${isSelected ? ' selecionado' : ''}`}
                     >
@@ -716,7 +728,7 @@ export default function VisualSearchHunt({
                           height: '62%',
                           objectFit: 'contain',
                           display: 'block',
-                          opacity: isSelected ? 0.35 : 1,
+                          opacity: isSelected ? 0.55 : 1,
                           transition: 'opacity 80ms',
                         }}
                         onError={(e) => {
@@ -735,13 +747,16 @@ export default function VisualSearchHunt({
                           justifyContent: 'center',
                           position: 'absolute',
                           inset: 0,
-                          opacity: isSelected ? 0.35 : 1,
+                          opacity: isSelected ? 0.55 : 1,
                         }}
                       >
                         <div style={getShapeFallbackStyle(tile.shape, tile.color)} />
                       </div>
                       {isSelected && (
-                        <div className="vsh-tile-selected-overlay" />
+                        <>
+                          <div className="vsh-tile-selected-overlay" />
+                          <span className="vsh-tile-check">✓</span>
+                        </>
                       )}
                     </button>
                   );
