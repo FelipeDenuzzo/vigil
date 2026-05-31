@@ -26,7 +26,13 @@ export const SelectiveHub: React.FC = () => {
       <header style={{ marginBottom: 'var(--space-8)' }}>
         <Button
           variant="ghost"
-          onClick={() => navigate('/treinar')}
+          onClick={() => {
+            if (activeGame !== null) {
+              setActiveGame(null);
+            } else {
+              navigate('/treinar');
+            }
+          }}
           style={{ marginBottom: 'var(--space-4)' }}
         >
           ← Voltar
@@ -44,17 +50,7 @@ export const SelectiveHub: React.FC = () => {
 
       <section>
         {activeGame === 'visual-search-hunt' ? (
-          <div style={{ paddingTop: 'var(--space-4)' }}>
-            <Button
-              variant="ghost"
-              onClick={() => setActiveGame(null)}
-              style={{ marginBottom: 'var(--space-4)' }}
-            >
-              ← Voltar
-            </Button>
-
-            <VisualSearchHunt onEnd={handleEnd} />
-          </div>
+          <VisualSearchHunt onEnd={handleEnd} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             <div
