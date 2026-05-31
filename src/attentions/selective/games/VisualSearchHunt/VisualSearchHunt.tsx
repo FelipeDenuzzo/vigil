@@ -594,12 +594,6 @@ export default function VisualSearchHunt({
     } catch (e) {}
   }, [level, roundIndex]);
 
-  const handleBack = useCallback(() => {
-    clearTimer();
-    markSessionAbandoned();
-    navigate('/treinar');
-  }, [clearTimer, markSessionAbandoned, navigate]);
-
   const restartTraining = useCallback(() => {
     try { markSessionAbandoned(); } catch (e) {}
     clearTimer();
@@ -773,10 +767,11 @@ export default function VisualSearchHunt({
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    borderRadius: 8,
                     pointerEvents: 'none',
-                    background: feedback === 'mark' ? 'rgba(34,197,94,0.13)' : 'rgba(239,68,68,0.13)',
-                    transition: 'background 80ms',
+                    borderRadius: 8,
+                    border: `3px solid ${feedback === 'mark' ? '#22c55e' : '#ef4444'}`,
+                    opacity: 0.5,
+                    transition: 'opacity 120ms',
                   }}
                 />
               )}
@@ -787,34 +782,24 @@ export default function VisualSearchHunt({
 
       {(status === 'won' || status === 'lost') && (() => {
         const last = roundResults[roundResults.length - 1];
-        const hits = last?.hits ?? 0;
-        const errors = last?.errors ?? 0;
-        const missed = last?.missedTargets ?? 0;
-        const isWon = status === 'won';
-        const isLast = roundIndex >= MAX_PHASES;
         return (
           <Card>
             <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
-              <div style={{ fontSize: 40 }}>{isWon ? '🎯' : '⏱️'}</div>
-              <h2 style={{ margin: 0 }}>{isWon ? 'Fase concluída!' : 'Tempo esgotado'}</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '10px 4px' }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#16a34a' }}>{hits}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>acertos</div>
+              <div style={{ fontSize: 40 }}>{status === 'won' ? '🎯' : '⏱️'}</div>
+              <h2 style={{ margin: 0 }}>{status === 'won' ? 'Fase concluída!' : 'Tempo esgotado'}</h2>
+              {last && (
+                <div style={{ display: 'grid', gap: 6, fontSize: 14 }}>
+                  <div>✅ Acertos: <strong>{last.hits}</strong> / {last.totalTargets}</div>
+                  <div>❌ Erros: <strong>{last.errors}</strong></div>
+                  {last.missedTargets > 0 && <div>👁️ Perdidos: <strong>{last.missedTargets}</strong></div>}
                 </div>
-                <div style={{ background: '#fef2f2', borderRadius: 10, padding: '10px 4px' }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#dc2626' }}>{errors}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>erros</div>
-                </div>
-                <div style={{ background: '#fafafa', borderRadius: 10, padding: '10px 4px' }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#374151' }}>{missed}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>perdidos</div>
-                </div>
-              </div>
-              {isLast ? (
-                <Button onClick={() => finishSession(roundResults)}>Ver resultado final</Button>
+              )}
+              {roundIndex < MAX_PHASES ? (
+                <Button onClick={goToNextRound}>
+                  {`Fase ${nextPhaseNumber} →`}
+                </Button>
               ) : (
-                <Button onClick={goToNextRound}>{`Próxima fase — ${nextPhaseNumber} de ${MAX_PHASES}`}</Button>
+                <Button onClick={() => finishSession(roundResults)}>Ver resultado final</Button>
               )}
               <button
                 onClick={restartTraining}
@@ -826,7 +811,6 @@ export default function VisualSearchHunt({
           </Card>
         );
       })()}
-
     </div>
   );
 }
