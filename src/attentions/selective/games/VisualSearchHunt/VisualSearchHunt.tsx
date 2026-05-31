@@ -305,6 +305,35 @@ function analyzeVisualSearchOrganization(clickLog: VisualSearchClickLog[], gridS
   return result;
 }
 
+// ─── Botão Voltar ─────────────────────────────────────────────────────────────
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        color: '#6b7280',
+        fontSize: 14,
+        fontWeight: 600,
+        padding: '4px 0',
+        marginBottom: 8,
+      }}
+      aria-label="Voltar para a escolha de treino"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+      Voltar
+    </button>
+  );
+}
+
 export default function VisualSearchHunt({
   onCorrectSound,
   onErrorSound,
@@ -594,6 +623,12 @@ export default function VisualSearchHunt({
     } catch (e) {}
   }, [level, roundIndex]);
 
+  const handleBack = useCallback(() => {
+    clearTimer();
+    markSessionAbandoned();
+    navigate('/treinar');
+  }, [clearTimer, markSessionAbandoned, navigate]);
+
   const restartTraining = useCallback(() => {
     try { markSessionAbandoned(); } catch (e) {}
     clearTimer();
@@ -626,47 +661,51 @@ export default function VisualSearchHunt({
     <div style={{ maxWidth: 460, margin: '0 auto', padding: 12 }}>
 
       {status === 'instruction' && (
-        <Card>
-          <div style={{ display: 'grid', gap: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button onClick={startRound}>{`Começar — Fase ${roundIndex}`}</Button>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
-              <p style={{ marginTop: 8, marginBottom: 0 }}>
-                Encontre todos os{' '}
-                <span style={{ textTransform: 'uppercase', fontWeight: 700 }}>
-                  {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
-                </span>.
-              </p>
-            </div>
-            <div
-              key={`target-${roundIndex}`}
-              className="vsh-target-fade"
-              style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120, borderRadius: 18, border: 'none', background: 'transparent', boxShadow: 'none' }}
-            >
-              <div style={{ width: 110, height: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: 12 }}>
-                <img
-                  src={SHAPE_IMAGE[targetShape][targetColor]}
-                  alt={`${targetShape} ${targetColor}`}
-                  loading="eager" decoding="sync"
-                  style={{ width: 70, height: 70, objectFit: 'contain' }}
-                  onError={(event) => {
-                    const img = event.currentTarget;
-                    img.style.opacity = '0'; img.style.pointerEvents = 'none';
-                    const fallback = img.nextElementSibling as HTMLDivElement | null;
-                    if (fallback) fallback.style.display = 'block';
-                  }}
-                />
-                <div style={{ display: 'none', ...getShapeFallbackStyle(targetShape, targetColor) }} />
+        <>
+          <BackButton onClick={handleBack} />
+          <Card>
+            <div style={{ display: 'grid', gap: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Button onClick={startRound}>{`Começar — Fase ${roundIndex}`}</Button>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
+                <p style={{ marginTop: 8, marginBottom: 0 }}>
+                  Encontre todos os{' '}
+                  <span style={{ textTransform: 'uppercase', fontWeight: 700 }}>
+                    {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
+                  </span>.
+                </p>
+              </div>
+              <div
+                key={`target-${roundIndex}`}
+                className="vsh-target-fade"
+                style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120, borderRadius: 18, border: 'none', background: 'transparent', boxShadow: 'none' }}
+              >
+                <div style={{ width: 110, height: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: 12 }}>
+                  <img
+                    src={SHAPE_IMAGE[targetShape][targetColor]}
+                    alt={`${targetShape} ${targetColor}`}
+                    loading="eager" decoding="sync"
+                    style={{ width: 70, height: 70, objectFit: 'contain' }}
+                    onError={(event) => {
+                      const img = event.currentTarget;
+                      img.style.opacity = '0'; img.style.pointerEvents = 'none';
+                      const fallback = img.nextElementSibling as HTMLDivElement | null;
+                      if (fallback) fallback.style.display = 'block';
+                    }}
+                  />
+                  <div style={{ display: 'none', ...getShapeFallbackStyle(targetShape, targetColor) }} />
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </>
       )}
 
       {status === 'playing' && (
         <div style={{ display: 'grid', gap: 8 }}>
+          <BackButton onClick={handleBack} />
           <Card>
             <div style={{ display: 'grid', gap: 8 }}>
               <div style={{ textAlign: 'left', fontWeight: 700, color: '#111827' }}>
