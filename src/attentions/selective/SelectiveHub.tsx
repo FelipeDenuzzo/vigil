@@ -37,15 +37,6 @@ export const SelectiveHub: React.FC = () => {
         >
           ← Voltar
         </Button>
-
-        <h1 style={{ fontSize: 'var(--text-2xl)', color: 'var(--color-selective)' }}>
-          Atenção Seletiva
-        </h1>
-
-        <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
-          Esta modalidade treina sua capacidade de se concentrar em um único estímulo,
-          ignorando distrações e informações irrelevantes ao redor.
-        </p>
       </header>
 
       <section>
