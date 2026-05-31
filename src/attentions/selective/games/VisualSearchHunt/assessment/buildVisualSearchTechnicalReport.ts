@@ -24,8 +24,13 @@ function getSeverity(omissionRate: number, commissionRate: number): SubscaleSeve
 
 function resolvePositiveIndicators(
   severity: SubscaleSeverity,
-  commissionRate: number
+  commissionRate: number,
+  totalHits: number,
+  engagementStatus: string
 ): string[] {
+  // Sem engajamento real: não exibir pontos fortes
+  if (engagementStatus === 'insuficiente' || totalHits === 0) return [];
+
   if (severity === 'minimo')
     return [
       banco.indicadoresPositivos[0],
@@ -182,7 +187,12 @@ export function buildVisualSearchTechnicalReport(
     m.reactionTimeStdDev
   );
 
-  const positiveIndicators = resolvePositiveIndicators(severity, m.commissionRate);
+  const positiveIndicators = resolvePositiveIndicators(
+    severity,
+    m.commissionRate,
+    m.totalHits,
+    m.engagementStatus
+  );
 
   // Aviso de negligência espacial: passa misseds por lado, não hasSpatialAsymmetry
   const redFlag = resolveRedFlag(
