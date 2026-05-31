@@ -121,16 +121,6 @@ if (typeof document !== 'undefined' && !document.getElementById(TARGET_FADE_STYL
       pointer-events: none;
       border-radius: 4px;
     }
-    .vsh-tile-check {
-      position: absolute;
-      top: 2px;
-      right: 3px;
-      font-size: 11px;
-      line-height: 1;
-      color: #6b7280;
-      font-weight: 900;
-      pointer-events: none;
-    }
   `;
   document.head.appendChild(style);
 }
@@ -753,10 +743,7 @@ export default function VisualSearchHunt({
                         <div style={getShapeFallbackStyle(tile.shape, tile.color)} />
                       </div>
                       {isSelected && (
-                        <>
-                          <div className="vsh-tile-selected-overlay" />
-                          <span className="vsh-tile-check">✓</span>
-                        </>
+                        <div className="vsh-tile-selected-overlay" />
                       )}
                     </button>
                   );
