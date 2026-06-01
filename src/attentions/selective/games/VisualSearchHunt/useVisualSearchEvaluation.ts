@@ -91,7 +91,7 @@ const IES_MAX = 9999;
 const SCORE_BASE = 100_000;
 
 function sortClicks(clicks: any[]): any[] {
-  return [...clicks].sort((a, b) => a.timestamp - b.timestamp);
+  return [...clicks].sort((a, b) => (a.timestampMs ?? a.timestamp ?? 0) - (b.timestampMs ?? b.timestamp ?? 0));
 }
 
 function getWrongCorrectionTimes(clicks: any[]): number[] {
@@ -128,8 +128,8 @@ function evaluateRound(round: any): RoundEvaluation {
   const rawErrors = wrongMarks.length;
 
   const totalTargets =
-    typeof round.accuracy === "number" && round.accuracy > 0
-      ? Math.max(hits, Math.round(hits / round.accuracy))
+    typeof round.totalTargets === "number" && round.totalTargets > 0
+      ? round.totalTargets
       : hits;
 
   const missed = Math.max(0, totalTargets - hits);
