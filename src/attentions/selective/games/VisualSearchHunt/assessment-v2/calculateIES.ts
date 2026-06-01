@@ -2,59 +2,28 @@
 /* Cálculo do Índice de Eficiência Inversa (IES) */
 /* Atualizado em: 01/06/2026 */
 
-import type { IESResult, VisualSearchV2SessionLog } from './visualSearchV2.types';
+import type { V2RoundInput, IESResult } from "./visualSearchV2.types";
 
-/**
- * Calcula o Índice de Eficiência Inversa (IES) da sessão.
- *
- * IES = meanReactionTime / accuracyRate
- *
- * Lógica:
- * - meanReactionTime: tempo médio de reação dos acertos (ms)
- * - accuracyRate: hits / (totalTargets + falseAlarms)
- * - Se accuracyRate === 0, retorna Infinity
- * - displayScore: 10_000_000 / ies (score gamificado)
- */
-export function calculateIES(sessionLog: VisualSearchV2SessionLog): IESResult {
-  const { rounds } = sessionLog;
+export function calculateIES(rounds: V2RoundInput[]): IESResult {
+  // 1. Juntar todos os reactionTimes de todas as rodadas
+  const allRTs = rounds.flatMap((r) => r.reactionTimes);
+  const meanRT = allRTs.length > 0
+    ? allRTs.reduce((sum, v) => sum + v, 0) / allRTs.length
+    : 0;
 
-  // ── Coleta de reaction times dos hits (cliques corretos) ──
-  const allReactionTimes: number[] = [];
-  for (const round of rounds) {
-    if (round.reactionTimes && Array.isArray(round.reactionTimes)) {
-      allReactionTimes.push(...round.reactionTimes);
-    }
-  }
+  // 2. Acurácia global: hits / (totalTargets + falseAlarms)
+  const totalHits = rounds.reduce((s, r) => s + r.hits, 0);
+  const totalTargets = rounds.reduce((s, r) => s + r.totalTargets, 0);
+  const totalErrors = rounds.reduce((s, r) => s + r.errors, 0);
+  const accuracyRate = (totalTargets + totalErrors) > 0
+    ? totalHits / (totalTargets + totalErrors)
+    : 0;
 
-  const totalHits = rounds.reduce((sum, r) => sum + r.hits, 0);
-  const meanReactionTime =
-    allReactionTimes.length > 0
-      ? allReactionTimes.reduce((sum, rt) => sum + rt, 0) / allReactionTimes.length
-      : 0;
-
-  // ── Cálculo de acurácia ──
-  // totalTargets: todos os alvos apresentados
-  const totalTargets = rounds.reduce((sum, r) => sum + (r.targetsPresented ?? 0), 0);
-  // totalFalseAlarms: total de erros (cliques em distratores)
-  const totalFalseAlarms = rounds.reduce((sum, r) => sum + r.errors, 0);
-
-  const accuracyRate =
-    totalTargets + totalFalseAlarms > 0
-      ? totalHits / (totalTargets + totalFalseAlarms)
-      : 0;
-
-  // ── Cálculo de IES ──
-  const ies = accuracyRate > 0 ? meanReactionTime / accuracyRate : Infinity;
-
-  // ── Score gamificado ──
-  const displayScore = Number.isFinite(ies) && ies > 0
+  // 3. IES e score gamificado
+  const ies = meanRT > 0 && accuracyRate > 0 ? meanRT / accuracyRate : 99999;
+  const displayScore = ies > 0 && Number.isFinite(ies)
     ? Math.round(10_000_000 / ies)
     : 0;
 
-  return {
-    meanReactionTime: Number(meanReactionTime.toFixed(2)),
-    accuracyRate: Number((accuracyRate * 100).toFixed(2)),
-    ies: Number(ies.toFixed(2)),
-    displayScore,
-  };
+  return { meanReactionTime: Math.round(meanRT), accuracyRate, ies, displayScore };
 }

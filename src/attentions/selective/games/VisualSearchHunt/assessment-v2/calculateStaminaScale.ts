@@ -1,105 +1,61 @@
 /* src/attentions/selective/games/VisualSearchHunt/assessment-v2/calculateStaminaScale.ts */
-/* Régua de Fôlego Mental — Sustentação e Vigilância */
+/* Régua de Fôlego Mental — Sustentação */
 /* Atualizado em: 01/06/2026 */
 
-import type { StaminaScaleResult, VisualSearchV2SessionLog } from './visualSearchV2.types';
+import type { V2RoundInput, StaminaScaleResult } from "./visualSearchV2.types";
 
-/**
- * Calcula a Régua de Fôlego Mental (Stamina/Sustentação).
- *
- * Lógica:
- * - accuracyRate por rodada = hits / (hits + errors + missedTargets)
- * - Divide rodadas em primeiro e último terço
- * - staminaDrop = média(primeiro) - média(último)
- * - score = clamp((1 - staminaDrop) * 100, 0, 100)
- * - vigilanceDropDetected se últimas 3 rodadas < 0.4 accuracy OU staminaDrop > 0.35
- */
-export function calculateStaminaScale(sessionLog: VisualSearchV2SessionLog): StaminaScaleResult {
-  const { rounds } = sessionLog;
+// Mede queda de desempenho entre o início e o fim da sessão.
+// Compara acurácia média do primeiro terço vs. último terço das rodadas.
 
-  if (rounds.length === 0) {
-    return {
-      score: 0,
-      markerLabel: 'Bateria Esgotada',
-      shortDescription: 'Sem dados de sustentação.',
-      clinicalMeaning: 'Impossível avaliar resistência atencional.',
-      vigilanceDropDetected: false,
-    };
+function resolveStaminaLabel(score: number) {
+  if (score >= 80) return {
+    label: "Bateria Cheia",
+    short: "Desempenho estável do início ao fim.",
+    clinical: "Atenção sustentada preservada; sem sinais de fadiga cognitiva.",
+  };
+  if (score >= 60) return {
+    label: "Bateria Estável",
+    short: "Pequena queda no final, dentro do esperado.",
+    clinical: "Leve declínio de vigilância, comum em tarefas prolongadas.",
+  };
+  if (score >= 40) return {
+    label: "Bateria Fraca",
+    short: "Queda relevante de desempenho na segunda metade.",
+    clinical: "Possível fadiga atencional. Recomendado avaliar padrão em múltiplas sessões.",
+  };
+  return {
+    label: "Bateria Esgotada",
+    short: "Colapso de desempenho nas rodadas finais.",
+    clinical: "Déficit de atenção sustentada; vigilância muito reduzida ao final da tarefa.",
+  };
+}
+
+export function calculateStaminaScale(rounds: V2RoundInput[]): StaminaScaleResult {
+  function roundAccuracy(r: V2RoundInput): number {
+    const denom = r.hits + r.errors + r.missedTargets;
+    return denom > 0 ? r.hits / denom : 0;
   }
 
-  // ── Calcular accuracyRate por rodada ──
-  const accuracyRates: number[] = [];
-  for (const round of rounds) {
-    const total = round.hits + round.errors + round.missedTargets;
-    if (total > 0) {
-      accuracyRates.push(round.hits / total);
-    } else {
-      accuracyRates.push(0);
-    }
-  }
+  const accs = rounds.map(roundAccuracy);
+  const n = accs.length;
+  const third = Math.max(1, Math.floor(n / 3));
 
-  // ── Dividir em blocos: primeiro e último terço ──
-  const thirdLength = Math.max(1, Math.ceil(accuracyRates.length / 3));
+  const earlyAvg = accs.slice(0, third).reduce((s, v) => s + v, 0) / third;
+  const lateAvg = accs.slice(-third).reduce((s, v) => s + v, 0) / third;
+  const drop = earlyAvg - lateAvg;
 
-  const firstThird = accuracyRates.slice(0, thirdLength);
-  const lastThird = accuracyRates.slice(-thirdLength);
+  const score = Math.max(0, Math.min(100, Math.round((1 - drop) * 100)));
 
-  const firstThirdMean = firstThird.reduce((sum, r) => sum + r, 0) / firstThird.length;
-  const lastThirdMean = lastThird.reduce((sum, r) => sum + r, 0) / lastThird.length;
+  const last3 = accs.slice(-3);
+  const vigilanceDropDetected = drop > 0.35 || last3.every((a) => a < 0.4);
 
-  const staminaDrop = firstThirdMean - lastThirdMean;
-
-  // ── Score: quanto menor a queda, melhor ──
-  const clampedScore = Math.max(0, Math.min(100, (1 - staminaDrop) * 100));
-  const score = Math.round(clampedScore);
-
-  // ── Detectar colapso de vigilância ──
-  let vigilanceDropDetected = false;
-
-  // Verificar se as últimas 3 rodadas têm accuracy < 0.4
-  const lastThreeAccuracy = accuracyRates.slice(-3);
-  if (lastThreeAccuracy.length > 0) {
-    const allBelowThreshold = lastThreeAccuracy.every((acc) => acc < 0.4);
-    if (allBelowThreshold) vigilanceDropDetected = true;
-  }
-
-  // OU se a queda de stamina > 0.35
-  if (staminaDrop > 0.35) {
-    vigilanceDropDetected = true;
-  }
-
-  // ── Determinar label e significado ──
-  let markerLabel: string;
-  let shortDescription: string;
-  let clinicalMeaning: string;
-
-  if (score >= 80) {
-    markerLabel = 'Bateria Cheia';
-    shortDescription = 'Sustentação atencional excelente.';
-    clinicalMeaning =
-      'Desempenho mantém-se elevado ao longo da sessão. Vigilância preservada, sem sinais de fadiga atencional.';
-  } else if (score >= 60) {
-    markerLabel = 'Bateria Estável';
-    shortDescription = 'Sustentação atencional adequada.';
-    clinicalMeaning =
-      'Desempenho ligeiramente reduzido nas últimas rodadas, mas sem colapso significativo. Resistência atencional aceitável.';
-  } else if (score >= 40) {
-    markerLabel = 'Bateria Fraca';
-    shortDescription = 'Sustentação atencional comprometida.';
-    clinicalMeaning =
-      'Queda notável de desempenho nas últimas rodadas. Sinais de fadiga atencional, com dificuldade em manter vigilância.';
-  } else {
-    markerLabel = 'Bateria Esgotada';
-    shortDescription = 'Sustentação atencional severamente reduzida.';
-    clinicalMeaning =
-      'Colapso significativo no final da sessão. Vigilância severamente comprometida, sugerindo esgotamento atencional.';
-  }
+  const { label, short, clinical } = resolveStaminaLabel(score);
 
   return {
     score,
-    markerLabel,
-    shortDescription,
-    clinicalMeaning,
+    markerLabel: label,
+    shortDescription: short,
+    clinicalMeaning: clinical,
     vigilanceDropDetected,
   };
 }

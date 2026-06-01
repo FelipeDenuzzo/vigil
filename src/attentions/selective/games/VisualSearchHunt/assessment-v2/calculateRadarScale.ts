@@ -1,93 +1,54 @@
 /* src/attentions/selective/games/VisualSearchHunt/assessment-v2/calculateRadarScale.ts */
-/* Régua de Visão de Radar — Organização Espacial */
+/* Régua de Visão de Radar — Organização */
 /* Atualizado em: 01/06/2026 */
 
-import type { RadarScaleResult, VisualSearchV2SessionLog } from './visualSearchV2.types';
+import type { V2RoundInput, RadarScaleResult } from "./visualSearchV2.types";
 
-/**
- * Calcula a Régua de Visão de Radar (organização espacial).
- *
- * Proxy: consistência do padrão de erro entre rodadas.
- * - commissionRate por rodada: errors / (hits + errors)
- * - consistencyScore: 1 - desvio padrão normalizado
- * - score: clamp(consistencyScore * 100, 0, 100)
- */
-export function calculateRadarScale(sessionLog: VisualSearchV2SessionLog): RadarScaleResult {
-  const { rounds } = sessionLog;
+// Mede consistência do commissionRate entre rodadas.
+// Baixa variância = radar calibrado. Alta variância = radar caótico.
 
-  if (rounds.length === 0) {
-    return {
-      score: 0,
-      markerLabel: 'Radar Perdido',
-      shortDescription: 'Sem dados de organização visual.',
-      clinicalMeaning: 'Impossível avaliar padrão de busca visual.',
-    };
-  }
+function resolveRadarLabel(score: number) {
+  if (score >= 80) return {
+    label: "Radar Calibrado",
+    short: "Erros consistentemente baixos em todos os níveis.",
+    clinical: "Controle inibitório estável ao longo da sessão.",
+  };
+  if (score >= 60) return {
+    label: "Radar Oscilante",
+    short: "Erros variaram entre rodadas sem padrão claro.",
+    clinical: "Controle inibitório instável; pode indicar fadiga ou impulsividade situacional.",
+  };
+  if (score >= 40) return {
+    label: "Radar em Pânico",
+    short: "Oscilação alta — do bom ao ruim dentro da mesma sessão.",
+    clinical: "Dificuldade em manter critério de seleção estável.",
+  };
+  return {
+    label: "Radar Perdido",
+    short: "Erros aumentaram drasticamente nas rodadas mais difíceis.",
+    clinical: "Colapso do controle inibitório sob carga cognitiva alta.",
+  };
+}
 
-  // ── Calcular commissionRate por rodada ──
-  const commissionRates: number[] = [];
-  for (const round of rounds) {
-    const totalActions = round.hits + round.errors;
-    if (totalActions > 0) {
-      commissionRates.push(round.errors / totalActions);
-    }
-  }
+export function calculateRadarScale(rounds: V2RoundInput[]): RadarScaleResult {
+  const rates = rounds.map((r) => {
+    const denom = r.hits + r.errors;
+    return denom > 0 ? r.errors / denom : 0;
+  });
 
-  if (commissionRates.length === 0) {
-    return {
-      score: 0,
-      markerLabel: 'Radar Perdido',
-      shortDescription: 'Sem ações registradas para análise.',
-      clinicalMeaning: 'Dados insuficientes para avaliação.',
-    };
-  }
+  const mean = rates.reduce((s, v) => s + v, 0) / rates.length;
+  const variance = rates.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / rates.length;
+  const stdev = Math.sqrt(variance);
+  const normalizedStdev = mean > 0 ? stdev / mean : stdev;
 
-  // ── Calcular média e desvio padrão ──
-  const mean = commissionRates.reduce((sum, r) => sum + r, 0) / commissionRates.length;
-  const variance = commissionRates.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / commissionRates.length;
-  const stdDev = Math.sqrt(variance);
+  const score = Math.max(0, Math.min(100, Math.round((1 - Math.min(normalizedStdev, 1)) * 100)));
 
-  // ── Normalizar desvio padrão (máximo 1) ──
-  // Se stdDev > 1, clampar a 1 para evitar consistencyScore negativo
-  const maxStdDev = 1;
-  const normalizedStdDev = Math.min(stdDev, maxStdDev);
-
-  // ── Consistência: 1 - desvio normalizado ──
-  const consistencyScore = 1 - normalizedStdDev;
-  const clampedScore = Math.max(0, Math.min(100, consistencyScore * 100));
-  const score = Math.round(clampedScore);
-
-  // ── Determinar label e significado ──
-  let markerLabel: string;
-  let shortDescription: string;
-  let clinicalMeaning: string;
-
-  if (score >= 80) {
-    markerLabel = 'Radar Calibrado';
-    shortDescription = 'Organização visual consistente e eficaz.';
-    clinicalMeaning =
-      'Padrão de busca visual bem organizado e estável. Estratégia de rastreio preservada.';
-  } else if (score >= 60) {
-    markerLabel = 'Radar Oscilante';
-    shortDescription = 'Organização visual com variações moderadas.';
-    clinicalMeaning =
-      'Padrão de busca visual oscila, com períodos de desorganização leve. Controle atencional em transição.';
-  } else if (score >= 40) {
-    markerLabel = 'Radar em Pânico';
-    shortDescription = 'Organização visual irregular e desorganizada.';
-    clinicalMeaning =
-      'Padrão de busca visual desorganizado. Estratégia de rastreio comprometida, com alternâncias frequentes.';
-  } else {
-    markerLabel = 'Radar Perdido';
-    shortDescription = 'Organização visual severamente prejudicada.';
-    clinicalMeaning =
-      'Ausência de organização visual coerente. Busca caótica e ineficiente, sugerindo perda de foco atencional.';
-  }
+  const { label, short, clinical } = resolveRadarLabel(score);
 
   return {
     score,
-    markerLabel,
-    shortDescription,
-    clinicalMeaning,
+    markerLabel: label,
+    shortDescription: short,
+    clinicalMeaning: clinical,
   };
 }
