@@ -1,11 +1,13 @@
 // src/attentions/selective/games/VisualSearchHunt/useVisualSearchEvaluation.ts
-// Atualizado em: 24/05/2026 às 15:30 (BRT)
+// Atualizado em: 01/06/2026 às 14:30 (BRT)
 
 import { getAllSessions } from "../../../../shared/storage";
 import type { SessionLog } from "../../../../shared/types";
 import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
 import { buildVisualSearchTechnicalReport } from "./assessment/buildVisualSearchTechnicalReport";
 import type { VisualSearchSessionMetricsInput, VisualSearchScaleResult, VisualSearchTechnicalReport } from "./assessment/visualSearchScale.types";
+import { buildVisualSearchV2Result } from "./assessment-v2";
+import type { VisualSearchV2AssessmentResult } from "./assessment-v2";
 
 export interface RoundEvaluation {
   roundIndex: number;
@@ -80,6 +82,8 @@ export interface EvaluationReport {
   deltaScorePct: number | null;
   scaleResult?: VisualSearchScaleResult;
   technicalReport?: VisualSearchTechnicalReport;
+  /** Resultado do avaliador V2 (em paralelo com v1) */
+  v2Result?: VisualSearchV2AssessmentResult;
 }
 
 const GAME_ID = "visual-search-hunt";
@@ -347,6 +351,28 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
   const scaleResult = buildVisualSearchScaleResult(sessionMetrics);
   const technicalReport = buildVisualSearchTechnicalReport(sessionMetrics);
 
+  // ── Avaliador V2 em paralelo ──
+  let v2Result: VisualSearchV2AssessmentResult | undefined;
+  try {
+    // Converter log para formato V2 (que estende o v1)
+    const v2SessionLog = currentLog as any;
+    // Garantir que todos os campos necessários ao v2 estão presentes
+    if (
+      v2SessionLog.rounds &&
+      v2SessionLog.rounds.every(
+        (r: any) =>
+          r.level !== undefined &&
+          Array.isArray(r.reactionTimes) &&
+          r.distractorOpportunities !== undefined
+      )
+    ) {
+      v2Result = buildVisualSearchV2Result(v2SessionLog);
+    }
+  } catch (e) {
+    // Se v2 falhar, continuar com apenas v1 (não quebra o fluxo)
+    console.warn("Falha ao calcular avaliação V2:", e);
+  }
+
   const history = allSessions
     .filter((session) => session.sessionId !== currentSessionId)
     .sort((a, b) => (a.completedAt ?? 0) - (b.completedAt ?? 0))
@@ -360,6 +386,7 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
       deltaScorePct: null,
       scaleResult,
       technicalReport,
+      v2Result,
     };
   }
 
@@ -387,5 +414,6 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
     deltaScorePct,
     scaleResult,
     technicalReport,
+    v2Result,
   };
 }

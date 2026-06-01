@@ -331,6 +331,10 @@ export default function VisualSearchHunt({
       const totalSelections = result.hits + result.errors;
       const accuracy = totalSelections > 0 ? Number(((result.hits / totalSelections) * 100).toFixed(2)) : 0;
       const searchAnalysis = analyzeVisualSearchOrganization([...clickLogRef.current], result.gridSize, tiles);
+      // ── Calcular distractorOpportunities: total de tiles - alvos ──
+      const distractorOpportunities = result.totalTargets > 0
+        ? result.gridSize * result.gridSize - result.totalTargets
+        : 0;
       const roundLog: VisualSearchRoundLog = {
         roundIndex: result.roundIndex,
         level: result.level,
@@ -350,6 +354,7 @@ export default function VisualSearchHunt({
         reactionTimes,
         clicks: [...clickLogRef.current],
         accuracy,
+        distractorOpportunities,
         systematicMoves: searchAnalysis.systematicMoves,
         erraticMoves: searchAnalysis.erraticMoves,
         organizationIndex: searchAnalysis.organizationIndex,

@@ -51,6 +51,9 @@ export type VisualSearchRoundLog = {
   timeToLastClickMs?: number;
   timeToAdvanceMs?: number;
 
+  // novo: total de distratores clicáveis na rodada (para v2)
+  distractorOpportunities?: number;
+
   // métricas de análise de busca visual (organização e assimetria espacial)
   systematicMoves?: number;
   erraticMoves?: number;
