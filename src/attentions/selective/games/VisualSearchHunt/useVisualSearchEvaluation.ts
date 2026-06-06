@@ -1,11 +1,16 @@
 // src/attentions/selective/games/VisualSearchHunt/useVisualSearchEvaluation.ts
-// Atualizado em: 06/06/2026 — Etapa 3.5: Promise.allSettled (paralelo real)
+// Atualizado em: 06/06/2026 — Etapa 3.5: corrige buildEvaluatorInput (métricas reais)
 
 import { getAllSessions } from "../../../../shared/storage";
 import type { SessionLog } from "../../../../shared/types";
 import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
 import { buildVisualSearchTechnicalReport } from "./assessment/buildVisualSearchTechnicalReport";
-import type { VisualSearchSessionMetricsInput, VisualSearchScaleResult, VisualSearchTechnicalReport } from "./assessment/visualSearchScale.types";
+import { calculateVisualSearchMetrics } from "./assessment/calculateVisualSearchMetrics";
+import type {
+  VisualSearchSessionMetricsInput,
+  VisualSearchScaleResult,
+  VisualSearchTechnicalReport,
+} from "./assessment/visualSearchScale.types";
 import { buildVisualSearchV2Result } from "./assessment-v2";
 import type { VisualSearchV2AssessmentResult } from "./assessment-v2";
 import { callEvaluator, buildEvaluatorInput } from "../../../../lib/evaluatorClient";
@@ -108,7 +113,6 @@ function getWrongCorrectionTimes(clicks: any[]): number[] {
       openWrongMarks.push(click);
       continue;
     }
-
     if (click.action === "unmark" && openWrongMarks.length > 0) {
       const wrongMark = openWrongMarks.shift();
       if (wrongMark && click.timestamp > wrongMark.timestamp) {
@@ -301,13 +305,15 @@ export async function useVisualSearchEvaluation(
     })),
   };
 
-  // ── Avaliações locais (determinísticas) — sempre síncronas ───────────────
+  // ── Avaliações locais (determinísticas) ──────────────────────────────────────
   const scaleResult = buildVisualSearchScaleResult(sessionMetrics);
-  // technicalReport precisa estar pronto antes do Promise.allSettled
-  // porque é usado como input para buildEvaluatorInput
   const technicalReport = buildVisualSearchTechnicalReport(sessionMetrics);
+  // metrics é calculada uma única vez aqui e reutilizada no buildEvaluatorInput
+  // Evita chamar calculateVisualSearchMetrics duas vezes (já é chamada internamente
+  // por buildVisualSearchTechnicalReport, mas o retorno não é exposto)
+  const metrics = calculateVisualSearchMetrics(sessionMetrics);
 
-  // ── V2 local ──────────────────────────────────────────────────────────────
+  // ── V2 local ──────────────────────────────────────────────────────────────────
   let v2Result: VisualSearchV2AssessmentResult | undefined;
   try {
     const v2SessionLog = currentLog as any;
@@ -326,40 +332,36 @@ export async function useVisualSearchEvaluation(
     console.warn("Falha ao calcular avaliação V2:", e);
   }
 
-  // ── Evaluator Cloud Run (Gemini) — paralelo real com Promise.allSettled ───
-  // technicalReport é o fallback garantido; enrichedReport é o enriquecimento.
-  // Promise.allSettled nunca rejeita: status 'rejected' preserva o laudo local.
+  // ── Evaluator Cloud Run (Gemini) — Promise.allSettled ─────────────────────
   const totalClicks = current.rounds.reduce(
     (sum, r) => sum + r.hits + r.rawErrors,
     0
   );
   const evaluatorInput = buildEvaluatorInput(
     currentLog.sessionId,
-    technicalReport,
+    metrics,            // ← VisualSearchMetrics (fonte real dos campos)
+    technicalReport,    // ← só para .severity
     currentLog.rounds.length,
     totalClicks
   );
 
   const [localReportResult, enrichedReportResult] = await Promise.allSettled([
-    // Slot 0: wraps technicalReport já calculado como Promise resolvida
     Promise.resolve(technicalReport),
-    // Slot 1: chamada real ao Cloud Run
     callEvaluator(evaluatorInput),
   ]);
 
-  // localReport sempre fulfilled (é Promise.resolve de um valor síncrono)
   const resolvedTechnicalReport =
-    localReportResult.status === "fulfilled"
+    localReportResult.status === 'fulfilled'
       ? localReportResult.value
-      : technicalReport; // fallback redundante, nunca deve ocorrer
+      : technicalReport;
 
   const enrichedReport: EnrichedReport | undefined =
-    enrichedReportResult.status === "fulfilled" && enrichedReportResult.value != null
+    enrichedReportResult.status === 'fulfilled' && enrichedReportResult.value != null
       ? enrichedReportResult.value
       : undefined;
 
-  if (enrichedReportResult.status === "rejected") {
-    console.warn("vigil-evaluator indisponível:", enrichedReportResult.reason);
+  if (enrichedReportResult.status === 'rejected') {
+    console.warn('vigil-evaluator indisponível:', enrichedReportResult.reason);
   }
 
   // ── Histórico e tendência ─────────────────────────────────────────────────
@@ -372,7 +374,7 @@ export async function useVisualSearchEvaluation(
     return {
       current,
       history,
-      trend: "first_session",
+      trend: 'first_session',
       deltaScorePct: null,
       scaleResult,
       technicalReport: resolvedTechnicalReport,
@@ -391,12 +393,12 @@ export async function useVisualSearchEvaluation(
 
   const trend =
     deltaScorePct === null
-      ? "stable"
+      ? 'stable'
       : deltaScorePct >= 15
-      ? "improved"
+      ? 'improved'
       : deltaScorePct <= -15
-      ? "declined"
-      : "stable";
+      ? 'declined'
+      : 'stable';
 
   return {
     current,
