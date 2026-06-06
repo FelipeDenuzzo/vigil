@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/useVisualSearchEvaluation.ts
-// Atualizado em: 01/06/2026 às 14:30 (BRT)
+// Atualizado em: 06/06/2026 — Etapa 3.5: integração vigil-evaluator
 
 import { getAllSessions } from "../../../../shared/storage";
 import type { SessionLog } from "../../../../shared/types";
@@ -8,6 +8,8 @@ import { buildVisualSearchTechnicalReport } from "./assessment/buildVisualSearch
 import type { VisualSearchSessionMetricsInput, VisualSearchScaleResult, VisualSearchTechnicalReport } from "./assessment/visualSearchScale.types";
 import { buildVisualSearchV2Result } from "./assessment-v2";
 import type { VisualSearchV2AssessmentResult } from "./assessment-v2";
+import { callEvaluator, buildEvaluatorInput } from "../../../../lib/evaluatorClient";
+import type { EnrichedReport } from "../../../../lib/evaluatorClient";
 
 export interface RoundEvaluation {
   roundIndex: number;
@@ -84,6 +86,8 @@ export interface EvaluationReport {
   technicalReport?: VisualSearchTechnicalReport;
   /** Resultado do avaliador V2 (em paralelo com v1) */
   v2Result?: VisualSearchV2AssessmentResult;
+  /** Laudo enriquecido pelo Gemini via vigil-evaluator (Cloud Run) */
+  enrichedReport?: EnrichedReport;
 }
 
 const GAME_ID = "visual-search-hunt";
@@ -158,14 +162,9 @@ function evaluateRound(round: any): RoundEvaluation {
 
   for (const dt of correctionTimesMs) {
     correctedErrors += 1;
-
-    if (dt <= 1500) {
-      accidentalErrors += 1;
-    } else if (dt <= 3750) {
-      quicklyCorrectedErrors += 1;
-    } else {
-      sustainedErrors += 1;
-    }
+    if (dt <= 1500) accidentalErrors += 1;
+    else if (dt <= 3750) quicklyCorrectedErrors += 1;
+    else sustainedErrors += 1;
   }
 
   const finalUncorrectedErrors = Math.max(0, rawErrors - correctedErrors);
@@ -176,44 +175,20 @@ function evaluateRound(round: any): RoundEvaluation {
 
   const wrong_before_first_hit =
     !!firstWrong && !!firstHit ? firstWrong.timestamp < firstHit.timestamp : false;
-
   const first_click_correct = !!firstMark && firstMark.isTarget;
-
   const correct_then_wrong = targetMarks.some((hit) =>
     wrongMarks.some((wrong) => wrong.timestamp > hit.timestamp)
   );
-
   const correct_then_unmarked = unmarks.some((unmark) =>
     targetMarks.some((hit) => unmark.timestamp > hit.timestamp)
   );
-
   const repeated_wrong_before_hit =
     wrongMarks.filter((wrong) => !firstHit || wrong.timestamp < firstHit.timestamp).length >= 2;
-
   const no_hit_round = hits === 0;
-
   const recovered_after_error = unmarks.some((unmark) =>
     targetMarks.some((hit) => hit.timestamp > unmark.timestamp)
   );
-
   const unstable_switching = clicks.length >= 9 && unmarks.length >= 2;
-
-  const exactHitsFromClicks = hits;
-  const shapeErrors = 0;
-  const colorErrors = 0;
-  const doubleErrors = 0;
-
-  const accidentalWrongClicks = accidentalErrors;
-  const quicklyCorrectedWrongClicks = quicklyCorrectedErrors;
-  const sustainedWrongClicks = sustainedErrors;
-  const sustainedFinalWrongClicks = finalUncorrectedErrors;
-
-  const colorBias = false;
-  const shapeBias = false;
-  const mixedBias = false;
-  const marked_same_color_varied_shapes = false;
-  const marked_same_shape_varied_colors = false;
-  const sustained_distractor_pattern = rawErrors > 0 && finalUncorrectedErrors > 0;
 
   return {
     roundIndex: round.roundIndex,
@@ -225,17 +200,14 @@ function evaluateRound(round: any): RoundEvaluation {
     avgReactionMs,
     precision,
     ies,
-
-    exactHitsFromClicks,
-    shapeErrors,
-    colorErrors,
-    doubleErrors,
-
-    accidentalWrongClicks,
-    quicklyCorrectedWrongClicks,
-    sustainedWrongClicks,
-    sustainedFinalWrongClicks,
-
+    exactHitsFromClicks: hits,
+    shapeErrors: 0,
+    colorErrors: 0,
+    doubleErrors: 0,
+    accidentalWrongClicks: accidentalErrors,
+    quicklyCorrectedWrongClicks: quicklyCorrectedErrors,
+    sustainedWrongClicks: sustainedErrors,
+    sustainedFinalWrongClicks: finalUncorrectedErrors,
     rawErrors,
     correctedErrors,
     accidentalErrors,
@@ -243,7 +215,6 @@ function evaluateRound(round: any): RoundEvaluation {
     sustainedErrors,
     finalUncorrectedErrors,
     correctionTimesMs,
-
     patterns: {
       wrong_before_first_hit,
       first_click_correct,
@@ -254,14 +225,13 @@ function evaluateRound(round: any): RoundEvaluation {
       recovered_after_error,
       unstable_switching,
     },
-
     confusion: {
-      colorBias,
-      shapeBias,
-      mixedBias,
-      marked_same_color_varied_shapes,
-      marked_same_shape_varied_colors,
-      sustained_distractor_pattern,
+      colorBias: false,
+      shapeBias: false,
+      mixedBias: false,
+      marked_same_color_varied_shapes: false,
+      marked_same_shape_varied_colors: false,
+      sustained_distractor_pattern: rawErrors > 0 && finalUncorrectedErrors > 0,
     },
   };
 }
@@ -270,7 +240,6 @@ function evaluateSession(log: SessionLog): SessionEvaluation {
   const rounds = log.rounds.map(evaluateRound);
 
   const totalWeight = rounds.reduce((sum: number, round: RoundEvaluation) => sum + round.totalTargets, 0);
-
   const weightedIES =
     totalWeight > 0
       ? rounds.reduce((sum: number, round: RoundEvaluation) => sum + round.ies * round.totalTargets, 0) / totalWeight
@@ -291,27 +260,15 @@ function evaluateSession(log: SessionLog): SessionEvaluation {
       acc.finalUncorrectedErrors += round.finalUncorrectedErrors;
       return acc;
     },
-    {
-      rawErrors: 0,
-      correctedErrors: 0,
-      accidentalErrors: 0,
-      quicklyCorrectedErrors: 0,
-      sustainedErrors: 0,
-      finalUncorrectedErrors: 0,
-    }
+    { rawErrors: 0, correctedErrors: 0, accidentalErrors: 0, quicklyCorrectedErrors: 0, sustainedErrors: 0, finalUncorrectedErrors: 0 }
   );
 
-  return {
-    sessionId: log.sessionId,
-    completedAt: log.completedAt || null,
-    rounds,
-    weightedIES,
-    score,
-    totals,
-  };
+  return { sessionId: log.sessionId, completedAt: log.completedAt || null, rounds, weightedIES, score, totals };
 }
 
-export function useVisualSearchEvaluation(currentSessionId: string): EvaluationReport | null {
+export async function useVisualSearchEvaluation(
+  currentSessionId: string
+): Promise<EvaluationReport | null> {
   const allSessions = getAllSessions().filter((session) => session.gameId === GAME_ID);
   const currentLog = allSessions.find((session) => session.sessionId === currentSessionId);
 
@@ -319,8 +276,6 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
 
   const current = evaluateSession(currentLog);
 
-  // Converter log para formato esperado pelas funções de avaliação
-  // Inclui todos os campos de varredura visual, assimetria espacial e velocidade
   const sessionMetrics: VisualSearchSessionMetricsInput = {
     sessionId: currentLog.sessionId,
     gameId: currentLog.gameId,
@@ -334,12 +289,10 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
       missedTargets: round.missedTargets ?? 0,
       durationMs: round.durationMs,
       reactionTimes: Array.isArray(round.reactionTimes) ? round.reactionTimes : undefined,
-      // varredura visual
       systematicMoves: round.systematicMoves,
       erraticMoves: round.erraticMoves,
       organizationIndex: round.organizationIndex,
       scanPattern: round.scanPattern,
-      // assimetria espacial
       leftSideClicks: round.leftSideClicks,
       rightSideClicks: round.rightSideClicks,
       leftSideTargetMisses: round.leftSideTargetMisses,
@@ -348,15 +301,14 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
     })),
   };
 
+  // ── Avaliações locais (determinísticas) ─────────────────────────────────
   const scaleResult = buildVisualSearchScaleResult(sessionMetrics);
   const technicalReport = buildVisualSearchTechnicalReport(sessionMetrics);
 
-  // ── Avaliador V2 em paralelo ──
+  // ── V2 local ───────────────────────────────────────────────────────────────────
   let v2Result: VisualSearchV2AssessmentResult | undefined;
   try {
-    // Converter log para formato V2 (que estende o v1)
     const v2SessionLog = currentLog as any;
-    // Garantir que todos os campos necessários ao v2 estão presentes
     if (
       v2SessionLog.rounds &&
       v2SessionLog.rounds.every(
@@ -369,10 +321,30 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
       v2Result = buildVisualSearchV2Result(v2SessionLog);
     }
   } catch (e) {
-    // Se v2 falhar, continuar com apenas v1 (não quebra o fluxo)
     console.warn("Falha ao calcular avaliação V2:", e);
   }
 
+  // ── Evaluator Cloud Run (Gemini) — paralelo, não bloqueia ───────────────
+  let enrichedReport: EnrichedReport | undefined;
+  try {
+    const totalClicks = current.rounds.reduce(
+      (sum, r) => sum + r.hits + r.rawErrors,
+      0
+    );
+    const evaluatorInput = buildEvaluatorInput(
+      currentLog.sessionId,
+      technicalReport,
+      currentLog.rounds.length,
+      totalClicks
+    );
+    const result = await callEvaluator(evaluatorInput);
+    if (result) enrichedReport = result;
+  } catch (e) {
+    // Falha no evaluator não quebra o fluxo — laudo local é suficiente
+    console.warn("vigil-evaluator indisponível:", e);
+  }
+
+  // ── Histórico e tendência ───────────────────────────────────────────────────
   const history = allSessions
     .filter((session) => session.sessionId !== currentSessionId)
     .sort((a, b) => (a.completedAt ?? 0) - (b.completedAt ?? 0))
@@ -387,6 +359,7 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
       scaleResult,
       technicalReport,
       v2Result,
+      enrichedReport,
     };
   }
 
@@ -415,5 +388,6 @@ export function useVisualSearchEvaluation(currentSessionId: string): EvaluationR
     scaleResult,
     technicalReport,
     v2Result,
+    enrichedReport,
   };
 }
