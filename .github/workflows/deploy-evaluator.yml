@@ -1,0 +1,63 @@
+# .github/workflows/deploy-evaluator.yml
+# Dispara APENAS quando há push em vigil-evaluator/** na branch main.
+# Faz build da imagem Docker, envia ao Artifact Registry e deploya no Cloud Run.
+
+name: Deploy vigil-evaluator
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'vigil-evaluator/**'
+      - '.github/workflows/deploy-evaluator.yml'
+
+env:
+  PROJECT_ID:   ${{ secrets.GCP_PROJECT_ID }}
+  REGION:       ${{ secrets.GCP_REGION }}
+  SERVICE:      vigil-evaluator
+  REGISTRY:     ${{ secrets.GCP_REGION }}-docker.pkg.dev
+  IMAGE:        ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/vigil-evaluator/vigil-evaluator
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vigil-evaluator
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Autenticar no GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configurar gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configurar Docker para Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Build e push da imagem
+        run: |
+          docker build -t ${{ env.IMAGE }}:${{ github.sha }} -t ${{ env.IMAGE }}:latest .
+          docker push ${{ env.IMAGE }}:${{ github.sha }}
+          docker push ${{ env.IMAGE }}:latest
+
+      - name: Deploy no Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE }} \
+            --image=${{ env.IMAGE }}:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --no-allow-unauthenticated \
+            --service-account=${{ secrets.GCP_SA_EMAIL }} \
+            --set-env-vars="GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}" \
+            --memory=512Mi \
+            --cpu=1 \
+            --timeout=30 \
+            --quiet
