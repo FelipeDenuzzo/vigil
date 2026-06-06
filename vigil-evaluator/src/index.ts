@@ -1,13 +1,15 @@
 // vigil-evaluator/src/index.ts
 // Servidor Express — POST /evaluate
+// Protegido por header x-evaluator-secret
 
 import express from 'express';
 import type { Request, Response } from 'express';
 import { evaluate } from './evaluate.js';
 import type { EvaluatorInput } from './types.js';
 
-const app  = express();
-const PORT = parseInt(process.env.PORT ?? '8080', 10);
+const app    = express();
+const PORT   = parseInt(process.env.PORT ?? '8080', 10);
+const SECRET = process.env.EVALUATOR_SECRET;
 
 app.use(express.json());
 
@@ -17,9 +19,14 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 app.post('/evaluate', async (req: Request, res: Response) => {
+  // Valida secret
+  if (SECRET && req.headers['x-evaluator-secret'] !== SECRET) {
+    res.status(401).json({ error: 'Não autorizado.' });
+    return;
+  }
+
   const input = req.body as EvaluatorInput;
 
-  // Validação mínima
   if (!input?.sessionId || typeof input.commissionRate !== 'number') {
     res.status(400).json({ error: 'Payload inválido: sessionId e commissionRate são obrigatórios.' });
     return;

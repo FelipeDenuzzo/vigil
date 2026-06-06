@@ -1,7 +1,4 @@
 # .github/workflows/deploy-evaluator.yml
-# Dispara APENAS quando há push em vigil-evaluator/** na branch main.
-# Faz build da imagem Docker, envia ao Artifact Registry e deploya no Cloud Run.
-
 name: Deploy vigil-evaluator
 
 on:
@@ -54,9 +51,9 @@ jobs:
             --image=${{ env.IMAGE }}:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --platform=managed \
-            --no-allow-unauthenticated \
+            --allow-unauthenticated \
             --service-account=${{ secrets.GCP_SA_EMAIL }} \
-            --set-env-vars="GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}" \
+            --set-env-vars="GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }},EVALUATOR_SECRET=${{ secrets.EVALUATOR_SECRET }}" \
             --memory=512Mi \
             --cpu=1 \
             --timeout=30 \
