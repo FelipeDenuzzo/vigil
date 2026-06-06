@@ -48,11 +48,6 @@ export interface EnrichedReport {
 
 // ─── Helpers internos ─────────────────────────────────────────────────────────
 
-/**
- * Infere dominantErrorAttribute a partir das taxas de erro em VisualSearchMetrics.
- * shapeErrorRate/colorErrorRate/doubleErrorRate existem como campos opcionais
- * em VisualSearchMetrics (visualSearchScale.types.ts linha ~120).
- */
 function inferDominantErrorAttribute(
   m: VisualSearchMetrics
 ): EvaluatorInput['dominantErrorAttribute'] {
@@ -65,10 +60,6 @@ function inferDominantErrorAttribute(
   return 'cor';
 }
 
-/**
- * Infere problemRegion a partir dos misses laterais.
- * totalLeftMisses / totalRightMisses existem em VisualSearchMetrics.
- */
 function inferProblemRegion(
   m: VisualSearchMetrics
 ): EvaluatorInput['problemRegion'] {
@@ -84,10 +75,6 @@ function inferProblemRegion(
   return 'distribuido';
 }
 
-/**
- * Detecta negligência espacial: >= 3 misses totais com >= 75% concentrados
- * em um lado. Mesma lógica de resolveRedFlag no buildVisualSearchTechnicalReport.
- */
 function inferSpatialNeglect(m: VisualSearchMetrics): boolean {
   const left  = m.totalLeftMisses  ?? 0;
   const right = m.totalRightMisses ?? 0;
@@ -96,9 +83,6 @@ function inferSpatialNeglect(m: VisualSearchMetrics): boolean {
   return left / total >= 0.75 || right / total >= 0.75;
 }
 
-/**
- * Infere o lado dominante da negligência (para spatialProfile.spatialNeglectSide).
- */
 function inferNeglectSide(m: VisualSearchMetrics): string {
   const left  = m.totalLeftMisses  ?? 0;
   const right = m.totalRightMisses ?? 0;
@@ -107,19 +91,6 @@ function inferNeglectSide(m: VisualSearchMetrics): string {
 }
 
 // ─── Mapeamento principal ─────────────────────────────────────────────────────
-/**
- * Converte VisualSearchMetrics + VisualSearchTechnicalReport → EvaluatorInput.
- *
- * Fonte de cada campo:
- *   severity          ← technicalReport.severity          (SubscaleSeverity)
- *   commissionRate    ← metrics.commissionRate             (number)
- *   shapeErrorRate    ← metrics.shapeErrorRate             (number | undefined)
- *   colorErrorRate    ← metrics.colorErrorRate             (number | undefined)
- *   doubleErrorRate   ← metrics.doubleErrorRate            (number | undefined)
- *   leftMisses        ← metrics.totalLeftMisses            (number | null)
- *   rightMisses       ← metrics.totalRightMisses           (number | null)
- *   byQuadrant        ← metrics.quadrantErrorMap           (Record | undefined)
- */
 export function buildEvaluatorInput(
   sessionId: string,
   metrics: VisualSearchMetrics,
@@ -131,22 +102,18 @@ export function buildEvaluatorInput(
   const colorErrorRate  = metrics.colorErrorRate  ?? 0;
   const doubleErrorRate = metrics.doubleErrorRate ?? 0;
 
-  // shapeErrors/colorErrors/doubleErrors: reconstrói a contagem absoluta
-  // a partir da taxa × total de erros (melhor estimativa disponível)
   const totalErrors = metrics.totalErrors;
   const shapeErrors  = Math.round(shapeErrorRate  * totalErrors);
   const colorErrors  = Math.round(colorErrorRate  * totalErrors);
   const doubleErrors = Math.round(doubleErrorRate * totalErrors);
 
-  // byQuadrant: quadrantErrorMap existe em VisualSearchMetrics (opcional)
-  // converte Record<string, number> → Record<string, {hits, errors, errorRate}>
   const rawQuadrant = metrics.quadrantErrorMap ?? {};
   const byQuadrant: EvaluatorInput['spatialProfile']['byQuadrant'] =
     Object.fromEntries(
       Object.entries(rawQuadrant).map(([k, errorCount]) => [
         k,
         {
-          hits: 0,          // hits por quadrante não disponível em VisualSearchMetrics
+          hits: 0,
           errors: errorCount,
           errorRate: totalErrors > 0 ? errorCount / totalErrors : 0,
         },
@@ -184,13 +151,17 @@ export function buildEvaluatorInput(
 export async function callEvaluator(
   input: EvaluatorInput
 ): Promise<EnrichedReport | null> {
-  const url = import.meta.env.VITE_EVALUATOR_URL;
-  if (!url) return null;
+  const url    = import.meta.env.VITE_EVALUATOR_URL;
+  const secret = import.meta.env.VITE_EVALUATOR_SECRET;
+  if (!url || !secret) return null;
 
   try {
     const res = await fetch(`${url}/evaluate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-evaluator-secret': secret,
+      },
       body: JSON.stringify(input),
       signal: AbortSignal.timeout(10_000),
     });
