@@ -1,5 +1,9 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './lib/AuthContext';
+import ProtectedRoute from './lib/ProtectedRoute';
 import { Home } from './pages/Home';
+import Login from './pages/Login';
+import Cadastro from './pages/Cadastro';
 import { SelectAttention } from './pages/SelectAttention';
 import { SelectiveHub } from './attentions/selective/SelectiveHub';
 import VisualSearchPlay from './attentions/selective/VisualSearchPlay';
@@ -12,19 +16,23 @@ import './shared/base.css';
 
 export default function App() {
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/treinar" element={<SelectAttention />} />
-        <Route path="/treinar/seletiva" element={<SelectiveHub />} />
-        <Route path="/treinar/seletiva/visual-search" element={<VisualSearchPlay />} />
-        <Route path="/treinar/seletiva/visual-search/resultado" element={<VisualSearchEvaluationContainer />} />
-        <Route path="/treinar/seletiva/visual-search/evaluation" element={<VisualSearchEvaluationContainer />} />
-        <Route path="/treinar/sustentada" element={<SustainedHub />} />
-        <Route path="/treinar/alternada" element={<AlternatingHub />} />
-        <Route path="/treinar/dividida" element={<DividedHub />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </HashRouter>
+    <AuthProvider>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/treinar" element={<ProtectedRoute><SelectAttention /></ProtectedRoute>} />
+          <Route path="/treinar/seletiva" element={<ProtectedRoute><SelectiveHub /></ProtectedRoute>} />
+          <Route path="/treinar/seletiva/visual-search" element={<ProtectedRoute><VisualSearchPlay /></ProtectedRoute>} />
+          <Route path="/treinar/seletiva/visual-search/resultado" element={<ProtectedRoute><VisualSearchEvaluationContainer /></ProtectedRoute>} />
+          <Route path="/treinar/seletiva/visual-search/evaluation" element={<ProtectedRoute><VisualSearchEvaluationContainer /></ProtectedRoute>} />
+          <Route path="/treinar/sustentada" element={<ProtectedRoute><SustainedHub /></ProtectedRoute>} />
+          <Route path="/treinar/alternada" element={<ProtectedRoute><AlternatingHub /></ProtectedRoute>} />
+          <Route path="/treinar/dividida" element={<ProtectedRoute><DividedHub /></ProtectedRoute>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </HashRouter>
+    </AuthProvider>
   );
 }
