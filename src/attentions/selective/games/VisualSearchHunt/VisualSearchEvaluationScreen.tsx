@@ -1,10 +1,11 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationScreen.tsx
-// Atualizado em: 28/05/2026
+// Atualizado em: 01/06/2026 — adicionado painel assessment-v2 (IES, Radar, Stamina, Conjunção)
 
 import { EagleScale } from "./EagleScale";
 import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
 import { buildVisualSearchTechnicalReport } from "./assessment/buildVisualSearchTechnicalReport";
 import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
+import { runVisualSearchV2 } from "./assessment-v2/runVisualSearchV2";
 
 type Props = {
   sessionLog: VisualSearchSessionMetricsInput;
@@ -135,6 +136,54 @@ const s = {
     fontSize: 13,
     color: "#8b8fa8",
   } as const,
+  // ── estilos v2 ──
+  v2Card: {
+    background: "rgba(255,255,255,0.03)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: 12,
+    padding: "12px 14px",
+    marginBottom: 8,
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: "4px 12px",
+    alignItems: "start",
+  } as const,
+  v2CardLabel: {
+    fontSize: 12,
+    color: "#8b8fa8",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.06em",
+    gridColumn: "1 / -1",
+    marginBottom: 2,
+  } as const,
+  v2CardTitle: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: "#e8e9f0",
+  } as const,
+  v2CardScore: {
+    fontSize: 22,
+    fontWeight: 800,
+    color: "#6c8ef5",
+    textAlign: "right" as const,
+  } as const,
+  v2CardDesc: {
+    fontSize: 12,
+    color: "#a0a4be",
+    gridColumn: "1 / -1",
+    lineHeight: 1.5,
+  } as const,
+  v2AlertBox: {
+    background: "rgba(255,160,50,0.08)",
+    border: "1px solid rgba(255,160,50,0.25)",
+    borderRadius: 10,
+    padding: "10px 12px",
+    marginTop: 4,
+    fontSize: 12,
+    color: "#f5c070",
+    lineHeight: 1.5,
+    gridColumn: "1 / -1",
+  } as const,
 };
 
 export function VisualSearchEvaluationScreen({
@@ -143,13 +192,17 @@ export function VisualSearchEvaluationScreen({
   onBackToStart,
   onContinueTrail,
 }: Props) {
+  // ── avaliador v1 (intocado) ──
   const scaleResult = buildVisualSearchScaleResult(sessionLog);
   const report = buildVisualSearchTechnicalReport(sessionLog);
+
+  // ── avaliador v2 (paralelo) ──
+  const v2 = runVisualSearchV2(sessionLog as any);
 
   return (
     <div style={s.container}>
 
-      {/* ── Régua lúdica ── */}
+      {/* ── Régua lúdica (v1) ── */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>
           {scaleResult.emoji} {scaleResult.scaleName}
@@ -167,7 +220,7 @@ export function VisualSearchEvaluationScreen({
         <p style={{ ...s.value, marginTop: 6 }}>{report.interpretation}</p>
       </section>
 
-      {/* ── Análise por subescalas ── */}
+      {/* ── Análise por subescalas (v1) ── */}
       <section style={s.section}>
         <h3 style={s.sectionTitle}>Como foi seu treino</h3>
 
@@ -192,7 +245,7 @@ export function VisualSearchEvaluationScreen({
         </div>
       </section>
 
-      {/* ── Indicadores positivos ── */}
+      {/* ── Indicadores positivos (v1) ── */}
       {report.positiveIndicators.length > 0 && (
         <section style={s.section}>
           <h3 style={s.sectionTitle}>Pontos fortes identificados</h3>
@@ -204,13 +257,69 @@ export function VisualSearchEvaluationScreen({
         </section>
       )}
 
-      {/* ── Sinal de alerta (somente quando presente) ── */}
+      {/* ── Sinal de alerta v1 ── */}
       {report.redFlag && (
         <section style={s.section}>
           <h3 style={{ ...s.sectionTitle, color: "#f08080" }}>⚠️ Ponto de atenção</h3>
           <div style={s.redFlagBox}>{report.redFlag}</div>
         </section>
       )}
+
+      {/* ════════════════════════════════════════════
+          PAINEL AVALIADOR v2
+          ════════════════════════════════════════════ */}
+      <section style={s.section}>
+        <h3 style={s.sectionTitle}>📊 Análise detalhada (v2)</h3>
+
+        {/* IES */}
+        <div style={s.v2Card}>
+          <span style={s.v2CardLabel}>Eficiência · IES</span>
+          <span style={s.v2CardTitle}>Score de eficiência</span>
+          <span style={s.v2CardScore}>{v2.ies.displayScore.toLocaleString("pt-BR")}</span>
+          <span style={s.v2CardDesc}>
+            Tempo médio: {v2.ies.meanReactionTime} ms · Precisão: {Math.round(v2.ies.accuracyRate * 100)}%
+          </span>
+        </div>
+
+        {/* Radar */}
+        <div style={s.v2Card}>
+          <span style={s.v2CardLabel}>Consistência · Visão de Radar</span>
+          <span style={s.v2CardTitle}>{v2.radarScale.markerLabel}</span>
+          <span style={s.v2CardScore}>{v2.radarScale.score}</span>
+          <span style={s.v2CardDesc}>{v2.radarScale.shortDescription}</span>
+        </div>
+
+        {/* Stamina */}
+        <div style={s.v2Card}>
+          <span style={s.v2CardLabel}>Sustentação · Fôlego Mental</span>
+          <span style={s.v2CardTitle}>{v2.staminaScale.markerLabel}</span>
+          <span style={s.v2CardScore}>{v2.staminaScale.score}</span>
+          <span style={s.v2CardDesc}>{v2.staminaScale.shortDescription}</span>
+          {v2.staminaScale.vigilanceDropDetected && (
+            <span style={s.v2AlertBox}>
+              ⚠️ Queda de vigilância detectada nas últimas rodadas.
+            </span>
+          )}
+        </div>
+
+        {/* Conjunction Break */}
+        <div style={s.v2Card}>
+          <span style={s.v2CardLabel}>Complexidade · Colapso de Conjunção</span>
+          <span style={s.v2CardTitle}>
+            {v2.conjunctionBreak.detected
+              ? `Detectado — nível ${v2.conjunctionBreak.collapseAtLevel}`
+              : "Não detectado"}
+          </span>
+          <span style={{
+            ...s.v2CardScore,
+            color: v2.conjunctionBreak.detected ? "#f5c070" : "#6dbf87",
+            fontSize: 14,
+          }}>
+            {v2.conjunctionBreak.detected ? "⚠️" : "✓"}
+          </span>
+          <span style={s.v2CardDesc}>{v2.conjunctionBreak.shortDescription}</span>
+        </div>
+      </section>
 
       {/* ── Próximos passos ── */}
       <section style={s.section}>
