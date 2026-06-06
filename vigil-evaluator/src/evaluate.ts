@@ -7,7 +7,7 @@ import type { EvaluatorInput, EvaluationReport } from './types.js';
 
 const PROJECT  = process.env.GCP_PROJECT_ID!;
 const LOCATION = process.env.GCP_REGION ?? 'us-central1';
-const MODEL    = 'gemini-2.0-flash-001';
+const MODEL    = 'gemini-2.0-flash';
 
 const vertex = new VertexAI({ project: PROJECT, location: LOCATION });
 const model  = vertex.getGenerativeModel({ model: MODEL });
