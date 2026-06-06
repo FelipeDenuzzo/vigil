@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/useVisualSearchEvaluation.ts
-// Atualizado em: 06/06/2026 — Etapa 3.5: integração vigil-evaluator
+// Atualizado em: 06/06/2026 — Etapa 3.5: Promise.allSettled (paralelo real)
 
 import { getAllSessions } from "../../../../shared/storage";
 import type { SessionLog } from "../../../../shared/types";
@@ -301,11 +301,13 @@ export async function useVisualSearchEvaluation(
     })),
   };
 
-  // ── Avaliações locais (determinísticas) ─────────────────────────────────
+  // ── Avaliações locais (determinísticas) — sempre síncronas ───────────────
   const scaleResult = buildVisualSearchScaleResult(sessionMetrics);
+  // technicalReport precisa estar pronto antes do Promise.allSettled
+  // porque é usado como input para buildEvaluatorInput
   const technicalReport = buildVisualSearchTechnicalReport(sessionMetrics);
 
-  // ── V2 local ───────────────────────────────────────────────────────────────────
+  // ── V2 local ──────────────────────────────────────────────────────────────
   let v2Result: VisualSearchV2AssessmentResult | undefined;
   try {
     const v2SessionLog = currentLog as any;
@@ -324,27 +326,43 @@ export async function useVisualSearchEvaluation(
     console.warn("Falha ao calcular avaliação V2:", e);
   }
 
-  // ── Evaluator Cloud Run (Gemini) — paralelo, não bloqueia ───────────────
-  let enrichedReport: EnrichedReport | undefined;
-  try {
-    const totalClicks = current.rounds.reduce(
-      (sum, r) => sum + r.hits + r.rawErrors,
-      0
-    );
-    const evaluatorInput = buildEvaluatorInput(
-      currentLog.sessionId,
-      technicalReport,
-      currentLog.rounds.length,
-      totalClicks
-    );
-    const result = await callEvaluator(evaluatorInput);
-    if (result) enrichedReport = result;
-  } catch (e) {
-    // Falha no evaluator não quebra o fluxo — laudo local é suficiente
-    console.warn("vigil-evaluator indisponível:", e);
+  // ── Evaluator Cloud Run (Gemini) — paralelo real com Promise.allSettled ───
+  // technicalReport é o fallback garantido; enrichedReport é o enriquecimento.
+  // Promise.allSettled nunca rejeita: status 'rejected' preserva o laudo local.
+  const totalClicks = current.rounds.reduce(
+    (sum, r) => sum + r.hits + r.rawErrors,
+    0
+  );
+  const evaluatorInput = buildEvaluatorInput(
+    currentLog.sessionId,
+    technicalReport,
+    currentLog.rounds.length,
+    totalClicks
+  );
+
+  const [localReportResult, enrichedReportResult] = await Promise.allSettled([
+    // Slot 0: wraps technicalReport já calculado como Promise resolvida
+    Promise.resolve(technicalReport),
+    // Slot 1: chamada real ao Cloud Run
+    callEvaluator(evaluatorInput),
+  ]);
+
+  // localReport sempre fulfilled (é Promise.resolve de um valor síncrono)
+  const resolvedTechnicalReport =
+    localReportResult.status === "fulfilled"
+      ? localReportResult.value
+      : technicalReport; // fallback redundante, nunca deve ocorrer
+
+  const enrichedReport: EnrichedReport | undefined =
+    enrichedReportResult.status === "fulfilled" && enrichedReportResult.value != null
+      ? enrichedReportResult.value
+      : undefined;
+
+  if (enrichedReportResult.status === "rejected") {
+    console.warn("vigil-evaluator indisponível:", enrichedReportResult.reason);
   }
 
-  // ── Histórico e tendência ───────────────────────────────────────────────────
+  // ── Histórico e tendência ─────────────────────────────────────────────────
   const history = allSessions
     .filter((session) => session.sessionId !== currentSessionId)
     .sort((a, b) => (a.completedAt ?? 0) - (b.completedAt ?? 0))
@@ -357,7 +375,7 @@ export async function useVisualSearchEvaluation(
       trend: "first_session",
       deltaScorePct: null,
       scaleResult,
-      technicalReport,
+      technicalReport: resolvedTechnicalReport,
       v2Result,
       enrichedReport,
     };
@@ -386,7 +404,7 @@ export async function useVisualSearchEvaluation(
     trend,
     deltaScorePct,
     scaleResult,
-    technicalReport,
+    technicalReport: resolvedTechnicalReport,
     v2Result,
     enrichedReport,
   };
