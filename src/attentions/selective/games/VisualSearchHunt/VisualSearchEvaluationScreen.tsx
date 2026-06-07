@@ -1,13 +1,10 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationScreen.tsx
-// Atualizado: integração do EvaluationReportPanel (ludic / general / clinical)
+// Atualizado: exibe apenas o painel Gemini (EvaluationReportPanel) + botões de ação.
+// Seções legadas v1/v2 mantidas como código comentado para referência.
 
-import { EagleScale } from "./EagleScale";
-import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
-import { buildVisualSearchTechnicalReport } from "./assessment/buildVisualSearchTechnicalReport";
-import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
-import { runVisualSearchV2 } from "./assessment-v2/runVisualSearchV2";
 import { EvaluationReportPanel } from "./EvaluationReportPanel";
 import type { EvaluationReport as GeminiReport } from "../../../../lib/evaluatorClient";
+import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
 
 type Props = {
   sessionLog: VisualSearchSessionMetricsInput;
@@ -36,65 +33,12 @@ const s = {
     fontSize: 16,
     fontWeight: 700,
   } as const,
-  label: {
-    fontSize: 12,
+  loadingBox: {
+    textAlign: "center" as const,
+    padding: "32px 16px",
     color: "#8b8fa8",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.06em",
-    marginBottom: 2,
-  },
-  value: {
     fontSize: 14,
-    color: "#e8e9f0",
-    marginBottom: 10,
   },
-  subsection: {
-    background: "rgba(255,255,255,0.04)",
-    borderRadius: 10,
-    padding: "10px 12px",
-    marginBottom: 8,
-  } as const,
-  subsectionTitle: {
-    fontSize: 13,
-    fontWeight: 700,
-    color: "#a0a4be",
-    marginBottom: 4,
-  } as const,
-  subsectionText: {
-    fontSize: 13,
-    color: "#c8cad8",
-    lineHeight: 1.5,
-  } as const,
-  strongLine: {
-    marginTop: 12,
-    fontWeight: 700,
-    color: "#e8e9f0",
-    fontSize: 15,
-  } as const,
-  tagList: {
-    display: "flex",
-    flexWrap: "wrap" as const,
-    gap: 8,
-    marginTop: 4,
-  } as const,
-  tag: {
-    background: "rgba(108,142,245,0.15)",
-    border: "1px solid rgba(108,142,245,0.3)",
-    borderRadius: 20,
-    padding: "4px 12px",
-    fontSize: 12,
-    color: "#a0b4f8",
-  } as const,
-  redFlagBox: {
-    background: "rgba(255,80,80,0.08)",
-    border: "1px solid rgba(255,80,80,0.25)",
-    borderRadius: 10,
-    padding: "10px 12px",
-    marginBottom: 8,
-    fontSize: 13,
-    color: "#f08080",
-    lineHeight: 1.5,
-  } as const,
   actions: {
     display: "grid",
     gap: 12,
@@ -139,166 +83,29 @@ const s = {
     fontSize: 13,
     color: "#8b8fa8",
   } as const,
-  v2Card: {
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid rgba(255,255,255,0.07)",
-    borderRadius: 12,
-    padding: "12px 14px",
-    marginBottom: 8,
-    display: "grid",
-    gridTemplateColumns: "1fr auto",
-    gap: "4px 12px",
-    alignItems: "start",
-  } as const,
-  v2CardLabel: {
-    fontSize: 12,
-    color: "#8b8fa8",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.06em",
-    gridColumn: "1 / -1",
-    marginBottom: 2,
-  } as const,
-  v2CardTitle: {
-    fontSize: 14,
-    fontWeight: 700,
-    color: "#e8e9f0",
-  } as const,
-  v2CardScore: {
-    fontSize: 22,
-    fontWeight: 800,
-    color: "#6c8ef5",
-    textAlign: "right" as const,
-  } as const,
-  v2CardDesc: {
-    fontSize: 12,
-    color: "#a0a4be",
-    gridColumn: "1 / -1",
-    lineHeight: 1.5,
-  } as const,
-  v2AlertBox: {
-    background: "rgba(255,160,50,0.08)",
-    border: "1px solid rgba(255,160,50,0.25)",
-    borderRadius: 10,
-    padding: "10px 12px",
-    marginTop: 4,
-    fontSize: 12,
-    color: "#f5c070",
-    lineHeight: 1.5,
-    gridColumn: "1 / -1",
-  } as const,
 };
 
 export function VisualSearchEvaluationScreen({
-  sessionLog,
   geminiReport,
   onRepeatTraining,
   onBackToStart,
   onContinueTrail,
 }: Props) {
-  const scaleResult = buildVisualSearchScaleResult(sessionLog);
-  const report = buildVisualSearchTechnicalReport(sessionLog);
-  const v2 = runVisualSearchV2(sessionLog as any);
-
   return (
     <div style={s.container}>
 
-      {/* Régua lúdica v1 */}
-      <section style={s.section}>
-        <h2 style={s.sectionTitle}>
-          {scaleResult.emoji} {scaleResult.scaleName}
-        </h2>
-        <EagleScale
-          score={scaleResult.score}
-          positionPercent={scaleResult.positionPercent}
-          leftLabel={scaleResult.leftLabel}
-          rightLabel={scaleResult.rightLabel}
-          markerLabel={scaleResult.markerLabel}
-        />
-        <p style={s.strongLine}>{scaleResult.shortDescription}</p>
-        <p style={{ ...s.value, marginTop: 6 }}>{report.interpretation}</p>
-      </section>
-
-      {/* Análise por subescalas v1 */}
-      <section style={s.section}>
-        <h3 style={s.sectionTitle}>Como foi seu treino</h3>
-        <div style={s.subsection}>
-          <p style={s.subsectionTitle}>Atenção seletiva</p>
-          <p style={s.subsectionText}>{report.subscalesSummary.selectiveAttention}</p>
-        </div>
-        <div style={s.subsection}>
-          <p style={s.subsectionTitle}>Varredura visual</p>
-          <p style={s.subsectionText}>{report.subscalesSummary.visualScanning}</p>
-        </div>
-        <div style={s.subsection}>
-          <p style={s.subsectionTitle}>Distribuição espacial</p>
-          <p style={s.subsectionText}>{report.subscalesSummary.spatialAsymmetry}</p>
-        </div>
-        <div style={s.subsection}>
-          <p style={s.subsectionTitle}>Velocidade e ritmo</p>
-          <p style={s.subsectionText}>{report.subscalesSummary.speedConsistency}</p>
-        </div>
-      </section>
-
-      {/* Indicadores positivos v1 */}
-      {report.positiveIndicators.length > 0 && (
+      {/* Painel Gemini — avaliador principal */}
+      {geminiReport ? (
+        <EvaluationReportPanel report={geminiReport} />
+      ) : (
         <section style={s.section}>
-          <h3 style={s.sectionTitle}>Pontos fortes identificados</h3>
-          <div style={s.tagList}>
-            {report.positiveIndicators.map((tag) => (
-              <span key={tag} style={s.tag}>{tag}</span>
-            ))}
+          <div style={s.loadingBox}>
+            <p style={{ fontSize: 28, marginBottom: 8 }}>&#x23F3;</p>
+            <p>Gerando sua avaliação com IA...</p>
+            <p style={{ marginTop: 4, fontSize: 12, color: "#6b6f88" }}>Isso pode levar alguns segundos.</p>
           </div>
         </section>
       )}
-
-      {/* Alerta v1 */}
-      {report.redFlag && (
-        <section style={s.section}>
-          <h3 style={{ ...s.sectionTitle, color: "#f08080" }}>⚠️ Ponto de atenção</h3>
-          <div style={s.redFlagBox}>{report.redFlag}</div>
-        </section>
-      )}
-
-      {/* Painel v2 */}
-      <section style={s.section}>
-        <h3 style={s.sectionTitle}>📊 Análise detalhada (v2)</h3>
-        <div style={s.v2Card}>
-          <span style={s.v2CardLabel}>Eficiência · IES</span>
-          <span style={s.v2CardTitle}>Score de eficiência</span>
-          <span style={s.v2CardScore}>{v2.ies.displayScore.toLocaleString("pt-BR")}</span>
-          <span style={s.v2CardDesc}>
-            Tempo médio: {v2.ies.meanReactionTime} ms · Precisão: {Math.round(v2.ies.accuracyRate * 100)}%
-          </span>
-        </div>
-        <div style={s.v2Card}>
-          <span style={s.v2CardLabel}>Consistência · Visão de Radar</span>
-          <span style={s.v2CardTitle}>{v2.radarScale.markerLabel}</span>
-          <span style={s.v2CardScore}>{v2.radarScale.score}</span>
-          <span style={s.v2CardDesc}>{v2.radarScale.shortDescription}</span>
-        </div>
-        <div style={s.v2Card}>
-          <span style={s.v2CardLabel}>Sustentação · Fôlego Mental</span>
-          <span style={s.v2CardTitle}>{v2.staminaScale.markerLabel}</span>
-          <span style={s.v2CardScore}>{v2.staminaScale.score}</span>
-          <span style={s.v2CardDesc}>{v2.staminaScale.shortDescription}</span>
-          {v2.staminaScale.vigilanceDropDetected && (
-            <span style={s.v2AlertBox}>⚠️ Queda de vigîlancia detectada nas últimas rodadas.</span>
-          )}
-        </div>
-        <div style={s.v2Card}>
-          <span style={s.v2CardLabel}>Complexidade · Colapso de Conjunção</span>
-          <span style={s.v2CardTitle}>
-            {v2.conjunctionBreak.detected ? `Detectado — nível ${v2.conjunctionBreak.collapseAtLevel}` : "Não detectado"}
-          </span>
-          <span style={{ ...s.v2CardScore, color: v2.conjunctionBreak.detected ? "#f5c070" : "#6dbf87", fontSize: 14 }}>
-            {v2.conjunctionBreak.detected ? "⚠️" : "✓"}
-          </span>
-          <span style={s.v2CardDesc}>{v2.conjunctionBreak.shortDescription}</span>
-        </div>
-      </section>
-
-      {/* ══ Painel Gemini — 3 níveis ══ */}
-      {geminiReport && <EvaluationReportPanel report={geminiReport} />}
 
       {/* Próximos passos */}
       <section style={s.section}>
@@ -322,9 +129,10 @@ export function VisualSearchEvaluationScreen({
           </button>
         </div>
         <p style={s.helperText}>
-          O botão "Seguir a trilha" ficará disponível quando a continuidade da trilha for implementada.
+          O botão “Seguir a trilha” ficará disponível quando a continuidade da trilha for implementada.
         </p>
       </section>
+
     </div>
   );
 }
