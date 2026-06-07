@@ -169,9 +169,14 @@ export async function callEvaluator(
 ): Promise<EvaluationReport | null> {
   const url    = import.meta.env.VITE_EVALUATOR_URL;
   const secret = import.meta.env.VITE_EVALUATOR_SECRET;
-  if (!url || !secret) return null;
+  
+  if (!url || !secret) {
+    console.warn('[callEvaluator] VITE_EVALUATOR_URL ou VITE_EVALUATOR_SECRET não configurados');
+    return null;
+  }
 
   try {
+    console.log('[callEvaluator] chamando', url);
     const res = await fetch(`${url}/evaluate`, {
       method: 'POST',
       headers: {
@@ -181,9 +186,19 @@ export async function callEvaluator(
       body: JSON.stringify(input),
       signal: AbortSignal.timeout(15_000),
     });
-    if (!res.ok) return null;
-    return res.json() as Promise<EvaluationReport>;
-  } catch {
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`[callEvaluator] HTTP ${res.status}: ${text}`);
+      return null;
+    }
+
+    const report = await res.json() as EvaluationReport;
+    console.log('[callEvaluator] sucesso', report);
+    return report;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[callEvaluator] erro:', msg);
     return null;
   }
 }
