@@ -21,6 +21,23 @@ function buildLudic(score: number): LudicReport {
 }
 
 function buildPrompt(input: EvaluatorInput): string {
+  const noEngagementWarning = input.totalClicks === 0
+    ? `
+ATENÇÃO — SESSÃO SEM ENGAJAMENTO MOTOR:
+totalClicks é 0. O usuário não emitiu nenhuma resposta motora durante a sessão.
+Por isso:
+- score DEVE ser 0 (zero numérico). Não use null, string ou omita o campo.
+- level DEVE ser "importante".
+- A taxa de comissão de 0% NÃO indica controle inibitório preservado.
+- A ausência de negligência espacial NÃO pode ser confirmada sem coordenadas de clique.
+- general.strengths e clinical.strengths NÃO devem conter itens baseados em
+  ausência de erros de comissão ou ausência de negligência espacial.
+- Descreva a sessão como sem engajamento motor suficiente para avaliação.
+- clinical.clinicalNote deve mencionar explicitamente que os dados são insuficientes
+  para inferir pontos preservados ou alterados nos domínios dependentes de resposta motora.
+`
+    : '';
+
   return `
 Você é um neuropsicólogo especialista em avaliação da atenção seletiva.
 Rececerá métricas de uma sessão de busca visual computadorizada e deve produzir
@@ -28,7 +45,7 @@ um laudo em JSON com os campos exatos abaixo.
 
 ### MÉTRICAS DA SESSÃO
 ${JSON.stringify(input, null, 2)}
-
+${noEngagementWarning}
 ### REGRAS
 - Seja objetivo; evite linguagem coloquial.
 - general.summary: 1-2 frases acessíveis ao leigo resumindo o desempenho.
