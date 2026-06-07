@@ -10,7 +10,7 @@ const model = genAI.getGenerativeModel({
   model: MODEL,
   generationConfig: {
     temperature: 0.3,
-    maxOutputTokens: 2048,
+    maxOutputTokens: 4096,
   },
 });
 
@@ -44,16 +44,28 @@ ${JSON.stringify(input, null, 2)}
 `.trim();
 }
 
+function extractJson(raw: string): string {
+  // Remove markdown code block se presente
+  const match = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (match) return match[1].trim();
+  // Extrai o primeiro objeto JSON encontrado
+  const start = raw.indexOf('{');
+  const end = raw.lastIndexOf('}');
+  if (start !== -1 && end !== -1) return raw.slice(start, end + 1);
+  return raw;
+}
+
 export async function evaluate(input: EvaluatorInput): Promise<EvaluationReport> {
   const prompt = buildPrompt(input);
   const result = await model.generateContent(prompt);
   const raw = result.response.text();
+  const clean = extractJson(raw);
 
   let parsed: EvaluationReport;
   try {
-    parsed = JSON.parse(raw) as EvaluationReport;
+    parsed = JSON.parse(clean) as EvaluationReport;
   } catch {
-    throw new Error(`Gemini retornou JSON inválido: ${raw.slice(0, 200)}`);
+    throw new Error(`Gemini retornou JSON inválido: ${raw.slice(0, 300)}`);
   }
 
   return parsed;
