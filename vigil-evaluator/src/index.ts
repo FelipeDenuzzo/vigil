@@ -4,6 +4,7 @@
 
 import express from 'express';
 import type { Request, Response } from 'express';
+import cors from 'cors';
 import { evaluate } from './evaluate.js';
 import type { EvaluatorInput } from './types.js';
 
@@ -11,6 +12,10 @@ const app    = express();
 const PORT   = parseInt(process.env.PORT ?? '8080', 10);
 const SECRET = process.env.EVALUATOR_SECRET;
 
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://vigil-app.vercel.app'],
+  methods: ['POST', 'GET'],
+}));
 app.use(express.json());
 
 // Health check exigido pelo Cloud Run
