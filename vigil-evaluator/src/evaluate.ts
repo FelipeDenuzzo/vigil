@@ -1,16 +1,22 @@
 // vigil-evaluator/src/evaluate.ts
-// Monta o prompt e chama o Gemini via Vertex AI SDK.
+// Monta o prompt e chama o Gemini via Google Generative AI SDK.
 // Retorna EvaluationReport com campos fixos (JSON forçado pelo prompt).
 
-import { VertexAI } from '@google-cloud/vertexai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { EvaluatorInput, EvaluationReport } from './types.js';
 
-const PROJECT  = process.env.GCP_PROJECT_ID!;
-const LOCATION = process.env.GCP_REGION ?? 'us-central1';
-const MODEL    = 'gemini-2.0-flash';
+const API_KEY = process.env.GEMINI_API_KEY!;
+const MODEL   = 'gemini-2.0-flash';
 
-const vertex = new VertexAI({ project: PROJECT, location: LOCATION });
-const model  = vertex.getGenerativeModel({ model: MODEL });
+const genAI = new GoogleGenerativeAI(API_KEY);
+const model = genAI.getGenerativeModel({
+  model: MODEL,
+  generationConfig: {
+    temperature: 0.3,
+    maxOutputTokens: 1024,
+    responseMimeType: 'application/json',
+  },
+});
 
 function buildPrompt(input: EvaluatorInput): string {
   return `
@@ -45,16 +51,8 @@ ${JSON.stringify(input, null, 2)}
 export async function evaluate(input: EvaluatorInput): Promise<EvaluationReport> {
   const prompt = buildPrompt(input);
 
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      temperature: 0.3,
-      maxOutputTokens: 1024,
-      responseMimeType: 'application/json',
-    },
-  });
-
-  const raw = result.response.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
+  const result = await model.generateContent(prompt);
+  const raw = result.response.text();
 
   let parsed: EvaluationReport;
   try {
