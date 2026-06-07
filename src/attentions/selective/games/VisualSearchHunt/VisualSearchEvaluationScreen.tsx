@@ -1,6 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationScreen.tsx
-// Atualizado: exibe apenas o painel Gemini (EvaluationReportPanel) + botões de ação.
-// Seções legadas v1/v2 mantidas como código comentado para referência.
+// Atualizado: exibe apenas o painel Gemini + fallback de erro quando não chega resultado.
 
 import { EvaluationReportPanel } from "./EvaluationReportPanel";
 import type { EvaluationReport as GeminiReport } from "../../../../lib/evaluatorClient";
@@ -9,6 +8,8 @@ import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchS
 type Props = {
   sessionLog: VisualSearchSessionMetricsInput;
   geminiReport?: GeminiReport;
+  /** Se false = ainda carregando. Se true = carregamento terminou (com ou sem resultado). */
+  loaded?: boolean;
   onRepeatTraining: () => void;
   onBackToStart: () => void;
   onContinueTrail?: () => void;
@@ -37,6 +38,12 @@ const s = {
     textAlign: "center" as const,
     padding: "32px 16px",
     color: "#8b8fa8",
+    fontSize: 14,
+  },
+  errorBox: {
+    textAlign: "center" as const,
+    padding: "32px 16px",
+    color: "#f08080",
     fontSize: 14,
   },
   actions: {
@@ -85,8 +92,38 @@ const s = {
   } as const,
 };
 
+function EvaluationBlock({ geminiReport, loaded }: { geminiReport?: GeminiReport; loaded?: boolean }) {
+  if (geminiReport) {
+    return <EvaluationReportPanel report={geminiReport} />;
+  }
+
+  if (!loaded) {
+    return (
+      <section style={s.section}>
+        <div style={s.loadingBox}>
+          <p style={{ fontSize: 28, marginBottom: 8 }}>&#x23F3;</p>
+          <p>Gerando sua avaliação com IA...</p>
+          <p style={{ marginTop: 4, fontSize: 12, color: "#6b6f88" }}>Isso pode levar alguns segundos.</p>
+        </div>
+      </section>
+    );
+  }
+
+  // loaded === true mas geminiReport é undefined/null — serviço não respondeu
+  return (
+    <section style={s.section}>
+      <div style={s.errorBox}>
+        <p style={{ fontSize: 28, marginBottom: 8 }}>&#x26A0;&#xFE0F;</p>
+        <p style={{ fontWeight: 700, marginBottom: 4 }}>Não foi possível gerar a avaliação.</p>
+        <p style={{ fontSize: 12, color: "#a0a4be" }}>O serviço de IA não respondeu. Tente repetir o treino ou volte mais tarde.</p>
+      </div>
+    </section>
+  );
+}
+
 export function VisualSearchEvaluationScreen({
   geminiReport,
+  loaded,
   onRepeatTraining,
   onBackToStart,
   onContinueTrail,
@@ -94,18 +131,7 @@ export function VisualSearchEvaluationScreen({
   return (
     <div style={s.container}>
 
-      {/* Painel Gemini — avaliador principal */}
-      {geminiReport ? (
-        <EvaluationReportPanel report={geminiReport} />
-      ) : (
-        <section style={s.section}>
-          <div style={s.loadingBox}>
-            <p style={{ fontSize: 28, marginBottom: 8 }}>&#x23F3;</p>
-            <p>Gerando sua avaliação com IA...</p>
-            <p style={{ marginTop: 4, fontSize: 12, color: "#6b6f88" }}>Isso pode levar alguns segundos.</p>
-          </div>
-        </section>
-      )}
+      <EvaluationBlock geminiReport={geminiReport} loaded={loaded} />
 
       {/* Próximos passos */}
       <section style={s.section}>
