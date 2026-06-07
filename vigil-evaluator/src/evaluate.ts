@@ -69,18 +69,70 @@ function extractJson(raw: string): string {
   return raw;
 }
 
-export async function evaluate(input: EvaluatorInput): Promise<EvaluationReport> {
-  const prompt = buildPrompt(input);
-  const result = await model.generateContent(prompt);
-  const raw    = result.response.text();
-  const clean  = extractJson(raw);
-
-  let parsed: Omit<EvaluationReport, 'ludic'>;
-  try {
-    parsed = JSON.parse(clean) as Omit<EvaluationReport, 'ludic'>;
-  } catch {
-    throw new Error(`Gemini retornou JSON inválido: ${raw.slice(0, 300)}`);
+function validateResponse(parsed: unknown): Omit<EvaluationReport, 'ludic'> {
+  const obj = parsed as Record<string, unknown>;
+  
+  // Validação básica da estrutura
+  if (!obj.score || typeof obj.score !== 'number') {
+    throw new Error('score é obrigatório e deve ser um número');
+  }
+  if (!obj.level || !['mínimo', 'leve', 'moderado', 'importante'].includes(String(obj.level))) {
+    throw new Error('level inválido: deve ser mínimo, leve, moderado ou importante');
+  }
+  if (!obj.general || typeof obj.general !== 'object') {
+    throw new Error('general é obrigatório e deve ser um objeto');
+  }
+  if (!obj.clinical || typeof obj.clinical !== 'object') {
+    throw new Error('clinical é obrigatório e deve ser um objeto');
   }
 
-  return { ...parsed, ludic: buildLudic(parsed.score) };
+  const general = obj.general as Record<string, unknown>;
+  if (!general.summary || !Array.isArray(general.strengths) || !Array.isArray(general.weaknesses)) {
+    throw new Error('general deve ter summary, strengths e weaknesses');
+  }
+
+  const clinical = obj.clinical as Record<string, unknown>;
+  if (!Array.isArray(clinical.strengths) || !Array.isArray(clinical.weaknesses)) {
+    throw new Error('clinical deve ter strengths, weaknesses, recommendation e clinicalNote');
+  }
+
+  return obj as Omit<EvaluationReport, 'ludic'>;
+}
+
+export async function evaluate(input: EvaluatorInput): Promise<EvaluationReport> {
+  if (!API_KEY) {
+    throw new Error('GEMINI_API_KEY não configurada');
+  }
+
+  try {
+    const prompt = buildPrompt(input);
+    const result = await model.generateContent(prompt);
+    
+    if (!result.response) {
+      throw new Error('Resposta vazia do Gemini (sem response)');
+    }
+
+    const raw = result.response.text();
+    if (!raw || raw.trim().length === 0) {
+      throw new Error('Resposta vazia do Gemini (text vazio)');
+    }
+
+    const clean = extractJson(raw);
+    if (!clean || clean.trim().length === 0) {
+      throw new Error(`Nenhum JSON encontrado na resposta: ${raw.slice(0, 200)}`);
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(clean);
+    } catch (e) {
+      throw new Error(`JSON parse falhou: ${clean.slice(0, 200)} | Erro: ${String(e)}`);
+    }
+
+    const validated = validateResponse(parsed);
+    return { ...validated, ludic: buildLudic(validated.score) };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Erro ao avaliar com Gemini: ${msg}`);
+  }
 }
