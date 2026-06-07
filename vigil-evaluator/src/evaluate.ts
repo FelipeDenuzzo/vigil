@@ -6,7 +6,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { EvaluatorInput, EvaluationReport } from './types.js';
 
 const API_KEY = process.env.GEMINI_API_KEY!;
-const MODEL   = 'gemini-2.0-flash';
+const MODEL   = 'gemini-2.5-flash-preview-05-20';
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({
