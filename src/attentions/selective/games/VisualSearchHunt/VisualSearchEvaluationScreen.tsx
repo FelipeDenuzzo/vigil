@@ -1,15 +1,16 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationScreen.tsx
-// Atualizado: exibe apenas o painel Gemini + fallback de erro quando não chega resultado.
+// Atualizado: substitui loading simples pela EvaluationLoadingAnimation em 2 fases.
 
 import { EvaluationReportPanel } from "./EvaluationReportPanel";
+import { EvaluationLoadingAnimation } from "./EvaluationLoadingAnimation";
 import type { EvaluationReport as GeminiReport } from "../../../../lib/evaluatorClient";
 import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
 
 type Props = {
   sessionLog: VisualSearchSessionMetricsInput;
   geminiReport?: GeminiReport;
-  /** Se false = ainda carregando. Se true = carregamento terminou (com ou sem resultado). */
-  loaded?: boolean;
+  /** false = IA ainda chamando | 'organizing' = IA ok, app montando | true = tudo pronto */
+  loaded?: boolean | 'organizing';
   onRepeatTraining: () => void;
   onBackToStart: () => void;
   onContinueTrail?: () => void;
@@ -34,12 +35,6 @@ const s = {
     fontSize: 16,
     fontWeight: 700,
   } as const,
-  loadingBox: {
-    textAlign: "center" as const,
-    padding: "32px 16px",
-    color: "#8b8fa8",
-    fontSize: 14,
-  },
   errorBox: {
     textAlign: "center" as const,
     padding: "32px 16px",
@@ -92,30 +87,37 @@ const s = {
   } as const,
 };
 
-function EvaluationBlock({ geminiReport, loaded }: { geminiReport?: GeminiReport; loaded?: boolean }) {
+function EvaluationBlock({
+  geminiReport,
+  loaded,
+}: {
+  geminiReport?: GeminiReport;
+  loaded?: boolean | 'organizing';
+}) {
+  // ✅ Laudo pronto
   if (geminiReport) {
     return <EvaluationReportPanel report={geminiReport} />;
   }
 
-  if (!loaded) {
-    return (
-      <section style={s.section}>
-        <div style={s.loadingBox}>
-          <p style={{ fontSize: 28, marginBottom: 8 }}>&#x23F3;</p>
-          <p>Gerando sua avaliação com IA...</p>
-          <p style={{ marginTop: 4, fontSize: 12, color: "#6b6f88" }}>Isso pode levar alguns segundos.</p>
-        </div>
-      </section>
-    );
+  // ⏳ IA ainda respondendo
+  if (loaded === false) {
+    return <EvaluationLoadingAnimation organizing={false} />;
   }
 
-  // loaded === true mas geminiReport é undefined/null — serviço não respondeu
+  // 🗂 IA respondeu, app está organizando
+  if (loaded === 'organizing') {
+    return <EvaluationLoadingAnimation organizing={true} />;
+  }
+
+  // ❌ loaded === true mas sem relatório — serviço não respondeu
   return (
     <section style={s.section}>
       <div style={s.errorBox}>
         <p style={{ fontSize: 28, marginBottom: 8 }}>&#x26A0;&#xFE0F;</p>
         <p style={{ fontWeight: 700, marginBottom: 4 }}>Não foi possível gerar a avaliação.</p>
-        <p style={{ fontSize: 12, color: "#a0a4be" }}>O serviço de IA não respondeu. Tente repetir o treino ou volte mais tarde.</p>
+        <p style={{ fontSize: 12, color: "#a0a4be" }}>
+          O serviço de IA não respondeu a tempo. O laudo será exibido na próxima consulta a esta sessão.
+        </p>
       </div>
     </section>
   );
@@ -155,7 +157,7 @@ export function VisualSearchEvaluationScreen({
           </button>
         </div>
         <p style={s.helperText}>
-          O botão “Seguir a trilha” ficará disponível quando a continuidade da trilha for implementada.
+          O botão "Seguir a trilha" ficará disponível quando a continuidade da trilha for implementada.
         </p>
       </section>
 

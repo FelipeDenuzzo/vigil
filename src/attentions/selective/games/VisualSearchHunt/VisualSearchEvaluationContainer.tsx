@@ -1,12 +1,55 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationContainer.tsx
-// fix: passa prop `loaded` ao Screen para distinguir carregando / erro / sucesso.
+// Atualizado: estado de loading em 3 fases + salvamento do geminiReport no Firestore.
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../../../lib/firebase';
 import { useVisualSearchEvaluation } from './useVisualSearchEvaluation';
 import type { EvaluationReport as InternalReport } from './useVisualSearchEvaluation';
 import { getSessionById } from '../../../../shared/storage';
 import { VisualSearchEvaluationScreen } from './VisualSearchEvaluationScreen';
+import type { EvaluationReport as GeminiReport } from '../../../../lib/evaluatorClient';
+
+/** false = IA chamando | 'organizing' = IA ok, app montando | true = tudo pronto */
+type LoadedState = false | 'organizing' | true;
+
+async function saveReportToFirestore(
+  sessionId: string,
+  report: GeminiReport
+): Promise<void> {
+  try {
+    const ref = doc(db, 'sessionReports', sessionId);
+    await setDoc(
+      ref,
+      {
+        geminiReport: report,
+        sessionId,
+        savedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } catch (err) {
+    console.warn('Falha ao salvar relatório no Firestore:', err);
+  }
+}
+
+async function loadReportFromFirestore(
+  sessionId: string
+): Promise<GeminiReport | null> {
+  try {
+    const ref = doc(db, 'sessionReports', sessionId);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data?.geminiReport) return data.geminiReport as GeminiReport;
+    }
+    return null;
+  } catch (err) {
+    console.warn('Falha ao carregar relatório do Firestore:', err);
+    return null;
+  }
+}
 
 export function VisualSearchEvaluationContainer() {
   const [searchParams] = useSearchParams();
@@ -15,20 +58,45 @@ export function VisualSearchEvaluationContainer() {
   const sessionLog = getSessionById(sessionId);
 
   const [evaluation, setEvaluation] = useState<InternalReport | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [geminiReport, setGeminiReport] = useState<GeminiReport | undefined>(undefined);
+  const [loaded, setLoaded] = useState<LoadedState>(false);
 
   useEffect(() => {
     if (!sessionId) return;
+
     setLoaded(false);
-    useVisualSearchEvaluation(sessionId)
-      .then((result) => {
-        setEvaluation(result);
-      })
-      .catch((err) => {
+    setGeminiReport(undefined);
+    setEvaluation(null);
+
+    (async () => {
+      // 1️⃣ Verifica cache no Firestore (resultado permanente)
+      const cached = await loadReportFromFirestore(sessionId);
+      if (cached) {
+        setGeminiReport(cached);
+        setLoaded(true);
+        return;
+      }
+
+      // 2️⃣ Sem cache — chama Gemini (fase 1: IA analisando)
+      let result: InternalReport | null = null;
+      try {
+        result = await useVisualSearchEvaluation(sessionId);
+      } catch (err) {
         console.warn('Erro ao avaliar sessão:', err);
-        setEvaluation(null);
-      })
-      .finally(() => setLoaded(true));
+      }
+
+      setEvaluation(result);
+
+      // 3️⃣ IA respondeu — fase 2: App organizando + salva no Firestore
+      setLoaded('organizing');
+
+      if (result?.geminiReport) {
+        await saveReportToFirestore(sessionId, result.geminiReport);
+        setGeminiReport(result.geminiReport);
+      }
+
+      setLoaded(true);
+    })();
   }, [sessionId]);
 
   if (!sessionLog) {
@@ -81,7 +149,7 @@ export function VisualSearchEvaluationContainer() {
     <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
       <VisualSearchEvaluationScreen
         sessionLog={sessionLogMapped}
-        geminiReport={evaluation?.geminiReport ?? undefined}
+        geminiReport={geminiReport ?? evaluation?.geminiReport}
         loaded={loaded}
         onRepeatTraining={() => navigate('/treinar/seletiva/visual-search')}
         onBackToStart={() => navigate('/treinar/seletiva')}
