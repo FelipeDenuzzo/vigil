@@ -1,3 +1,5 @@
+import cors from 'cors';
+import cors from 'cors';
 // vigil-evaluator/src/index.ts
 // Servidor Express — POST /evaluate
 // Protegido por header x-evaluator-secret
