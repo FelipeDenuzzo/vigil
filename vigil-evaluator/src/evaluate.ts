@@ -23,7 +23,7 @@ function buildLudic(score: number): LudicReport {
 function buildPrompt(input: EvaluatorInput): string {
   return `
 Você é um neuropsicólogo especialista em avaliação da atenção seletiva.
-Receberá métricas de uma sessão de busca visual computadorizada e deve produzir
+Rececerá métricas de uma sessão de busca visual computadorizada e deve produzir
 um laudo em JSON com os campos exatos abaixo.
 
 ### MÉTRICAS DA SESSÃO
@@ -37,7 +37,7 @@ ${JSON.stringify(input, null, 2)}
 - clinical.strengths / clinical.weaknesses: análise técnica (mín 1, máx 3 cada).
 - clinical.recommendation: encaminhamento clínico formal.
 - clinical.clinicalNote: parágrafo técnico de 3-5 linhas integrando os dados.
-- score: 0–100 refletindo a performance geral.
+- score: 0–100 refletindo a performance geral. score=0 é válido para sessões sem interação.
 - level: um de "mínimo" | "leve" | "moderado" | "importante".
 
 ### RESPONDA APENAS com JSON válido, sem markdown, sem texto extra:
@@ -69,12 +69,32 @@ function extractJson(raw: string): string {
   return raw;
 }
 
+/**
+ * Sanitiza strings dentro do JSON para escapar quebras de linha literais,
+ * tabs e aspas não-escapadas que o Gemini ocasionalmente insere em campos
+ * de texto livre, corrompendo o JSON.parse.
+ */
+function sanitizeJsonStrings(jsonText: string): string {
+  return jsonText.replace(
+    /:\s*"([\s\S]*?)(?<!\\)"/g,
+    (_match, inner: string) => {
+      const escaped = inner
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t');
+      return `: "${escaped}"`;
+    }
+  );
+}
+
 function validateResponse(parsed: unknown): Omit<EvaluationReport, 'ludic'> {
   const obj = parsed as Record<string, unknown>;
-  
-  // Validação básica da estrutura
-  if (!obj.score || typeof obj.score !== 'number') {
-    throw new Error('score é obrigatório e deve ser um número');
+
+  // score=0 é válido — verificar typeof, NÃO usar !obj.score
+  if (typeof obj.score !== 'number' || obj.score < 0 || obj.score > 100) {
+    throw new Error('score é obrigatório e deve ser um número entre 0 e 100');
   }
   if (!obj.level || !['mínimo', 'leve', 'moderado', 'importante'].includes(String(obj.level))) {
     throw new Error('level inválido: deve ser mínimo, leve, moderado ou importante');
@@ -107,7 +127,7 @@ export async function evaluate(input: EvaluatorInput): Promise<EvaluationReport>
   try {
     const prompt = buildPrompt(input);
     const result = await model.generateContent(prompt);
-    
+
     if (!result.response) {
       throw new Error('Resposta vazia do Gemini (sem response)');
     }
@@ -122,11 +142,13 @@ export async function evaluate(input: EvaluatorInput): Promise<EvaluationReport>
       throw new Error(`Nenhum JSON encontrado na resposta: ${raw.slice(0, 200)}`);
     }
 
+    const safeJson = sanitizeJsonStrings(clean);
+
     let parsed: unknown;
     try {
-      parsed = JSON.parse(clean);
+      parsed = JSON.parse(safeJson);
     } catch (e) {
-      throw new Error(`JSON parse falhou: ${clean.slice(0, 200)} | Erro: ${String(e)}`);
+      throw new Error(`JSON parse falhou: ${clean.slice(0, 400)} | Erro: ${String(e)}`);
     }
 
     const validated = validateResponse(parsed);
