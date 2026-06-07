@@ -1,68 +1,88 @@
+// src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationContainer.tsx
+// fix: useVisualSearchEvaluation é async — usa useEffect+useState para aguardar a Promise
+// e passar geminiReport corretamente ao VisualSearchEvaluationScreen.
+
+import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useVisualSearchEvaluation } from './useVisualSearchEvaluation';
+import type { EvaluationReport as InternalReport } from './useVisualSearchEvaluation';
 import { getSessionById } from '../../../../shared/storage';
 import { VisualSearchEvaluationScreen } from './VisualSearchEvaluationScreen';
 
 export function VisualSearchEvaluationContainer() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('sessionId') || '';
-
-  // useVisualSearchEvaluation é async — mas o hook retorna sincrono inicialmente;
-  // se já for uma Promise, precisamos de useEffect. Como o hook já é síncrono na
-  // parte local e async apenas no Gemini, usamos o padrão existente.
-  const evaluation = useVisualSearchEvaluation(sessionId);
   const navigate = useNavigate();
   const sessionLog = getSessionById(sessionId);
+
+  const [evaluation, setEvaluation] = useState<InternalReport | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    setLoading(true);
+    useVisualSearchEvaluation(sessionId)
+      .then((result) => {
+        setEvaluation(result);
+      })
+      .catch((err) => {
+        console.warn('Erro ao avaliar sessão:', err);
+        setEvaluation(null);
+      })
+      .finally(() => setLoading(false));
+  }, [sessionId]);
 
   if (!sessionLog) {
     return (
       <div style={{ maxWidth: 920, margin: '0 auto', padding: 16, textAlign: 'center' }}>
-        <p>Carregando avaliação...</p>
+        <p style={{ color: '#8b8fa8' }}>Sessão não encontrada.</p>
       </div>
     );
   }
 
+  const sessionLogMapped = {
+    sessionId: sessionLog.sessionId,
+    gameId: sessionLog.gameId,
+    startedAt: sessionLog.startedAt ? new Date(sessionLog.startedAt).toISOString() : undefined,
+    completedAt: sessionLog.completedAt ? new Date(sessionLog.completedAt).toISOString() : undefined,
+    rounds: (sessionLog.rounds ?? []).map((round: any, idx: number) => ({
+      round: idx + 1,
+      totalTargets: round.totalTargets ?? 0,
+      hits: round.hits ?? 0,
+      errors: round.errors ?? 0,
+      missedTargets: round.missedTargets ?? 0,
+      durationMs: round.durationMs,
+      reactionTimes: round.reactionTimes,
+      gridSize: round.gridSize,
+      clicks: Array.isArray(round.clicks)
+        ? round.clicks.map((c: any) => ({
+            isTarget: c.isTarget ?? false,
+            clickedShape: c.clickedShape ?? '',
+            clickedColor: c.clickedColor ?? '',
+            targetShape: c.targetShape ?? '',
+            targetColor: c.targetColor ?? '',
+            row: c.row ?? 0,
+            col: c.col ?? 0,
+            screenHalf: c.screenHalf ?? 'left',
+          }))
+        : undefined,
+      systematicMoves: round.systematicMoves,
+      erraticMoves: round.erraticMoves,
+      organizationIndex: round.organizationIndex,
+      scanPattern: round.scanPattern,
+      leftSideClicks: round.leftSideClicks,
+      rightSideClicks: round.rightSideClicks,
+      leftSideTargetMisses: round.leftSideTargetMisses,
+      rightSideTargetMisses: round.rightSideTargetMisses,
+      spatialAsymmetryIndex: round.spatialAsymmetryIndex,
+    })),
+  };
+
   return (
     <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
       <VisualSearchEvaluationScreen
-        sessionLog={{
-          sessionId: sessionLog.sessionId,
-          gameId: sessionLog.gameId,
-          startedAt: sessionLog.startedAt ? new Date(sessionLog.startedAt).toISOString() : undefined,
-          completedAt: sessionLog.completedAt ? new Date(sessionLog.completedAt).toISOString() : undefined,
-          rounds: (sessionLog.rounds ?? []).map((round: any, idx: number) => ({
-            round: idx + 1,
-            totalTargets: round.totalTargets ?? 0,
-            hits: round.hits ?? 0,
-            errors: round.errors ?? 0,
-            missedTargets: round.missedTargets ?? 0,
-            durationMs: round.durationMs,
-            reactionTimes: round.reactionTimes,
-            gridSize: round.gridSize,
-            clicks: Array.isArray(round.clicks)
-              ? round.clicks.map((c: any) => ({
-                  isTarget: c.isTarget ?? false,
-                  clickedShape: c.clickedShape ?? '',
-                  clickedColor: c.clickedColor ?? '',
-                  targetShape: c.targetShape ?? '',
-                  targetColor: c.targetColor ?? '',
-                  row: c.row ?? 0,
-                  col: c.col ?? 0,
-                  screenHalf: c.screenHalf ?? 'left',
-                }))
-              : undefined,
-            systematicMoves: round.systematicMoves,
-            erraticMoves: round.erraticMoves,
-            organizationIndex: round.organizationIndex,
-            scanPattern: round.scanPattern,
-            leftSideClicks: round.leftSideClicks,
-            rightSideClicks: round.rightSideClicks,
-            leftSideTargetMisses: round.leftSideTargetMisses,
-            rightSideTargetMisses: round.rightSideTargetMisses,
-            spatialAsymmetryIndex: round.spatialAsymmetryIndex,
-          })),
-        }}
-        geminiReport={(evaluation as any)?.geminiReport}
+        sessionLog={sessionLogMapped}
+        geminiReport={loading ? undefined : (evaluation?.geminiReport ?? undefined)}
         onRepeatTraining={() => navigate('/treinar/seletiva/visual-search')}
         onBackToStart={() => navigate('/treinar/seletiva')}
       />
