@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/useVisualSearchEvaluation.ts
-// Atualizado em: 06/06/2026 — Etapa 3.5: corrige buildEvaluatorInput (métricas reais)
+// Atualizado: enrichedReport agora usa EvaluationReport (3 níveis)
 
 import { getAllSessions } from "../../../../shared/storage";
 import type { SessionLog } from "../../../../shared/types";
@@ -14,7 +14,7 @@ import type {
 import { buildVisualSearchV2Result } from "./assessment-v2";
 import type { VisualSearchV2AssessmentResult } from "./assessment-v2";
 import { callEvaluator, buildEvaluatorInput } from "../../../../lib/evaluatorClient";
-import type { EnrichedReport } from "../../../../lib/evaluatorClient";
+import type { EvaluationReport as GeminiReport } from "../../../../lib/evaluatorClient";
 
 export interface RoundEvaluation {
   roundIndex: number;
@@ -89,10 +89,9 @@ export interface EvaluationReport {
   deltaScorePct: number | null;
   scaleResult?: VisualSearchScaleResult;
   technicalReport?: VisualSearchTechnicalReport;
-  /** Resultado do avaliador V2 (em paralelo com v1) */
   v2Result?: VisualSearchV2AssessmentResult;
-  /** Laudo enriquecido pelo Gemini via vigil-evaluator (Cloud Run) */
-  enrichedReport?: EnrichedReport;
+  /** Laudo Gemini — 3 níveis: ludic, general, clinical */
+  geminiReport?: GeminiReport;
 }
 
 const GAME_ID = "visual-search-hunt";
@@ -305,15 +304,10 @@ export async function useVisualSearchEvaluation(
     })),
   };
 
-  // ── Avaliações locais (determinísticas) ──────────────────────────────────────
   const scaleResult = buildVisualSearchScaleResult(sessionMetrics);
   const technicalReport = buildVisualSearchTechnicalReport(sessionMetrics);
-  // metrics é calculada uma única vez aqui e reutilizada no buildEvaluatorInput
-  // Evita chamar calculateVisualSearchMetrics duas vezes (já é chamada internamente
-  // por buildVisualSearchTechnicalReport, mas o retorno não é exposto)
   const metrics = calculateVisualSearchMetrics(sessionMetrics);
 
-  // ── V2 local ──────────────────────────────────────────────────────────────────
   let v2Result: VisualSearchV2AssessmentResult | undefined;
   try {
     const v2SessionLog = currentLog as any;
@@ -332,55 +326,39 @@ export async function useVisualSearchEvaluation(
     console.warn("Falha ao calcular avaliação V2:", e);
   }
 
-  // ── Evaluator Cloud Run (Gemini) — Promise.allSettled ─────────────────────
   const totalClicks = current.rounds.reduce(
     (sum, r) => sum + r.hits + r.rawErrors,
     0
   );
   const evaluatorInput = buildEvaluatorInput(
     currentLog.sessionId,
-    metrics,            // ← VisualSearchMetrics (fonte real dos campos)
-    technicalReport,    // ← só para .severity
+    metrics,
+    technicalReport,
     currentLog.rounds.length,
     totalClicks
   );
 
-  const [localReportResult, enrichedReportResult] = await Promise.allSettled([
+  const [, geminiResult] = await Promise.allSettled([
     Promise.resolve(technicalReport),
     callEvaluator(evaluatorInput),
   ]);
 
-  const resolvedTechnicalReport =
-    localReportResult.status === 'fulfilled'
-      ? localReportResult.value
-      : technicalReport;
-
-  const enrichedReport: EnrichedReport | undefined =
-    enrichedReportResult.status === 'fulfilled' && enrichedReportResult.value != null
-      ? enrichedReportResult.value
+  const geminiReport: GeminiReport | undefined =
+    geminiResult.status === 'fulfilled' && geminiResult.value != null
+      ? geminiResult.value
       : undefined;
 
-  if (enrichedReportResult.status === 'rejected') {
-    console.warn('vigil-evaluator indisponível:', enrichedReportResult.reason);
+  if (geminiResult.status === 'rejected') {
+    console.warn('vigil-evaluator indisponível:', geminiResult.reason);
   }
 
-  // ── Histórico e tendência ─────────────────────────────────────────────────
   const history = allSessions
     .filter((session) => session.sessionId !== currentSessionId)
     .sort((a, b) => (a.completedAt ?? 0) - (b.completedAt ?? 0))
     .map(evaluateSession);
 
   if (history.length === 0) {
-    return {
-      current,
-      history,
-      trend: 'first_session',
-      deltaScorePct: null,
-      scaleResult,
-      technicalReport: resolvedTechnicalReport,
-      v2Result,
-      enrichedReport,
-    };
+    return { current, history, trend: 'first_session', deltaScorePct: null, scaleResult, technicalReport, v2Result, geminiReport };
   }
 
   const avgHistoricScore =
@@ -392,22 +370,10 @@ export async function useVisualSearchEvaluation(
       : null;
 
   const trend =
-    deltaScorePct === null
-      ? 'stable'
-      : deltaScorePct >= 15
-      ? 'improved'
-      : deltaScorePct <= -15
-      ? 'declined'
-      : 'stable';
+    deltaScorePct === null ? 'stable'
+    : deltaScorePct >= 15  ? 'improved'
+    : deltaScorePct <= -15 ? 'declined'
+    : 'stable';
 
-  return {
-    current,
-    history,
-    trend,
-    deltaScorePct,
-    scaleResult,
-    technicalReport: resolvedTechnicalReport,
-    v2Result,
-    enrichedReport,
-  };
+  return { current, history, trend, deltaScorePct, scaleResult, technicalReport, v2Result, geminiReport };
 }

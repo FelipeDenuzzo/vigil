@@ -1,14 +1,17 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationScreen.tsx
-// Atualizado em: 01/06/2026 — adicionado painel assessment-v2 (IES, Radar, Stamina, Conjunção)
+// Atualizado: integração do EvaluationReportPanel (ludic / general / clinical)
 
 import { EagleScale } from "./EagleScale";
 import { buildVisualSearchScaleResult } from "./assessment/buildVisualSearchScaleResult";
 import { buildVisualSearchTechnicalReport } from "./assessment/buildVisualSearchTechnicalReport";
 import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
 import { runVisualSearchV2 } from "./assessment-v2/runVisualSearchV2";
+import { EvaluationReportPanel } from "./EvaluationReportPanel";
+import type { EvaluationReport as GeminiReport } from "../../../../lib/evaluatorClient";
 
 type Props = {
   sessionLog: VisualSearchSessionMetricsInput;
+  geminiReport?: GeminiReport;
   onRepeatTraining: () => void;
   onBackToStart: () => void;
   onContinueTrail?: () => void;
@@ -136,7 +139,6 @@ const s = {
     fontSize: 13,
     color: "#8b8fa8",
   } as const,
-  // ── estilos v2 ──
   v2Card: {
     background: "rgba(255,255,255,0.03)",
     border: "1px solid rgba(255,255,255,0.07)",
@@ -188,26 +190,23 @@ const s = {
 
 export function VisualSearchEvaluationScreen({
   sessionLog,
+  geminiReport,
   onRepeatTraining,
   onBackToStart,
   onContinueTrail,
 }: Props) {
-  // ── avaliador v1 (intocado) ──
   const scaleResult = buildVisualSearchScaleResult(sessionLog);
   const report = buildVisualSearchTechnicalReport(sessionLog);
-
-  // ── avaliador v2 (paralelo) ──
   const v2 = runVisualSearchV2(sessionLog as any);
 
   return (
     <div style={s.container}>
 
-      {/* ── Régua lúdica (v1) ── */}
+      {/* Régua lúdica v1 */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>
           {scaleResult.emoji} {scaleResult.scaleName}
         </h2>
-
         <EagleScale
           score={scaleResult.score}
           positionPercent={scaleResult.positionPercent}
@@ -215,37 +214,32 @@ export function VisualSearchEvaluationScreen({
           rightLabel={scaleResult.rightLabel}
           markerLabel={scaleResult.markerLabel}
         />
-
         <p style={s.strongLine}>{scaleResult.shortDescription}</p>
         <p style={{ ...s.value, marginTop: 6 }}>{report.interpretation}</p>
       </section>
 
-      {/* ── Análise por subescalas (v1) ── */}
+      {/* Análise por subescalas v1 */}
       <section style={s.section}>
         <h3 style={s.sectionTitle}>Como foi seu treino</h3>
-
         <div style={s.subsection}>
           <p style={s.subsectionTitle}>Atenção seletiva</p>
           <p style={s.subsectionText}>{report.subscalesSummary.selectiveAttention}</p>
         </div>
-
         <div style={s.subsection}>
           <p style={s.subsectionTitle}>Varredura visual</p>
           <p style={s.subsectionText}>{report.subscalesSummary.visualScanning}</p>
         </div>
-
         <div style={s.subsection}>
           <p style={s.subsectionTitle}>Distribuição espacial</p>
           <p style={s.subsectionText}>{report.subscalesSummary.spatialAsymmetry}</p>
         </div>
-
         <div style={s.subsection}>
           <p style={s.subsectionTitle}>Velocidade e ritmo</p>
           <p style={s.subsectionText}>{report.subscalesSummary.speedConsistency}</p>
         </div>
       </section>
 
-      {/* ── Indicadores positivos (v1) ── */}
+      {/* Indicadores positivos v1 */}
       {report.positiveIndicators.length > 0 && (
         <section style={s.section}>
           <h3 style={s.sectionTitle}>Pontos fortes identificados</h3>
@@ -257,7 +251,7 @@ export function VisualSearchEvaluationScreen({
         </section>
       )}
 
-      {/* ── Sinal de alerta v1 ── */}
+      {/* Alerta v1 */}
       {report.redFlag && (
         <section style={s.section}>
           <h3 style={{ ...s.sectionTitle, color: "#f08080" }}>⚠️ Ponto de atenção</h3>
@@ -265,13 +259,9 @@ export function VisualSearchEvaluationScreen({
         </section>
       )}
 
-      {/* ════════════════════════════════════════════
-          PAINEL AVALIADOR v2
-          ════════════════════════════════════════════ */}
+      {/* Painel v2 */}
       <section style={s.section}>
         <h3 style={s.sectionTitle}>📊 Análise detalhada (v2)</h3>
-
-        {/* IES */}
         <div style={s.v2Card}>
           <span style={s.v2CardLabel}>Eficiência · IES</span>
           <span style={s.v2CardTitle}>Score de eficiência</span>
@@ -280,60 +270,46 @@ export function VisualSearchEvaluationScreen({
             Tempo médio: {v2.ies.meanReactionTime} ms · Precisão: {Math.round(v2.ies.accuracyRate * 100)}%
           </span>
         </div>
-
-        {/* Radar */}
         <div style={s.v2Card}>
           <span style={s.v2CardLabel}>Consistência · Visão de Radar</span>
           <span style={s.v2CardTitle}>{v2.radarScale.markerLabel}</span>
           <span style={s.v2CardScore}>{v2.radarScale.score}</span>
           <span style={s.v2CardDesc}>{v2.radarScale.shortDescription}</span>
         </div>
-
-        {/* Stamina */}
         <div style={s.v2Card}>
           <span style={s.v2CardLabel}>Sustentação · Fôlego Mental</span>
           <span style={s.v2CardTitle}>{v2.staminaScale.markerLabel}</span>
           <span style={s.v2CardScore}>{v2.staminaScale.score}</span>
           <span style={s.v2CardDesc}>{v2.staminaScale.shortDescription}</span>
           {v2.staminaScale.vigilanceDropDetected && (
-            <span style={s.v2AlertBox}>
-              ⚠️ Queda de vigilância detectada nas últimas rodadas.
-            </span>
+            <span style={s.v2AlertBox}>⚠️ Queda de vigîlancia detectada nas últimas rodadas.</span>
           )}
         </div>
-
-        {/* Conjunction Break */}
         <div style={s.v2Card}>
           <span style={s.v2CardLabel}>Complexidade · Colapso de Conjunção</span>
           <span style={s.v2CardTitle}>
-            {v2.conjunctionBreak.detected
-              ? `Detectado — nível ${v2.conjunctionBreak.collapseAtLevel}`
-              : "Não detectado"}
+            {v2.conjunctionBreak.detected ? `Detectado — nível ${v2.conjunctionBreak.collapseAtLevel}` : "Não detectado"}
           </span>
-          <span style={{
-            ...s.v2CardScore,
-            color: v2.conjunctionBreak.detected ? "#f5c070" : "#6dbf87",
-            fontSize: 14,
-          }}>
+          <span style={{ ...s.v2CardScore, color: v2.conjunctionBreak.detected ? "#f5c070" : "#6dbf87", fontSize: 14 }}>
             {v2.conjunctionBreak.detected ? "⚠️" : "✓"}
           </span>
           <span style={s.v2CardDesc}>{v2.conjunctionBreak.shortDescription}</span>
         </div>
       </section>
 
-      {/* ── Próximos passos ── */}
+      {/* ══ Painel Gemini — 3 níveis ══ */}
+      {geminiReport && <EvaluationReportPanel report={geminiReport} />}
+
+      {/* Próximos passos */}
       <section style={s.section}>
         <h3 style={s.sectionTitle}>Próximos passos</h3>
-
         <div style={s.actions}>
           <button type="button" onClick={onRepeatTraining} style={s.primaryButton}>
             Repetir o treino
           </button>
-
           <button type="button" onClick={onBackToStart} style={s.secondaryButton}>
             Voltar ao começo
           </button>
-
           <button
             type="button"
             onClick={onContinueTrail}
@@ -345,12 +321,10 @@ export function VisualSearchEvaluationScreen({
             Seguir a trilha
           </button>
         </div>
-
         <p style={s.helperText}>
           O botão "Seguir a trilha" ficará disponível quando a continuidade da trilha for implementada.
         </p>
       </section>
-
     </div>
   );
 }
