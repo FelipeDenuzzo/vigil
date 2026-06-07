@@ -1,12 +1,9 @@
 // vigil-evaluator/src/evaluate.ts
-// Monta o prompt e chama o Gemini via Google Generative AI SDK.
-// Retorna EvaluationReport com campos fixos (JSON forçado pelo prompt).
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { EvaluatorInput, EvaluationReport } from './types.js';
 
 const API_KEY = process.env.GEMINI_API_KEY!;
-const MODEL   = 'gemini-2.5-flash-preview-05-20';
+const MODEL   = 'gemini-2.5-flash';
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({
@@ -50,7 +47,6 @@ ${JSON.stringify(input, null, 2)}
 
 export async function evaluate(input: EvaluatorInput): Promise<EvaluationReport> {
   const prompt = buildPrompt(input);
-
   const result = await model.generateContent(prompt);
   const raw = result.response.text();
 
