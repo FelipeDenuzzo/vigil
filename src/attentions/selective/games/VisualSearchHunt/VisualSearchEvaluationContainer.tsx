@@ -1,6 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationContainer.tsx
-// fix: useVisualSearchEvaluation é async — usa useEffect+useState para aguardar a Promise
-// e passar geminiReport corretamente ao VisualSearchEvaluationScreen.
+// fix: passa prop `loaded` ao Screen para distinguir carregando / erro / sucesso.
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -16,11 +15,11 @@ export function VisualSearchEvaluationContainer() {
   const sessionLog = getSessionById(sessionId);
 
   const [evaluation, setEvaluation] = useState<InternalReport | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!sessionId) return;
-    setLoading(true);
+    setLoaded(false);
     useVisualSearchEvaluation(sessionId)
       .then((result) => {
         setEvaluation(result);
@@ -29,7 +28,7 @@ export function VisualSearchEvaluationContainer() {
         console.warn('Erro ao avaliar sessão:', err);
         setEvaluation(null);
       })
-      .finally(() => setLoading(false));
+      .finally(() => setLoaded(true));
   }, [sessionId]);
 
   if (!sessionLog) {
@@ -82,7 +81,8 @@ export function VisualSearchEvaluationContainer() {
     <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
       <VisualSearchEvaluationScreen
         sessionLog={sessionLogMapped}
-        geminiReport={loading ? undefined : (evaluation?.geminiReport ?? undefined)}
+        geminiReport={evaluation?.geminiReport ?? undefined}
+        loaded={loaded}
         onRepeatTraining={() => navigate('/treinar/seletiva/visual-search')}
         onBackToStart={() => navigate('/treinar/seletiva')}
       />
