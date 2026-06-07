@@ -1,6 +1,4 @@
 // vigil-evaluator/src/types.ts
-// Tipos de entrada e saída do serviço.
-// EvaluatorInput espelha os campos de EvaluatorInput em src/lib/evaluatorClient.ts do Vigil.
 
 export interface EvaluatorInput {
   sessionId: string;
@@ -28,11 +26,30 @@ export interface EvaluatorInput {
   };
 }
 
-export interface EvaluationReport {
-  score: number;
-  level: 'mínimo' | 'leve' | 'moderado' | 'importante';
+export interface LudicReport {
+  score: number;       // 0-100, espelha o score geral
+  label: string;       // ex: "Muito bom!"
+  emoji: string;       // ex: "⭐"
+}
+
+export interface GeneralReport {
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  recommendation: string;
+}
+
+export interface ClinicalReport {
   strengths: string[];
   weaknesses: string[];
   recommendation: string;
   clinicalNote: string;
+}
+
+export interface EvaluationReport {
+  score: number;
+  level: 'mínimo' | 'leve' | 'moderado' | 'importante';
+  ludic: LudicReport;
+  general: GeneralReport;
+  clinical: ClinicalReport;
 }
