@@ -7,12 +7,14 @@ export function VisualSearchEvaluationContainer() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('sessionId') || '';
 
+  // useVisualSearchEvaluation é async — mas o hook retorna sincrono inicialmente;
+  // se já for uma Promise, precisamos de useEffect. Como o hook já é síncrono na
+  // parte local e async apenas no Gemini, usamos o padrão existente.
   const evaluation = useVisualSearchEvaluation(sessionId);
   const navigate = useNavigate();
-
   const sessionLog = getSessionById(sessionId);
 
-  if (!evaluation || !sessionLog) {
+  if (!sessionLog) {
     return (
       <div style={{ maxWidth: 920, margin: '0 auto', padding: 16, textAlign: 'center' }}>
         <p>Carregando avaliação...</p>
@@ -37,7 +39,6 @@ export function VisualSearchEvaluationContainer() {
             durationMs: round.durationMs,
             reactionTimes: round.reactionTimes,
             gridSize: round.gridSize,
-            // cliques detalhados para análise de qualidade do erro e posição
             clicks: Array.isArray(round.clicks)
               ? round.clicks.map((c: any) => ({
                   isTarget: c.isTarget ?? false,
@@ -50,12 +51,10 @@ export function VisualSearchEvaluationContainer() {
                   screenHalf: c.screenHalf ?? 'left',
                 }))
               : undefined,
-            // varredura visual
             systematicMoves: round.systematicMoves,
             erraticMoves: round.erraticMoves,
             organizationIndex: round.organizationIndex,
             scanPattern: round.scanPattern,
-            // assimetria espacial
             leftSideClicks: round.leftSideClicks,
             rightSideClicks: round.rightSideClicks,
             leftSideTargetMisses: round.leftSideTargetMisses,
@@ -63,6 +62,7 @@ export function VisualSearchEvaluationContainer() {
             spatialAsymmetryIndex: round.spatialAsymmetryIndex,
           })),
         }}
+        geminiReport={(evaluation as any)?.geminiReport}
         onRepeatTraining={() => navigate('/treinar/seletiva/visual-search')}
         onBackToStart={() => navigate('/treinar/seletiva')}
       />
