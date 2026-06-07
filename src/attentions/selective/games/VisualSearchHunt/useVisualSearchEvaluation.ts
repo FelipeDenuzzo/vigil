@@ -326,31 +326,39 @@ export async function useVisualSearchEvaluation(
     console.warn("Falha ao calcular avaliação V2:", e);
   }
 
-  const totalClicks = current.rounds.reduce(
-    (sum, r) => sum + r.hits + r.rawErrors,
-    0
-  );
-  const evaluatorInput = buildEvaluatorInput(
-    currentLog.sessionId,
-    metrics,
-    technicalReport,
-    currentLog.rounds.length,
-    totalClicks
-  );
+  // ── GEMINI DESABILITADO TEMPORARIAMENTE ────────────────────────────────────
+  // Para reativar: remova este bloco e descomente o bloco original abaixo.
+  const geminiReport: GeminiReport | undefined = undefined;
+  void callEvaluator;      // mantém o import sem lint error
+  void buildEvaluatorInput;
+  void metrics;
+  // ── FIM DO BLOCO DESABILITADO ──────────────────────────────────────────────
 
-  const [, geminiResult] = await Promise.allSettled([
-    Promise.resolve(technicalReport),
-    callEvaluator(evaluatorInput),
-  ]);
-
-  const geminiReport: GeminiReport | undefined =
-    geminiResult.status === 'fulfilled' && geminiResult.value != null
-      ? geminiResult.value
-      : undefined;
-
-  if (geminiResult.status === 'rejected') {
-    console.warn('vigil-evaluator indisponível:', geminiResult.reason);
-  }
+  // const totalClicks = current.rounds.reduce(
+  //   (sum, r) => sum + r.hits + r.rawErrors,
+  //   0
+  // );
+  // const evaluatorInput = buildEvaluatorInput(
+  //   currentLog.sessionId,
+  //   metrics,
+  //   technicalReport,
+  //   currentLog.rounds.length,
+  //   totalClicks
+  // );
+  //
+  // const [, geminiResult] = await Promise.allSettled([
+  //   Promise.resolve(technicalReport),
+  //   callEvaluator(evaluatorInput),
+  // ]);
+  //
+  // const geminiReport: GeminiReport | undefined =
+  //   geminiResult.status === 'fulfilled' && geminiResult.value != null
+  //     ? geminiResult.value
+  //     : undefined;
+  //
+  // if (geminiResult.status === 'rejected') {
+  //   console.warn('vigil-evaluator indisponível:', geminiResult.reason);
+  // }
 
   const history = allSessions
     .filter((session) => session.sessionId !== currentSessionId)
