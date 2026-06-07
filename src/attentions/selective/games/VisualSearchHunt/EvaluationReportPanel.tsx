@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/EvaluationReportPanel.tsx
-// Painel com os 3 níveis de avaliação: Lúdico · Geral · Clínico
+// fix: remove propriedade 'border' duplicada no estilo tab (TS1117)
 
 import { useState } from 'react';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
@@ -32,7 +32,6 @@ const s = {
     marginBottom: 12,
   } as const,
 
-  // ── Tabs ──
   tabRow: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr 1fr',
@@ -48,8 +47,6 @@ const s = {
     borderBottom: active ? '2px solid #6c8ef5' : '2px solid transparent',
     cursor: 'pointer',
     background: 'none',
-    border: 'none',
-    borderBottom: active ? '2px solid #6c8ef5' : '2px solid transparent',
     transition: 'color 0.18s',
   }),
 
@@ -59,7 +56,6 @@ const s = {
     gap: 12,
   } as const,
 
-  // ── Régua lúdica ──
   gaugeWrap: {
     position: 'relative' as const,
     marginTop: 8,
@@ -112,7 +108,6 @@ const s = {
     marginBottom: 4,
   },
 
-  // ── Geral / Clínico ──
   summary: {
     fontSize: 14,
     color: '#c8cad8',
@@ -188,14 +183,11 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
 
   return (
     <div style={s.wrapper}>
-      {/* cabeçalho */}
       <div style={s.header}>
         <p style={s.title}>
           🤖 Avaliação IA
           <span style={s.levelBadge(report.level)}>{report.level}</span>
         </p>
-
-        {/* abas */}
         <div style={s.tabRow}>
           {(['ludic', 'general', 'clinical'] as Tab[]).map((t) => (
             <button
@@ -204,96 +196,67 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
               style={s.tab(tab === t)}
               onClick={() => setTab(t)}
             >
-              {t === 'ludic'    ? '🎯 Régua' :
-               t === 'general'  ? '📋 Geral' :
-                                  '🔬 Clínico'}
+              {t === 'ludic'   ? '🎯 Régua' :
+               t === 'general' ? '📋 Geral' :
+                                 '🔬 Clínico'}
             </button>
           ))}
         </div>
       </div>
 
-      {/* conteúdo */}
       <div style={s.body}>
-
-        {/* ── LÚDICO ── */}
         {tab === 'ludic' && (
           <>
-            <p style={s.ludicScore}>
-              {report.ludic.emoji} {report.ludic.score}
-            </p>
+            <p style={s.ludicScore}>{report.ludic.emoji} {report.ludic.score}</p>
             <p style={s.ludicLabel}>{report.ludic.label}</p>
-
             <div style={s.gaugeWrap}>
               <div style={s.gaugeTrack}>
                 <div style={s.gaugeMarker(report.ludic.score)} />
               </div>
               <div style={s.gaugeLegend}>
-                <span>0</span>
-                <span>25</span>
-                <span>50</span>
-                <span>75</span>
-                <span>100</span>
+                <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
               </div>
             </div>
           </>
         )}
 
-        {/* ── GERAL ── */}
         {tab === 'general' && (
           <>
             <p style={s.summary}>{report.general.summary}</p>
-
             <p style={s.listTitle}>Pontos fortes</p>
             {report.general.strengths.map((item, i) => (
               <div key={i} style={s.listItem}>
-                <span style={s.dot('#6dbf87')} />
-                {item}
+                <span style={s.dot('#6dbf87')} />{item}
               </div>
             ))}
-
             <p style={s.listTitle}>Pontos de atenção</p>
             {report.general.weaknesses.map((item, i) => (
               <div key={i} style={s.listItem}>
-                <span style={s.dot('#f5c070')} />
-                {item}
+                <span style={s.dot('#f5c070')} />{item}
               </div>
             ))}
-
-            <div style={s.recommendBox}>
-              💡 {report.general.recommendation}
-            </div>
+            <div style={s.recommendBox}>💡 {report.general.recommendation}</div>
           </>
         )}
 
-        {/* ── CLÍNICO ── */}
         {tab === 'clinical' && (
           <>
             <p style={s.listTitle}>Pontos preservados</p>
             {report.clinical.strengths.map((item, i) => (
               <div key={i} style={s.listItem}>
-                <span style={s.dot('#6dbf87')} />
-                {item}
+                <span style={s.dot('#6dbf87')} />{item}
               </div>
             ))}
-
             <p style={s.listTitle}>Achados</p>
             {report.clinical.weaknesses.map((item, i) => (
               <div key={i} style={s.listItem}>
-                <span style={s.dot('#f08080')} />
-                {item}
+                <span style={s.dot('#f08080')} />{item}
               </div>
             ))}
-
-            <div style={s.recommendBox}>
-              📋 {report.clinical.recommendation}
-            </div>
-
-            <div style={s.clinicalNote}>
-              {report.clinical.clinicalNote}
-            </div>
+            <div style={s.recommendBox}>📋 {report.clinical.recommendation}</div>
+            <div style={s.clinicalNote}>{report.clinical.clinicalNote}</div>
           </>
         )}
-
       </div>
     </div>
   );
