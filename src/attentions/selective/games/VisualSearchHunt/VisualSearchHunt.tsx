@@ -312,6 +312,9 @@ export default function VisualSearchHunt({
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]);
   const [feedback, setFeedback] = useState<'mark' | 'unmark' | null>(null);
 
+  // Flag to trigger finishSession after state update from advanceRoundNow
+  const pendingFinishRef = useRef(false);
+
   const config = useMemo(() => getLevelConfig(level), [level]);
   const timerRef = useRef<number | null>(null);
   const roundStartRef = useRef<number>(0);
@@ -331,7 +334,6 @@ export default function VisualSearchHunt({
       const totalSelections = result.hits + result.errors;
       const accuracy = totalSelections > 0 ? Number(((result.hits / totalSelections) * 100).toFixed(2)) : 0;
       const searchAnalysis = analyzeVisualSearchOrganization([...clickLogRef.current], result.gridSize, tiles);
-      // ── Calcular distractorOpportunities: total de tiles - alvos ──
       const distractorOpportunities = result.totalTargets > 0
         ? result.gridSize * result.gridSize - result.totalTargets
         : 0;
@@ -408,6 +410,38 @@ export default function VisualSearchHunt({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
+
+  const finishSession = useCallback((results: RoundResult[]) => {
+    const totalHits = results.reduce((s, r) => s + r.hits, 0);
+    const totalErrors = results.reduce((s, r) => s + r.errors, 0);
+    const roundsWon = results.filter((r) => r.status === 'won').length;
+    const roundsLost = results.filter((r) => r.status === 'lost').length;
+    const startedAt = results[0]?.startedAt ?? Date.now();
+    const completedAt = Date.now();
+    const totalSelections = totalHits + totalErrors;
+    const sessionId = sessionLogRef.current?.sessionId ?? `vsh-${startedAt}`;
+    const gameResult: GameResult = {
+      sessionId,
+      gameId: 'visual-search-hunt',
+      attentionType: 'selective',
+      startedAt, completedAt, sessionStatus: 'completed', abandoned: false, completed: true,
+      totalRoundsPlanned: results.length, completedRounds: roundsWon + roundsLost,
+      startedRounds: results.length,
+      lastRoundIndexReached: results[results.length - 1]?.roundIndex ?? roundIndex,
+      lastLevelReached: results[results.length - 1]?.level ?? level,
+      accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
+    };
+    try {
+      if (sessionLogRef.current) {
+        sessionLogRef.current.completedAt = completedAt;
+        sessionLogRef.current.abandoned = false;
+        saveSession(sessionLogRef.current);
+      }
+      saveResult(gameResult);
+    } catch (e) {}
+    onEnd?.(gameResult);
+    navigate(`/treinar/seletiva/visual-search/resultado?sessionId=${sessionId}`);
+  }, [roundIndex, level, onEnd, navigate]);
 
   const finishRound = useCallback(
     (resultStatus: 'won' | 'lost') => {
@@ -487,38 +521,6 @@ export default function VisualSearchHunt({
     [status, roundIndex, level, targetShape, targetColor, config.gridSize, onCorrectSound, onErrorSound, showFeedback],
   );
 
-  const finishSession = useCallback((results: RoundResult[]) => {
-    const totalHits = results.reduce((s, r) => s + r.hits, 0);
-    const totalErrors = results.reduce((s, r) => s + r.errors, 0);
-    const roundsWon = results.filter((r) => r.status === 'won').length;
-    const roundsLost = results.filter((r) => r.status === 'lost').length;
-    const startedAt = results[0]?.startedAt ?? Date.now();
-    const completedAt = Date.now();
-    const totalSelections = totalHits + totalErrors;
-    const sessionId = sessionLogRef.current?.sessionId ?? `vsh-${startedAt}`;
-    const gameResult: GameResult = {
-      sessionId,
-      gameId: 'visual-search-hunt',
-      attentionType: 'selective',
-      startedAt, completedAt, sessionStatus: 'completed', abandoned: false, completed: true,
-      totalRoundsPlanned: results.length, completedRounds: roundsWon + roundsLost,
-      startedRounds: results.length,
-      lastRoundIndexReached: results[results.length - 1]?.roundIndex ?? roundIndex,
-      lastLevelReached: results[results.length - 1]?.level ?? level,
-      accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
-    };
-    try {
-      if (sessionLogRef.current) {
-        sessionLogRef.current.completedAt = completedAt;
-        sessionLogRef.current.abandoned = false;
-        saveSession(sessionLogRef.current);
-      }
-      saveResult(gameResult);
-    } catch (e) {}
-    onEnd?.(gameResult);
-    navigate(`/treinar/seletiva/visual-search/resultado?sessionId=${sessionId}`);
-  }, [roundIndex, level, onEnd, navigate]);
-
   const goToNextRound = useCallback(() => {
     if (roundIndex >= MAX_PHASES) {
       finishSession(roundResults);
@@ -555,18 +557,26 @@ export default function VisualSearchHunt({
       }
       persistRoundLog(result);
     } catch (e) {}
-    setRoundResults((prev) => {
-      const next = [...prev, result];
-      if (roundIndex >= MAX_PHASES) {
-        finishSession(next);
-      } else {
-        setLevel((l) => l + 1);
-        setRoundIndex((r) => r + 1);
-        setStatus('instruction');
-      }
-      return next;
-    });
-  }, [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime, persistRoundLog, finishSession]);
+
+    if (roundIndex >= MAX_PHASES) {
+      // Mark flag so the effect below triggers finishSession after state settles
+      pendingFinishRef.current = true;
+      setRoundResults((prev) => [...prev, result]);
+    } else {
+      setRoundResults((prev) => [...prev, result]);
+      setLevel((l) => l + 1);
+      setRoundIndex((r) => r + 1);
+      setStatus('instruction');
+    }
+  }, [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime, persistRoundLog]);
+
+  // Safe effect: finish session after roundResults state has settled
+  useEffect(() => {
+    if (pendingFinishRef.current && roundResults.length > 0) {
+      pendingFinishRef.current = false;
+      finishSession(roundResults);
+    }
+  }, [roundResults, finishSession]);
 
   useEffect(() => { return () => clearTimer(); }, [clearTimer]);
 
@@ -596,6 +606,7 @@ export default function VisualSearchHunt({
     setTiles([]); setRoundResults([]); setRemainingTime(FIXED_TIME_SECONDS);
     clickLogRef.current = []; roundStartRef.current = 0; sessionLogRef.current = null;
     roundGeneratedRef.current = false;
+    pendingFinishRef.current = false;
   }, [clearTimer, markSessionAbandoned]);
 
   useEffect(() => {
