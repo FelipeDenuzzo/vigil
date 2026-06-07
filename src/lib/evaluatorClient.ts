@@ -1,16 +1,12 @@
 // src/lib/evaluatorClient.ts
-// Etapa 3.5 — cliente do vigil-evaluator (Cloud Run + Gemini)
-//
-// DIRETRIZ: antes de acessar qualquer campo de tipo externo, confirmar
-// que o campo existe no tipo real (visualSearchScale.types.ts).
-// Nunca assumir campos do plano — sempre verificar o tipo fonte.
+// Atualizado: tipagem refletindo os 3 níveis do vigil-evaluator (ludic, general, clinical)
 
 import type {
   VisualSearchTechnicalReport,
   VisualSearchMetrics,
 } from '../attentions/selective/games/VisualSearchHunt/assessment/visualSearchScale.types';
 
-// ─── Tipos espelhados do vigil-evaluator ─────────────────────────────────────
+// ─── Tipos de entrada ────────────────────────────────────────────────────────
 export interface EvaluatorInput {
   sessionId: string;
   attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida';
@@ -37,13 +33,33 @@ export interface EvaluatorInput {
   };
 }
 
-export interface EnrichedReport {
-  score: number;
-  level: 'mínimo' | 'leve' | 'moderado' | 'importante';
+// ─── Tipos de retorno — 3 níveis ─────────────────────────────────────────────
+export interface LudicReport {
+  score: number;    // 0-100
+  label: string;   // ex: "Muito bom!"
+  emoji: string;   // ex: "⭐"
+}
+
+export interface GeneralReport {
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  recommendation: string;
+}
+
+export interface ClinicalReport {
   strengths: string[];
   weaknesses: string[];
   recommendation: string;
   clinicalNote: string;
+}
+
+export interface EvaluationReport {
+  score: number;
+  level: 'mínimo' | 'leve' | 'moderado' | 'importante';
+  ludic: LudicReport;
+  general: GeneralReport;
+  clinical: ClinicalReport;
 }
 
 // ─── Helpers internos ─────────────────────────────────────────────────────────
@@ -150,7 +166,7 @@ export function buildEvaluatorInput(
 // ─── Chamada ao Cloud Run ─────────────────────────────────────────────────────
 export async function callEvaluator(
   input: EvaluatorInput
-): Promise<EnrichedReport | null> {
+): Promise<EvaluationReport | null> {
   const url    = import.meta.env.VITE_EVALUATOR_URL;
   const secret = import.meta.env.VITE_EVALUATOR_SECRET;
   if (!url || !secret) return null;
@@ -163,10 +179,10 @@ export async function callEvaluator(
         'x-evaluator-secret': secret,
       },
       body: JSON.stringify(input),
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(15_000),
     });
     if (!res.ok) return null;
-    return res.json() as Promise<EnrichedReport>;
+    return res.json() as Promise<EvaluationReport>;
   } catch {
     return null;
   }
