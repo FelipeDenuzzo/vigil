@@ -13,8 +13,16 @@ const PORT   = parseInt(process.env.PORT ?? '8080', 10);
 const SECRET = process.env.EVALUATOR_SECRET;
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://vigil-app.vercel.app'],
-  methods: ['POST', 'GET'],
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://vigil-app.vercel.app',
+    'https://vigil-felipedenuzzos-projects.vercel.app',
+    'https://vigil-git-main-felipedenuzzos-projects.vercel.app',
+    'https://atento-felipedenuzzos-projects.vercel.app',
+    'https://atento-git-main-felipedenuzzos-projects.vercel.app',
+  ],
+  methods: ['POST', 'GET', 'OPTIONS'],
 }));
 app.use(express.json());
 
