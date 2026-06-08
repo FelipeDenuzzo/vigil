@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../lib/firebase';
+import db from '../../../../lib/firebase';
 import { useVisualSearchEvaluation } from './useVisualSearchEvaluation';
 import type { EvaluationReport as InternalReport } from './useVisualSearchEvaluation';
 import { getSessionById } from '../../../../shared/storage';
