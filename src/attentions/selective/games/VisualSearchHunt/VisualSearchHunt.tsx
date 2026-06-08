@@ -440,7 +440,7 @@ export default function VisualSearchHunt({
       saveResult(gameResult);
     } catch (e) {}
     onEnd?.(gameResult);
-    navigate(`/treinar/seletiva/visual-search/resultado?sessionId=${sessionId}`);
+    navigate(`/treinar/seletiva/mapa-de-simbolos/resultado?sessionId=${sessionId}`);
   }, [roundIndex, level, onEnd, navigate]);
 
   const finishRound = useCallback(
@@ -559,7 +559,6 @@ export default function VisualSearchHunt({
     } catch (e) {}
 
     if (roundIndex >= MAX_PHASES) {
-      // Mark flag so the effect below triggers finishSession after state settles
       pendingFinishRef.current = true;
       setRoundResults((prev) => [...prev, result]);
     } else {
@@ -570,7 +569,6 @@ export default function VisualSearchHunt({
     }
   }, [clearTimer, tiles, roundIndex, level, targetShape, targetColor, config.gridSize, remainingTime, persistRoundLog]);
 
-  // Safe effect: finish session after roundResults state has settled
   useEffect(() => {
     if (pendingFinishRef.current && roundResults.length > 0) {
       pendingFinishRef.current = false;
