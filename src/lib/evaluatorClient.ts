@@ -8,6 +8,7 @@ import type {
 
 // ─── Tipos de entrada ────────────────────────────────────────────────────────
 export interface EvaluatorInput {
+  game: 'visual-search';
   sessionId: string;
   attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida';
   roundCount: number;
@@ -137,6 +138,7 @@ export function buildEvaluatorInput(
     );
 
   return {
+    game: 'visual-search',
     sessionId,
     attentionType: 'seletiva',
     roundCount,
