@@ -15,6 +15,7 @@ import { buildVisualSearchV2Result } from "./assessment-v2";
 import type { VisualSearchV2AssessmentResult } from "./assessment-v2";
 import { callEvaluator, buildEvaluatorInput } from "../../../../lib/evaluatorClient";
 import type { EvaluationReport as GeminiReport } from "../../../../lib/evaluatorClient";
+import { saveReport } from "../../../../lib/saveReport";
 
 export interface RoundEvaluation {
   roundIndex: number;
@@ -307,7 +308,6 @@ export async function useVisualSearchEvaluation(
   const technicalReport = buildVisualSearchTechnicalReport(sessionMetrics);
   const metrics = calculateVisualSearchMetrics(sessionMetrics);
 
-  // mantém imports utilizados (v2, scaleResult não são mais exibidos mas preservamos a lógica)
   let v2Result: VisualSearchV2AssessmentResult | undefined;
   try {
     const v2SessionLog = currentLog as any;
@@ -352,6 +352,11 @@ export async function useVisualSearchEvaluation(
 
   if (geminiResult.status === 'rejected') {
     console.warn('vigil-evaluator indisponível:', geminiResult.reason);
+  }
+
+  // Salva laudo no Firebase Storage + URL no Firestore (fire-and-forget)
+  if (geminiReport) {
+    saveReport(geminiReport, evaluatorInput);
   }
 
   const history = allSessions
