@@ -186,7 +186,7 @@ export async function callEvaluator(
         'x-evaluator-secret': secret,
       },
       body: JSON.stringify(input),
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(45_000),
     });
 
     if (!res.ok) {
