@@ -8,7 +8,6 @@ import { SelectAttention } from './pages/SelectAttention';
 import { SelectiveHub } from './attentions/selective/SelectiveHub';
 import VisualSearchPlay from './attentions/selective/VisualSearchPlay';
 import VisualSearchEvaluationContainer from './attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationContainer';
-import MapaSimbolosEvaluationContainer from './attentions/selective/games/VisualSearchHunt/MapaSimbolosEvaluationContainer';
 import { SustainedHub } from './attentions/sustained/SustainedHub';
 import { AlternatingHub } from './attentions/alternating/AlternatingHub';
 import { DividedHub } from './attentions/divided/DividedHub';
@@ -28,7 +27,6 @@ export default function App() {
           <Route path="/treinar/seletiva/visual-search" element={<ProtectedRoute><VisualSearchPlay /></ProtectedRoute>} />
           <Route path="/treinar/seletiva/visual-search/resultado" element={<ProtectedRoute><VisualSearchEvaluationContainer /></ProtectedRoute>} />
           <Route path="/treinar/seletiva/visual-search/evaluation" element={<ProtectedRoute><VisualSearchEvaluationContainer /></ProtectedRoute>} />
-          <Route path="/treinar/seletiva/mapa-de-simbolos/resultado" element={<ProtectedRoute><MapaSimbolosEvaluationContainer /></ProtectedRoute>} />
           <Route path="/treinar/sustentada" element={<ProtectedRoute><SustainedHub /></ProtectedRoute>} />
           <Route path="/treinar/alternada" element={<ProtectedRoute><AlternatingHub /></ProtectedRoute>} />
           <Route path="/treinar/dividida" element={<ProtectedRoute><DividedHub /></ProtectedRoute>} />
