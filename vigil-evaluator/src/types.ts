@@ -27,9 +27,9 @@ export interface EvaluatorInput {
 }
 
 export interface LudicReport {
-  score: number;       // 0-100, espelha o score geral
-  label: string;       // ex: "Muito bom!"
-  emoji: string;       // ex: "⭐"
+  score: number;
+  label: string;
+  emoji: string;
 }
 
 export interface GeneralReport {
@@ -52,4 +52,18 @@ export interface EvaluationReport {
   ludic: LudicReport;
   general: GeneralReport;
   clinical: ClinicalReport;
+}
+
+// Job assíncrono salvo no Firestore
+export type JobStatus = 'pending' | 'done' | 'error';
+
+export interface EvaluationJob {
+  jobId: string;
+  sessionId: string;
+  status: JobStatus;
+  payload: EvaluatorInput;
+  result: EvaluationReport | null;
+  error: string | null;
+  createdAt: number;
+  finishedAt: number | null;
 }

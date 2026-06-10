@@ -11,12 +11,11 @@ const model = genAI.getGenerativeModel({
   generationConfig: { temperature: 0.3, maxOutputTokens: 4096 },
 });
 
-// Calcula o nível lúdico localmente — sem gastar tokens do Gemini
 function buildLudic(score: number): LudicReport {
-  if (score >= 90) return { score, label: 'Excelente!',      emoji: '🏆' };
-  if (score >= 75) return { score, label: 'Muito bom!',      emoji: '⭐' };
-  if (score >= 60) return { score, label: 'Bom desempenho!', emoji: '👍' };
-  if (score >= 45) return { score, label: 'Em progresso.',   emoji: '💪' };
+  if (score >= 90) return { score, label: 'Excelente!',        emoji: '🏆' };
+  if (score >= 75) return { score, label: 'Muito bom!',        emoji: '⭐' };
+  if (score >= 60) return { score, label: 'Bom desempenho!',   emoji: '👍' };
+  if (score >= 45) return { score, label: 'Em progresso.',     emoji: '💪' };
   return                  { score, label: 'Precisa praticar.', emoji: '🌱' };
 }
 
@@ -86,11 +85,6 @@ function extractJson(raw: string): string {
   return raw;
 }
 
-/**
- * Sanitiza strings dentro do JSON para escapar quebras de linha literais,
- * tabs e aspas não-escapadas que o Gemini ocasionalmente insere em campos
- * de texto livre, corrompendo o JSON.parse.
- */
 function sanitizeJsonStrings(jsonText: string): string {
   return jsonText.replace(
     /:\s*"([\s\S]*?)(?<!\\)"/g,
@@ -109,7 +103,6 @@ function sanitizeJsonStrings(jsonText: string): string {
 function validateResponse(parsed: unknown): Omit<EvaluationReport, 'ludic'> {
   const obj = parsed as Record<string, unknown>;
 
-  // score=0 é válido — verificar typeof, NÃO usar !obj.score
   if (typeof obj.score !== 'number' || obj.score < 0 || obj.score > 100) {
     throw new Error('score é obrigatório e deve ser um número entre 0 e 100');
   }
@@ -141,37 +134,32 @@ export async function evaluate(input: EvaluatorInput): Promise<EvaluationReport>
     throw new Error('GEMINI_API_KEY não configurada');
   }
 
-  try {
-    const prompt = buildPrompt(input);
-    const result = await model.generateContent(prompt);
+  const prompt = buildPrompt(input);
+  const result = await model.generateContent(prompt);
 
-    if (!result.response) {
-      throw new Error('Resposta vazia do Gemini (sem response)');
-    }
-
-    const raw = result.response.text();
-    if (!raw || raw.trim().length === 0) {
-      throw new Error('Resposta vazia do Gemini (text vazio)');
-    }
-
-    const clean = extractJson(raw);
-    if (!clean || clean.trim().length === 0) {
-      throw new Error(`Nenhum JSON encontrado na resposta: ${raw.slice(0, 200)}`);
-    }
-
-    const safeJson = sanitizeJsonStrings(clean);
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(safeJson);
-    } catch (e) {
-      throw new Error(`JSON parse falhou: ${clean.slice(0, 400)} | Erro: ${String(e)}`);
-    }
-
-    const validated = validateResponse(parsed);
-    return { ...validated, ludic: buildLudic(validated.score) };
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    throw new Error(`Erro ao avaliar com Gemini: ${msg}`);
+  if (!result.response) {
+    throw new Error('Resposta vazia do Gemini (sem response)');
   }
+
+  const raw = result.response.text();
+  if (!raw || raw.trim().length === 0) {
+    throw new Error('Resposta vazia do Gemini (text vazio)');
+  }
+
+  const clean = extractJson(raw);
+  if (!clean || clean.trim().length === 0) {
+    throw new Error(`Nenhum JSON encontrado na resposta: ${raw.slice(0, 200)}`);
+  }
+
+  const safeJson = sanitizeJsonStrings(clean);
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(safeJson);
+  } catch (e) {
+    throw new Error(`JSON parse falhou: ${clean.slice(0, 400)} | Erro: ${String(e)}`);
+  }
+
+  const validated = validateResponse(parsed);
+  return { ...validated, ludic: buildLudic(validated.score) };
 }
