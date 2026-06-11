@@ -1,64 +1,59 @@
 import type { GameResult, SessionLog } from "./types";
 
-const SESSIONS_KEY = "vigil:sessions";
-const RESULTS_KEY = "vigil:results";
+// localStorage é bloqueado em iframes sandboxados (Vercel).
+// Usamos Maps em memória como store primário — os dados persistem
+// durante toda a sessão do navegador (enquanto a aba estiver aberta).
 
-function safeRead<T>(key: string): T[] {
-  if (typeof window === "undefined") return [];
+const sessionsMap = new Map<string, SessionLog>();
+const resultsMap = new Map<string, GameResult>();
 
+// Tenta hidratar do localStorage na inicialização (funciona fora de sandbox).
+(function hydrate() {
+  if (typeof window === "undefined") return;
   try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return [];
-
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    const rawSessions = localStorage.getItem("vigil:sessions");
+    if (rawSessions) {
+      const parsed: SessionLog[] = JSON.parse(rawSessions);
+      if (Array.isArray(parsed)) parsed.forEach((s) => sessionsMap.set(s.sessionId, s));
+    }
+    const rawResults = localStorage.getItem("vigil:results");
+    if (rawResults) {
+      const parsed: GameResult[] = JSON.parse(rawResults);
+      if (Array.isArray(parsed)) parsed.forEach((r) => resultsMap.set(r.sessionId, r));
+    }
   } catch {
-    return [];
+    // silencioso — localStorage indisponível no sandbox
   }
+})();
+
+function persistSessions() {
+  try {
+    localStorage.setItem("vigil:sessions", JSON.stringify([...sessionsMap.values()]));
+  } catch { /* silencioso */ }
 }
 
-function safeWrite<T>(key: string, value: T[]): void {
-  if (typeof window === "undefined") return;
-
+function persistResults() {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // silencioso de propósito
-  }
+    localStorage.setItem("vigil:results", JSON.stringify([...resultsMap.values()]));
+  } catch { /* silencioso */ }
 }
 
 export function getAllSessions(): SessionLog[] {
-  return safeRead<SessionLog>(SESSIONS_KEY);
+  return [...sessionsMap.values()];
 }
 
 export function getAllResults(): GameResult[] {
-  return safeRead<GameResult>(RESULTS_KEY);
+  return [...resultsMap.values()];
 }
 
 export function saveSession(session: SessionLog): void {
-  const sessions = getAllSessions();
-  const index = sessions.findIndex((s) => s.sessionId === session.sessionId);
-
-  if (index >= 0) {
-    sessions[index] = session;
-  } else {
-    sessions.push(session);
-  }
-
-  safeWrite(SESSIONS_KEY, sessions);
+  sessionsMap.set(session.sessionId, session);
+  persistSessions();
 }
 
 export function saveResult(result: GameResult): void {
-  const results = getAllResults();
-  const index = results.findIndex((r) => r.sessionId === result.sessionId);
-
-  if (index >= 0) {
-    results[index] = result;
-  } else {
-    results.push(result);
-  }
-
-  safeWrite(RESULTS_KEY, results);
+  resultsMap.set(result.sessionId, result);
+  persistResults();
 }
 
 export function getResultsByGame(gameId: string): GameResult[] {
@@ -70,20 +65,18 @@ export function getSessionsByGame(gameId: string): SessionLog[] {
 }
 
 export function getSessionById(sessionId: string): SessionLog | null {
-  return getAllSessions().find((s) => s.sessionId === sessionId) ?? null;
+  return sessionsMap.get(sessionId) ?? null;
 }
 
 export function getResultBySessionId(sessionId: string): GameResult | null {
-  return getAllResults().find((r) => r.sessionId === sessionId) ?? null;
+  return resultsMap.get(sessionId) ?? null;
 }
 
 export function clearAllData(): void {
-  if (typeof window === "undefined") return;
-
+  sessionsMap.clear();
+  resultsMap.clear();
   try {
-    localStorage.removeItem(SESSIONS_KEY);
-    localStorage.removeItem(RESULTS_KEY);
-  } catch {
-    // silencioso de propósito
-  }
+    localStorage.removeItem("vigil:sessions");
+    localStorage.removeItem("vigil:results");
+  } catch { /* silencioso */ }
 }
