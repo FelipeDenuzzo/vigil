@@ -13,12 +13,16 @@ export async function saveReport(
     const md = reportToMarkdown(report, input);
     const storageRef = ref(storage, `laudos/${input.sessionId}.md`);
 
+    console.log('[saveReport] iniciando upload Storage...');
     await uploadString(storageRef, md, 'raw', {
       contentType: 'text/markdown',
     });
+    console.log('[saveReport] upload Storage OK');
 
     const downloadUrl = await getDownloadURL(storageRef);
+    console.log('[saveReport] getDownloadURL OK:', downloadUrl);
 
+    console.log('[saveReport] iniciando setDoc Firestore...');
     await setDoc(doc(db, 'sessions', input.sessionId), {
       sessionId: input.sessionId,
       game: input.game,
@@ -28,6 +32,7 @@ export async function saveReport(
       reportUrl: downloadUrl,
       createdAt: serverTimestamp(),
     }, { merge: true });
+    console.log('[saveReport] setDoc Firestore OK');
 
     return downloadUrl;
   } catch (err) {
