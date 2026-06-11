@@ -312,7 +312,6 @@ export default function VisualSearchHunt({
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]);
   const [feedback, setFeedback] = useState<'mark' | 'unmark' | null>(null);
 
-  // Flag to trigger finishSession after state update from advanceRoundNow
   const pendingFinishRef = useRef(false);
 
   const config = useMemo(() => getLevelConfig(level), [level]);
@@ -440,7 +439,7 @@ export default function VisualSearchHunt({
       saveResult(gameResult);
     } catch (e) {}
     onEnd?.(gameResult);
-    navigate(`/treinar/seletiva/mapa-de-simbolos/resultado?sessionId=${sessionId}`);
+    navigate(`/treinar/seletiva/visual-search/resultado?sessionId=${sessionId}`);
   }, [roundIndex, level, onEnd, navigate]);
 
   const finishRound = useCallback(
