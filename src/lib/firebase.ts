@@ -18,9 +18,12 @@ export const storage = getStorage(app);
 
 // experimentalForceLongPolling: evita ERR_BLOCKED_BY_CLIENT causado por
 // extensões de navegador (uBlock, AdBlock, Brave) que bloqueiam o streaming
-// gRPC-Web do Firestore (Listen/channel). Long polling usa HTTP simples.
+// gRPC-Web do Firestore (Listen/channel e Write/channel).
+// experimentalAutoDetectLongPolling: false impede que o SDK retorne para
+// gRPC-Web automaticamente em qualquer situação.
 const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
+  experimentalAutoDetectLongPolling: false,
   cacheSizeBytes: CACHE_SIZE_UNLIMITED,
 });
 
