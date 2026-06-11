@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -15,5 +15,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
-const db = getFirestore(app);
+
+// experimentalForceLongPolling: evita ERR_BLOCKED_BY_CLIENT causado por
+// extensões de navegador (uBlock, AdBlock, Brave) que bloqueiam o streaming
+// gRPC-Web do Firestore (Listen/channel). Long polling usa HTTP simples.
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+  cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+});
+
 export default db;
