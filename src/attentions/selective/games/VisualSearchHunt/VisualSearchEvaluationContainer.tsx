@@ -14,6 +14,8 @@ import type { EvaluationReport as GeminiReport } from '../../../../lib/evaluator
 /** false = IA chamando | 'organizing' = IA ok, app montando | true = tudo pronto */
 type LoadedState = false | 'organizing' | true;
 
+const RETRYABLE_CODES = new Set(['unavailable', 'permission-denied', 'resource-exhausted']);
+
 async function saveReportToFirestore(
   sessionId: string,
   report: GeminiReport
@@ -46,8 +48,8 @@ async function loadReportFromFirestore(
     }
     return null;
   } catch (err: any) {
-    // Se o cliente ainda não estabeleceu conexão, aguarda 2s e tenta uma vez mais
-    if (err?.code === 'unavailable') {
+    // Retenta após 2s para erros transitórios de conectividade, permissão ou quota
+    if (RETRYABLE_CODES.has(err?.code)) {
       try {
         await new Promise(r => setTimeout(r, 2000));
         const ref = doc(db, 'sessionReports', sessionId);
