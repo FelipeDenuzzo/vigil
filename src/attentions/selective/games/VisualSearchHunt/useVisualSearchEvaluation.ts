@@ -99,8 +99,13 @@ const GAME_ID = "visual-search-hunt";
 const IES_MAX = 9999;
 const SCORE_BASE = 100_000;
 
+/** Resolve o timestamp de um click-log, independente do campo salvo */
+function ts(click: any): number {
+  return click.timestampMs ?? click.timestamp ?? 0;
+}
+
 function sortClicks(clicks: any[]): any[] {
-  return [...clicks].sort((a, b) => (a.timestampMs ?? a.timestamp ?? 0) - (b.timestampMs ?? b.timestamp ?? 0));
+  return [...clicks].sort((a, b) => ts(a) - ts(b));
 }
 
 function getWrongCorrectionTimes(clicks: any[]): number[] {
@@ -115,8 +120,8 @@ function getWrongCorrectionTimes(clicks: any[]): number[] {
     }
     if (click.action === "unmark" && openWrongMarks.length > 0) {
       const wrongMark = openWrongMarks.shift();
-      if (wrongMark && click.timestamp > wrongMark.timestamp) {
-        correctionTimes.push(click.timestamp - wrongMark.timestamp);
+      if (wrongMark && ts(click) > ts(wrongMark)) {
+        correctionTimes.push(ts(click) - ts(wrongMark));
       }
     }
   }
@@ -178,19 +183,19 @@ function evaluateRound(round: any): RoundEvaluation {
   const firstWrong = wrongMarks[0] ?? null;
 
   const wrong_before_first_hit =
-    !!firstWrong && !!firstHit ? firstWrong.timestamp < firstHit.timestamp : false;
+    !!firstWrong && !!firstHit ? ts(firstWrong) < ts(firstHit) : false;
   const first_click_correct = !!firstMark && firstMark.isTarget;
   const correct_then_wrong = targetMarks.some((hit) =>
-    wrongMarks.some((wrong) => wrong.timestamp > hit.timestamp)
+    wrongMarks.some((wrong) => ts(wrong) > ts(hit))
   );
   const correct_then_unmarked = unmarks.some((unmark) =>
-    targetMarks.some((hit) => unmark.timestamp > hit.timestamp)
+    targetMarks.some((hit) => ts(unmark) > ts(hit))
   );
   const repeated_wrong_before_hit =
-    wrongMarks.filter((wrong) => !firstHit || wrong.timestamp < firstHit.timestamp).length >= 2;
+    wrongMarks.filter((wrong) => !firstHit || ts(wrong) < ts(firstHit)).length >= 2;
   const no_hit_round = hits === 0;
   const recovered_after_error = unmarks.some((unmark) =>
-    targetMarks.some((hit) => hit.timestamp > unmark.timestamp)
+    targetMarks.some((hit) => ts(hit) > ts(unmark))
   );
   const unstable_switching = clicks.length >= 9 && unmarks.length >= 2;
 
