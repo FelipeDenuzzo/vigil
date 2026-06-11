@@ -10,7 +10,7 @@ import type {
   VisualSearchTechnicalReport,
 } from './visualSearchScale.types';
 
-// ─── Severidade global ──────────────────────────────────────────────────────────────────────────
+// ─── Severidade global ──────────────────────────────────────────────────────────────────────────────────────────────
 
 function getSeverity(omissionRate: number, commissionRate: number): SubscaleSeverity {
   const maxRate = Math.max(omissionRate, commissionRate);
@@ -20,7 +20,69 @@ function getSeverity(omissionRate: number, commissionRate: number): SubscaleSeve
   return 'importante';
 }
 
-// ─── Indicadores positivos ──────────────────────────────────────────────────────────────────────
+// ─── Early return: sessão sem engajamento ───────────────────────────────────────────────────────────────────────────────
+//
+// Quando não há nenhum clique registrado, não é possível calcular precisão,
+// padrão de varredura, discriminação de atributos ou controle inibitório.
+// A ausência de erros NEÃO deve ser interpretada como acerto.
+// O score é anulado (0) e a régua não deve exibir valor significativo.
+
+function buildNoEngagementReport(
+  m: ReturnType<typeof calculateVisualSearchMetrics>,
+): VisualSearchTechnicalReport {
+  return {
+    title: 'Avaliação do Visual Search Hunt',
+    question: 'O paciente tem dificuldade em filtrar distratores?',
+    answer: 'insuficiente',
+    dominantPattern: 'omissao',
+    severity: 'importante',
+    positiveIndicators: [],
+    redFlag: null,
+    summary:
+      `Sessão inconclusiva — nenhum clique registrado em ${m.totalRounds} round(s). ` +
+      `A ausência de interação impede qualquer avaliação de precisão, ` +
+      `varredura visual, padrão espacial ou controle inibitório. ` +
+      `Score: 0/100.`,
+    interpretation:
+      'Protocolo inconclusivo por ausência de resposta comportamental mensurável. ' +
+      'A ausência de erros não equivale a acerto. ' +
+      'Possíveis causas não dissociáveis neste protocolo: não compreensão da instrução, ' +
+      'recusa ou evitação da tarefa, rebaixamento do nível de alerta, ' +
+      'lentificação psicomotora acentuada, falha do dispositivo de entrada ou ' +
+      'interrupção atencional grave. ' +
+      'Reaplicar após checagem de compreensão, dispositivo e condições clínicas.',
+    subscalesSummary: {
+      selectiveAttention: 'Dados insuficientes — nenhum clique registrado.',
+      visualScanning: 'Dados insuficientes — nenhum clique registrado.',
+      spatialAsymmetry: 'Dados insuficientes — nenhum clique registrado.',
+      speedConsistency: 'Dados insuficientes — nenhum clique registrado.',
+    },
+    evidence: {
+      totalTargets: m.totalTargets,
+      totalHits: 0,
+      totalErrors: 0,
+      totalMissedTargets: m.totalMissedTargets,
+      totalRounds: m.totalRounds,
+      omissionRate: m.omissionRate,
+      commissionRate: 0,
+      accuracyRate: 0,
+      hitRate: 0,
+      falseAlarmRate: null,
+      dPrime: null,
+      dPrimeBand: 'indisponivel',
+      meanReactionTimeMs: null,
+      reactionTimeStdDev: null,
+      meanOrganizationIndex: null,
+      predominantScanPattern: null,
+      meanSpatialAsymmetryIndex: null,
+      totalLeftMisses: m.totalLeftMisses,
+      totalRightMisses: m.totalRightMisses,
+      score: 0,
+    },
+  };
+}
+
+// ─── Indicadores positivos ────────────────────────────────────────────────────────────────────────────────────────────
 
 function resolvePositiveIndicators(
   severity: SubscaleSeverity,
@@ -47,7 +109,7 @@ function resolvePositiveIndicators(
   return [];
 }
 
-// ─── Sinal de alerta ──────────────────────────────────────────────────────────────────────────────
+// ─── Sinal de alerta ──────────────────────────────────────────────────────────────────────────────────────────────────
 
 // Negligência espacial: exige alvos perdidos E concentrados em um lado (>= 75%).
 // Assimetria de cliques isolada não é evidência de negligência — reflete apenas
@@ -73,7 +135,7 @@ function resolveRedFlag(
   return null;
 }
 
-// ─── Subescala: Atenção seletiva ─────────────────────────────────────────────────────────────────
+// ─── Subescala: Atenção seletiva ─────────────────────────────────────────────────────────────────────────────────────
 
 function buildSelectiveAttentionInterpretation(params: {
   dominantPattern: string;
@@ -101,7 +163,7 @@ function buildSelectiveAttentionInterpretation(params: {
   return `${banco.frasesDeInterpretacao[0]} ${dSentence}`;
 }
 
-// ─── Subescala: Varredura visual ────────────────────────────────────────────────────────────────
+// ─── Subescala: Varredura visual ───────────────────────────────────────────────────────────────────────────────────
 
 function buildScanningInterpretation(
   orgIndex: number | null,
@@ -117,7 +179,7 @@ function buildScanningInterpretation(
   return `Varredura predominantemente errática (índice ${orgIndex.toFixed(0)}/100). ${banco.frasesDeInterpretacao[6]}`;
 }
 
-// ─── Subescala: Assimetria espacial ──────────────────────────────────────────────────────────────────
+// ─── Subescala: Assimetria espacial ──────────────────────────────────────────────────────────────────────────────────────────
 
 function buildAsymmetryInterpretation(
   asymIdx: number | null,
@@ -136,7 +198,7 @@ function buildAsymmetryInterpretation(
   return `Distribuição espacial equilibrada (assimetria ${asymIdx.toFixed(0)}).`;
 }
 
-// ─── Subescala: Velocidade e consistência ─────────────────────────────────────────────────────
+// ─── Subescala: Velocidade e consistência ────────────────────────────────────────────────────────────────────────────
 
 function buildSpeedInterpretation(
   meanRT: number | null,
@@ -155,13 +217,19 @@ function buildSpeedInterpretation(
   return `Tempo de resposta adequado: média ${rtLabel}${cvLabel}.`;
 }
 
-// ─── Função principal ───────────────────────────────────────────────────────────────────────────────
+// ─── Função principal ──────────────────────────────────────────────────────────────────────────────────────────────────
 
 export function buildVisualSearchTechnicalReport(
   session: VisualSearchSessionMetricsInput
 ): VisualSearchTechnicalReport {
   const m = calculateVisualSearchMetrics(session);
   const scale = buildVisualSearchScaleResult(session);
+
+  // — Sessão sem engajamento: nenhum clique em nenhum round
+  if (m.totalHits === 0 && m.totalErrors === 0) {
+    return buildNoEngagementReport(m);
+  }
+
   const severity = getSeverity(m.omissionRate, m.commissionRate);
 
   const selectiveAttention = buildSelectiveAttentionInterpretation({
@@ -194,7 +262,6 @@ export function buildVisualSearchTechnicalReport(
     m.engagementStatus
   );
 
-  // Aviso de negligência espacial: passa misseds por lado, não hasSpatialAsymmetry
   const redFlag = resolveRedFlag(
     m.totalLeftMisses,
     m.totalRightMisses,
