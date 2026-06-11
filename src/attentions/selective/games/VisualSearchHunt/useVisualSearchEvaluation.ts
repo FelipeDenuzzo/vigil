@@ -14,7 +14,7 @@ import type {
 import { buildVisualSearchV2Result } from "./assessment-v2";
 import type { VisualSearchV2AssessmentResult } from "./assessment-v2";
 import { callEvaluator, buildEvaluatorInput } from "../../../../lib/evaluatorClient";
-import type { EvaluationReport as GeminiReport } from "../../../../lib/evaluatorClient";
+import type { EvaluationReport as GeminiReport, EvaluatorInput } from "../../../../lib/evaluatorClient";
 import { saveReport } from "../../../../lib/saveReport";
 
 export interface RoundEvaluation {
@@ -275,6 +275,21 @@ function evaluateSession(log: SessionLog): SessionEvaluation {
   return { sessionId: log.sessionId, completedAt: log.completedAt || null, rounds, weightedIES, score, totals };
 }
 
+/** Tenta salvar o laudo; se falhar, aguarda 2s e tenta uma vez mais */
+async function saveReportWithRetry(
+  report: GeminiReport,
+  input: EvaluatorInput
+): Promise<void> {
+  const result = await saveReport(report, input);
+  if (result !== null) return;
+  // Primeira tentativa falhou — aguarda e retenta uma vez
+  await new Promise((r) => setTimeout(r, 2000));
+  const retry = await saveReport(report, input);
+  if (retry === null) {
+    console.warn('[saveReportWithRetry] laudo não persistido após retry:', input.sessionId);
+  }
+}
+
 export async function useVisualSearchEvaluation(
   currentSessionId: string
 ): Promise<EvaluationReport | null> {
@@ -359,9 +374,9 @@ export async function useVisualSearchEvaluation(
     console.warn('vigil-evaluator indisponível:', geminiResult.reason);
   }
 
-  // Salva laudo no Firebase Storage + URL no Firestore (fire-and-forget)
+  // Salva laudo no Firebase Storage + URL no Firestore, com retry único em falha
   if (geminiReport) {
-    saveReport(geminiReport, evaluatorInput);
+    await saveReportWithRetry(geminiReport, evaluatorInput);
   }
 
   const history = allSessions
