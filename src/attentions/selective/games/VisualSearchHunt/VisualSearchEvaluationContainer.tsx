@@ -45,7 +45,23 @@ async function loadReportFromFirestore(
       if (data?.geminiReport) return data.geminiReport as GeminiReport;
     }
     return null;
-  } catch (err) {
+  } catch (err: any) {
+    // Se o cliente ainda não estabeleceu conexão, aguarda 2s e tenta uma vez mais
+    if (err?.code === 'unavailable') {
+      try {
+        await new Promise(r => setTimeout(r, 2000));
+        const ref = doc(db, 'sessionReports', sessionId);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data?.geminiReport) return data.geminiReport as GeminiReport;
+        }
+        return null;
+      } catch (retryErr) {
+        console.warn('Falha ao carregar relatório do Firestore (retry):', retryErr);
+        return null;
+      }
+    }
     console.warn('Falha ao carregar relatório do Firestore:', err);
     return null;
   }
