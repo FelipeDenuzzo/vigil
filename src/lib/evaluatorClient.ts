@@ -76,6 +76,14 @@ interface RawEvaluatorResponse {
 
 // ─── Helpers internos ─────────────────────────────────────────────────────────
 
+const VALID_LEVELS: EvaluationReport['level'][] = ['mínimo', 'leve', 'moderado', 'importante'];
+
+function parseSeverity(raw: string): EvaluationReport['level'] {
+  if ((VALID_LEVELS as string[]).includes(raw)) return raw as EvaluationReport['level'];
+  console.warn(`[callEvaluator] severity inesperado do Cloud Run: "${raw}" — usando "leve" como fallback`);
+  return 'leve';
+}
+
 function inferDominantErrorAttribute(
   m: VisualSearchMetrics
 ): EvaluatorInput['dominantErrorAttribute'] {
@@ -212,7 +220,7 @@ export async function callEvaluator(
     // Mapeia para o formato interno EvaluationReport
     const report: EvaluationReport = {
       score:    raw.score,
-      level:    raw.severity as EvaluationReport['level'],
+      level:    parseSeverity(raw.severity),
       ludic:    raw.report.ludic,
       general:  raw.report.general,
       clinical: raw.report.clinical,
