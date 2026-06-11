@@ -4,12 +4,12 @@ import { initializeFirestore, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCyyIXR6VNwChgZxl7B1bLLLuu4LOAkwTE",
-  authDomain: "vigil-felipe-prod-498620.firebaseapp.com",
-  projectId: "vigil-felipe-prod-498620",
-  storageBucket: "vigil-felipe-prod-498620.firebasestorage.app",
-  messagingSenderId: "340788189794",
-  appId: "1:340788189794:web:a04fb4c8d462dcfba90f3b"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
