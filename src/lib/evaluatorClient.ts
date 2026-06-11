@@ -63,6 +63,17 @@ export interface EvaluationReport {
   clinical: ClinicalReport;
 }
 
+// ─── Tipo raw retornado pelo Cloud Run ────────────────────────────────────────
+interface RawEvaluatorResponse {
+  score: number;
+  severity: string;
+  report: {
+    ludic: LudicReport;
+    general: GeneralReport;
+    clinical: ClinicalReport;
+  };
+}
+
 // ─── Helpers internos ─────────────────────────────────────────────────────────
 
 function inferDominantErrorAttribute(
@@ -195,7 +206,18 @@ export async function callEvaluator(
       return null;
     }
 
-    const report = await res.json() as EvaluationReport;
+    const raw = await res.json() as RawEvaluatorResponse;
+
+    // O Cloud Run retorna { score, severity, report: { ludic, general, clinical } }
+    // Mapeia para o formato interno EvaluationReport
+    const report: EvaluationReport = {
+      score:    raw.score,
+      level:    raw.severity as EvaluationReport['level'],
+      ludic:    raw.report.ludic,
+      general:  raw.report.general,
+      clinical: raw.report.clinical,
+    };
+
     console.log('[callEvaluator] sucesso', report);
     return report;
   } catch (err) {
