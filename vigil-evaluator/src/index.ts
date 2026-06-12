@@ -20,7 +20,7 @@ if (getApps().length === 0) {
   initializeApp(
     serviceAccount
       ? { credential: cert(serviceAccount) }
-      : undefined // usa Application Default Credentials no Cloud Run
+      : undefined
   );
 }
 
@@ -49,7 +49,10 @@ app.use(express.json());
 
 // ── Middleware de autenticação ──────────────────────────────────────────────────────
 function authGuard(req: Request, res: Response, next: NextFunction): void {
-  if (SECRET && req.headers['x-evaluator-secret'] !== SECRET) {
+  const incoming = Array.isArray(req.headers['x-evaluator-secret'])
+    ? req.headers['x-evaluator-secret'][0]
+    : req.headers['x-evaluator-secret'];
+  if (SECRET && incoming !== SECRET) {
     res.status(401).json({ error: 'Não autorizado.' });
     return;
   }
@@ -62,7 +65,6 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // ── POST /evaluate ───────────────────────────────────────────────────────────────────
-// Cria o job, retorna { jobId } imediatamente e processa em background.
 app.post('/evaluate', authGuard, async (req: Request, res: Response) => {
   const input = req.body as EvaluatorInput;
 
@@ -87,17 +89,14 @@ app.post('/evaluate', authGuard, async (req: Request, res: Response) => {
 
   await db.collection(JOBS).doc(jobId).set(job);
 
-  // Responde imediatamente — sem esperar o Gemini
   res.json({ jobId });
 
-  // Processa em background (não bloqueia o response)
   processJob(jobId, input).catch((err) => {
     console.error(`[vigil-evaluator] erro fatal no job ${jobId}:`, err);
   });
 });
 
 // ── GET /evaluate/status/:jobId ─────────────────────────────────────────────────────────
-// Retorna o status atual do job: pending | done | error
 app.get('/evaluate/status/:jobId', authGuard, async (req: Request, res: Response) => {
   const { jobId } = req.params;
 
@@ -110,7 +109,6 @@ app.get('/evaluate/status/:jobId', authGuard, async (req: Request, res: Response
 
   const job = snap.data() as EvaluationJob;
 
-  // Não expõe o payload completo na resposta de status
   res.json({
     jobId:       job.jobId,
     sessionId:   job.sessionId,
