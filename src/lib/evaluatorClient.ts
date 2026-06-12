@@ -13,6 +13,8 @@ export interface EvaluatorInput {
   attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida';
   roundCount: number;
   totalClicks: number;
+  totalHits: number;
+  totalTargets: number;
   commissionRate: number;
   dominantErrorAttribute: 'forma' | 'cor' | 'duplo' | 'indeterminado';
   problemRegion: 'esquerda' | 'direita' | 'centro' | 'distribuido' | 'indeterminado';
@@ -162,6 +164,8 @@ export function buildEvaluatorInput(
     attentionType: 'seletiva',
     roundCount,
     totalClicks,
+    totalHits: metrics.totalHits,
+    totalTargets: metrics.totalTargets,
     commissionRate: metrics.commissionRate,
     dominantErrorAttribute: inferDominantErrorAttribute(metrics),
     problemRegion: inferProblemRegion(metrics),
@@ -216,8 +220,6 @@ export async function callEvaluator(
 
     const raw = await res.json() as RawEvaluatorResponse;
 
-    // O Cloud Run retorna { score, severity, report: { ludic, general, clinical } }
-    // Mapeia para o formato interno EvaluationReport
     const report: EvaluationReport = {
       score:    raw.score,
       level:    parseSeverity(raw.severity),
