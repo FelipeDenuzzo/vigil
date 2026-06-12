@@ -3,7 +3,7 @@
 // Protegido por header x-evaluator-secret
 
 import express from 'express';
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { randomUUID } from 'crypto';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
@@ -11,7 +11,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { evaluate } from './evaluate.js';
 import type { EvaluatorInput, EvaluationJob } from './types.js';
 
-// ── Firebase Admin ────────────────────────────────────────────────────────────
+// ── Firebase Admin ───────────────────────────────────────────────────────────────────
 if (getApps().length === 0) {
   const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
     ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
@@ -27,7 +27,7 @@ if (getApps().length === 0) {
 const db = getFirestore();
 const JOBS = 'evaluation_jobs';
 
-// ── Express ───────────────────────────────────────────────────────────────────
+// ── Express ───────────────────────────────────────────────────────────────────────────
 const app    = express();
 const PORT   = parseInt(process.env.PORT ?? '8080', 10);
 const SECRET = process.env.EVALUATOR_SECRET;
@@ -47,8 +47,8 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// ── Middleware de autenticação ────────────────────────────────────────────────
-function authGuard(req: Request, res: Response, next: () => void) {
+// ── Middleware de autenticação ──────────────────────────────────────────────────────
+function authGuard(req: Request, res: Response, next: NextFunction): void {
   if (SECRET && req.headers['x-evaluator-secret'] !== SECRET) {
     res.status(401).json({ error: 'Não autorizado.' });
     return;
@@ -56,12 +56,12 @@ function authGuard(req: Request, res: Response, next: () => void) {
   next();
 }
 
-// ── Health check ──────────────────────────────────────────────────────────────
+// ── Health check ───────────────────────────────────────────────────────────────────
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok' });
 });
 
-// ── POST /evaluate ────────────────────────────────────────────────────────────
+// ── POST /evaluate ───────────────────────────────────────────────────────────────────
 // Cria o job, retorna { jobId } imediatamente e processa em background.
 app.post('/evaluate', authGuard, async (req: Request, res: Response) => {
   const input = req.body as EvaluatorInput;
@@ -96,7 +96,7 @@ app.post('/evaluate', authGuard, async (req: Request, res: Response) => {
   });
 });
 
-// ── GET /evaluate/status/:jobId ───────────────────────────────────────────────
+// ── GET /evaluate/status/:jobId ─────────────────────────────────────────────────────────
 // Retorna o status atual do job: pending | done | error
 app.get('/evaluate/status/:jobId', authGuard, async (req: Request, res: Response) => {
   const { jobId } = req.params;
@@ -122,7 +122,7 @@ app.get('/evaluate/status/:jobId', authGuard, async (req: Request, res: Response
   });
 });
 
-// ── Processamento em background ───────────────────────────────────────────────
+// ── Processamento em background ────────────────────────────────────────────────────────
 async function processJob(jobId: string, input: EvaluatorInput): Promise<void> {
   try {
     console.log(`[vigil-evaluator] iniciando job ${jobId} para sessão ${input.sessionId}`);
@@ -147,7 +147,7 @@ async function processJob(jobId: string, input: EvaluatorInput): Promise<void> {
   }
 }
 
-// ── Start ─────────────────────────────────────────────────────────────────────
+// ── Start ─────────────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`vigil-evaluator rodando na porta ${PORT}`);
 });
