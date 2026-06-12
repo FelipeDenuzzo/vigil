@@ -1,5 +1,5 @@
 // src/attentions/selective/games/VisualSearchHunt/assessment/buildVisualSearchScaleResult.ts
-// Atualizado em: 26/05/2026 às 18:00 (BRT)
+// Atualizado em: 12/06/2026
 
 import { calculateVisualSearchMetrics } from './calculateVisualSearchMetrics';
 import type {
@@ -17,25 +17,8 @@ function clamp(value: number, min = 0, max = 100) {
 }
 
 function calculateEagleScore(m: VisualSearchMetrics): number {
-  // Sem nenhum acerto e omissão total → sessão sem desempenho real
-  // Cobre: avançou sem clicar, clicou só em erros e não acertou nada
-  if (m.totalHits === 0 && m.omissionRate >= 1.0) return 0;
-
-  let score = 100;
-  score -= m.omissionRate * 40;
-  score -= m.commissionRate * 30;
-
-  if (m.dPrime !== null) {
-    if (m.dPrime < 0.5) score -= 20;
-    else if (m.dPrime < 1) score -= 10;
-    else if (m.dPrime < 1.5) score -= 5;
-  } else if (m.omissionRate >= 1.0) {
-    score -= 20;
-  }
-
-  if (m.meanOrganizationIndex !== null && m.meanOrganizationIndex < 40) score -= 5;
-  if (m.meanSpatialAsymmetryIndex !== null && m.meanSpatialAsymmetryIndex > 50) score -= 5;
-  return clamp(Math.round(score));
+  if (m.totalTargets === 0) return 0;
+  return clamp(Math.round((m.totalHits / m.totalTargets) * 100));
 }
 
 // ─── Subescala 1: Atenção Seletiva (Alvos vs Distratores) ────────────────────
@@ -228,7 +211,6 @@ function getMarkerLabel(score: number): string {
   return 'Águia Cega';
 }
 
-// Retorna texto condizente com as taxas reais, não apenas com o score numérico
 function getShortDescription(score: number, m: VisualSearchMetrics): string {
   const { omissionRate, commissionRate } = m;
   if (omissionRate >= 0.4 && commissionRate >= 0.25)
@@ -298,9 +280,6 @@ export function buildVisualSearchScaleResult(
     clinicalMeaning: getClinicalMeaning(score, m),
     summary:
       `${score}/100 na régua Olho de Águia. ` +
-      `Omissões ${(m.omissionRate * 100).toFixed(0)}% | ` +
-      `Comissões ${(m.commissionRate * 100).toFixed(0)}% | ` +
-      `Organização ${m.meanOrganizationIndex !== null ? m.meanOrganizationIndex.toFixed(0) : 'N/A'} | ` +
-      `Assimetria ${m.meanSpatialAsymmetryIndex !== null ? m.meanSpatialAsymmetryIndex.toFixed(0) : 'N/A'}.`
+      `Acertos: ${m.totalHits} de ${m.totalTargets} alvos.`
   };
 }
