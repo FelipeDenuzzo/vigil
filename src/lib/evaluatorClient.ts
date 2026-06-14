@@ -1,12 +1,22 @@
 // src/lib/evaluatorClient.ts
-// Atualizado: tipagem refletindo os 3 níveis do vigil-evaluator (ludic, general, clinical)
+// Atualizado: campos temporais e progressão por round adicionados ao EvaluatorInput
 
 import type {
   VisualSearchTechnicalReport,
   VisualSearchMetrics,
 } from '../attentions/selective/games/VisualSearchHunt/assessment/visualSearchScale.types';
 
-// ─── Tipos de entrada ────────────────────────────────────────────────────────
+// ─── Tipo de progressão por round ─────────────────────────────────────────────
+export interface EvaluatorRoundProgression {
+  round: number;
+  commissionRate: number;
+  avgRtMs: number | null;
+  omissionRate?: number;
+  organizationIndex?: number;
+  scanPattern?: 'row-wise' | 'column-wise' | 'mixed' | 'chaotic';
+}
+
+// ─── Tipos de entrada ─────────────────────────────────────────────────────────
 export interface EvaluatorInput {
   game: 'visual-search';
   sessionId: string;
@@ -34,13 +44,18 @@ export interface EvaluatorInput {
     leftMisses: number;
     rightMisses: number;
   };
+  // ─── Campos temporais e de progressão (opcionais) ────────────────────────
+  avgRtMs?: number;
+  ies?: number;
+  searchStrategy?: 'organizado' | 'caotico' | 'indeterminado';
+  roundProgression?: EvaluatorRoundProgression[];
 }
 
-// ─── Tipos de retorno — 3 níveis ─────────────────────────────────────────────
+// ─── Tipos de retorno — 3 níveis ───────────────────────────────────────────
 export interface LudicReport {
-  score: number;    // 0-100
-  label: string;   // ex: "Muito bom!"
-  emoji: string;   // ex: "⭐"
+  score: number;
+  label: string;
+  emoji: string;
 }
 
 export interface GeneralReport {
@@ -65,7 +80,7 @@ export interface EvaluationReport {
   clinical: ClinicalReport;
 }
 
-// ─── Tipo raw retornado pelo Cloud Run ────────────────────────────────────────
+// ─── Tipo raw retornado pelo Cloud Run ───────────────────────────────────────
 interface RawEvaluatorResponse {
   score: number;
   severity: string;
@@ -128,7 +143,45 @@ function inferNeglectSide(m: VisualSearchMetrics): string {
   return left > right ? 'esquerdo' : 'direito';
 }
 
-// ─── Mapeamento principal ─────────────────────────────────────────────────────
+/**
+ * Mapeia o predominantScanPattern de VisualSearchMetrics (que não inclui 'chaotic')
+ * para o union type do EvaluatorRoundProgression, que inclui 'chaotic'.
+ * O valor 'chaotic' pode surgir por round individualmente mas não no agregado.
+ */
+function mapScanPattern(
+  p: string | null | undefined
+): EvaluatorRoundProgression['scanPattern'] {
+  if (p === 'row-wise' || p === 'column-wise' || p === 'mixed') return p;
+  return undefined;
+}
+
+/**
+ * IES (Inverse Efficiency Score) = meanRT / accuracyRate.
+ * Quanto menor, mais eficiente (rápido E preciso).
+ * Retorna undefined se não houver RT ou se accuracyRate = 0.
+ */
+function calcIES(meanRtMs: number | null, accuracyRate: number): number | undefined {
+  if (!meanRtMs || accuracyRate <= 0) return undefined;
+  return Math.round(meanRtMs / accuracyRate);
+}
+
+/**
+ * Infere a estratégia de varredura com base no organizationIndex médio
+ * e no predominantScanPattern da sessão.
+ */
+function inferSearchStrategy(
+  m: VisualSearchMetrics
+): EvaluatorInput['searchStrategy'] {
+  const orgIdx = m.meanOrganizationIndex;
+  const pattern = m.predominantScanPattern;
+  if (orgIdx === null && pattern === null) return 'indeterminado';
+  const isOrganized =
+    (pattern === 'row-wise' || pattern === 'column-wise') ||
+    (orgIdx !== null && orgIdx >= 50);
+  return isOrganized ? 'organizado' : 'caotico';
+}
+
+// ─── Mapeamento principal ───────────────────────────────────────────────────────
 export function buildEvaluatorInput(
   sessionId: string,
   metrics: VisualSearchMetrics,
@@ -158,6 +211,22 @@ export function buildEvaluatorInput(
       ])
     );
 
+  // ─── Progressão por round ────────────────────────────────────────────────
+  const roundProgression: EvaluatorRoundProgression[] = (metrics.rounds ?? []).map((r) => ({
+    round: r.round,
+    commissionRate: r.commissionRate,
+    avgRtMs: r.meanReactionTimeMs ?? null,
+    omissionRate: r.omissionRate,
+    organizationIndex: r.organizationIndex,
+    scanPattern: mapScanPattern(r.scanPattern),
+  }));
+
+  // ─── Média de RT e IES da sessão ──────────────────────────────────────────
+  const avgRtMs = metrics.meanReactionTimeMs !== null
+    ? Math.round(metrics.meanReactionTimeMs)
+    : undefined;
+  const ies = calcIES(metrics.meanReactionTimeMs, metrics.accuracyRate);
+
   return {
     game: 'visual-search',
     sessionId,
@@ -185,10 +254,15 @@ export function buildEvaluatorInput(
       leftMisses:  metrics.totalLeftMisses  ?? 0,
       rightMisses: metrics.totalRightMisses ?? 0,
     },
+    // ─── Campos temporais e de progressão ──────────────────────────────────
+    ...(avgRtMs !== undefined && { avgRtMs }),
+    ...(ies     !== undefined && { ies }),
+    searchStrategy: inferSearchStrategy(metrics),
+    ...(roundProgression.length > 0 && { roundProgression }),
   };
 }
 
-// ─── Chamada ao Cloud Run ─────────────────────────────────────────────────────
+// ─── Chamada ao Cloud Run ───────────────────────────────────────────────────────
 export async function callEvaluator(
   input: EvaluatorInput
 ): Promise<EvaluationReport | null> {
