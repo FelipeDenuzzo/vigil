@@ -12,6 +12,9 @@ const LEVEL_COLOR: Record<string, string> = {
   'importante':'#f08080',
 };
 
+const DISCLAIMER =
+  '⚠️ Este resultado é baseado em uma tarefa de treino e não substitui avaliação profissional. Em caso de dúvidas, consulte um profissional de saúde mental.';
+
 const s = {
   wrapper: {
     background: '#161820',
@@ -55,7 +58,6 @@ const s = {
     gap: 12,
   } as const,
 
-  // Gauge
   gaugeWrap: {
     position: 'relative' as const,
     marginTop: 8,
@@ -108,7 +110,6 @@ const s = {
     marginBottom: 4,
   },
 
-  // Análise
   analysisBlock: {
     fontSize: 14,
     color: '#c8cad8',
@@ -164,21 +165,40 @@ const s = {
     marginLeft: 8,
   }),
 
-  disclaimer: {
-    background: 'rgba(108,142,245,0.06)',
-    border: '1px solid rgba(108,142,245,0.15)',
+  recommendBox: {
+    background: 'rgba(108,142,245,0.08)',
+    border: '1px solid rgba(108,142,245,0.2)',
     borderRadius: 10,
     padding: '10px 12px',
+    fontSize: 13,
+    color: '#a0b4f8',
+    lineHeight: 1.6,
+  } as const,
+
+  disclaimerBox: {
     fontSize: 12,
     color: '#8b8fa8',
     lineHeight: 1.6,
+    padding: '8px 2px',
+    textAlign: 'center' as const,
   } as const,
 };
+
+/** Remove frases de aviso/disclaimer que o Gemini às vezes inclui na recomendação */
+function cleanRecommendation(text: string): string {
+  return text
+    .replace(/aviso[^.]*\./gi, '')
+    .replace(/este resultado[^.]*\./gi, '')
+    .replace(/não constitui diagn[^.]*\./gi, '')
+    .replace(/procure um profissional[^.]*\./gi, '')
+    .replace(/para investigação aprofundada[^.]*\./gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
 
 export function EvaluationReportPanel({ report }: { report: EvaluationReport }) {
   const [tab, setTab] = useState<Tab>('ludic');
 
-  // Mescla strengths e weaknesses de geral + clínico sem duplicatas
   const allStrengths = [
     ...report.general.strengths,
     ...report.clinical.strengths.filter(
@@ -193,13 +213,12 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
     ),
   ];
 
-  // Mescla recomendações sem repetição
-  const generalRec = report.general.recommendation.trim();
-  const clinicalRec = report.clinical.recommendation.trim();
-  const mergedRecommendation =
-    generalRec.toLowerCase() === clinicalRec.toLowerCase()
-      ? clinicalRec
-      : `${generalRec} ${clinicalRec}`;
+  const generalRec  = cleanRecommendation(report.general.recommendation);
+  const clinicalRec = cleanRecommendation(report.clinical.recommendation);
+  const recommendation =
+    !clinicalRec || generalRec.toLowerCase() === clinicalRec.toLowerCase()
+      ? generalRec
+      : clinicalRec; // prefer clínico por ser mais específico
 
   return (
     <div style={s.wrapper}>
@@ -223,7 +242,6 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
       </div>
 
       <div style={s.body}>
-        {/* Aba Régua — mantida como estava */}
         {tab === 'ludic' && (
           <>
             <p style={s.ludicScore}>{report.ludic.emoji} {report.ludic.score}</p>
@@ -239,15 +257,12 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
           </>
         )}
 
-        {/* Aba Análise — geral + clínico unificados */}
         {tab === 'analysis' && (
           <>
-            {/* Texto de análise no topo */}
             <div style={s.analysisBlock}>
               {report.clinical.clinicalNote || report.general.summary}
             </div>
 
-            {/* Pontos positivos */}
             {allStrengths.length > 0 && (
               <>
                 <p style={s.sectionTitle}>✅ O que foi bem</p>
@@ -259,7 +274,6 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
               </>
             )}
 
-            {/* Deficiências */}
             {allWeaknesses.length > 0 && (
               <>
                 <p style={s.sectionTitle}>⚠️ Pontos de atenção</p>
@@ -271,21 +285,15 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
               </>
             )}
 
+            {recommendation && (
+              <div style={s.recommendBox}>
+                📌 {recommendation}
+              </div>
+            )}
+
             <div style={s.divider} />
 
-            {/* Orientação + aviso legal no rodapé */}
-            <div style={s.disclaimer}>
-              <p style={{ margin: '0 0 6px', color: '#a0b4f8', fontWeight: 600, fontSize: 13 }}>
-                📌 Orientação
-              </p>
-              <p style={{ margin: '0 0 8px' }}>{mergedRecommendation}</p>
-              <p style={{ margin: 0, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8 }}>
-                ⚠️ Este resultado reflete o desempenho em uma tarefa de treino e{' '}
-                <strong>não constitui diagnóstico clínico</strong>.
-                Para investigação aprofundada ou dúvidas, procure um profissional de saúde mental
-                certificado pelos conselhos.
-              </p>
-            </div>
+            <p style={s.disclaimerBox}>{DISCLAIMER}</p>
           </>
         )}
       </div>
