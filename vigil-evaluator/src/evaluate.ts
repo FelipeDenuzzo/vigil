@@ -38,7 +38,7 @@ Por isso:
     : '';
 
   return `
-Você é um neuropsicólogo especialista em avaliação da atenção seletiva.
+Você é um especialista em avaliação cognitiva.
 Receberá métricas de uma sessão de busca visual computadorizada e deve produzir
 um laudo em JSON com os campos exatos abaixo.
 
@@ -83,13 +83,17 @@ Assimetrias expressivas — concentração de erros ou omissões em um hemicampo
 - general.weaknesses: lista de 1–3 pontos de melhoria descritos de forma encorajadora e compreensível.
 - general.recommendation: uma frase de orientação prática e acessível ao leigo.
 
-**Clínico (para profissionais)**
+**Clínico**
 - clinical.strengths / clinical.weaknesses: análise técnica profunda (mín 1, máx 4 cada). Use termos técnicos corretos (rastreio visual, lentificação cognitiva, controle inibitório, sensibilidade atencional, flutuação da vigilância). **Cite os valores numéricos relevantes** diretamente nos itens (ex: "dPrime de 1.2 indica sensibilidade atencional moderada", "TR médio de 1850ms sugere lentificação leve").
 - clinical.recommendation: encaminhamento clínico formal e direcionado aos achados específicos desta sessão.
-- clinical.clinicalNote: parágrafo técnico de 4–6 linhas integrando os dados quantitativos e qualitativos. Estruture em: (1) Impressão Clínica geral, (2) achados de precisão e velocidade com valores numéricos, (3) padrão de varredura e organização espacial, (4) hipótese interpretativa. Não invente referências bibliográficas — baseie-se apenas nos dados fornecidos.
+- clinical.clinicalNote: texto de 4–6 linhas que será lido diretamente pelo usuário final. Deve ser **didático, claro e explicativo**, sem jargões ou termos técnicos. Se precisar usar um conceito técnico, explique-o em seguida com palavras simples. Estruture assim:
+  (1) O que foi observado de forma geral nesta sessão, descrevendo o comportamento em linguagem simples.
+  (2) Como foi a velocidade e a precisão — cite os números de forma acessível (ex: "respondeu em média em X segundos", "acertou Y% dos alvos").
+  (3) Como foi a forma de percorrer a tela — se foi organizada ou dispersa — e se houve concentração de erros em alguma região.
+  (4) O que esse padrão pode indicar, explicado de forma simples e sem diagnóstico.
+  Não invente referências bibliográficas. Não use palavras como "comprometimento", "déficit", "patologia", "diagnóstico" ou "negligência hemiespacial".
 
 **Geral**
-- Seja objetivo e técnico no laudo clínico; use linguagem acessível apenas no laudo geral.
 - score: 0–100 refletindo a performance geral. score=0 é válido para sessões sem interação.
 - level: um de "mínimo" | "leve" | "moderado" | "importante".
 
