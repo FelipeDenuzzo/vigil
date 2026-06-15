@@ -1,6 +1,9 @@
 // src/attentions/selective/games/VisualSearchHunt/EvaluationReportPanel.tsx
 
+import { useState } from 'react';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
+
+type Tab = 'ludic' | 'analysis';
 
 const LEVEL_COLOR: Record<string, string> = {
   'mínimo':    '#6dbf87',
@@ -18,51 +21,49 @@ const s = {
   } as const,
 
   header: {
-    padding: '16px 16px 12px',
-    borderBottom: '1px solid rgba(255,255,255,0.08)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    padding: '16px 16px 0',
   } as const,
 
   title: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 700,
     color: '#e8e9f0',
-    margin: 0,
+    marginBottom: 12,
   } as const,
 
-  levelBadge: (level: string): React.CSSProperties => ({
-    display: 'inline-block',
-    padding: '2px 10px',
-    borderRadius: 99,
-    fontSize: 12,
-    fontWeight: 700,
-    color: LEVEL_COLOR[level] ?? '#e8e9f0',
-    border: `1px solid ${LEVEL_COLOR[level] ?? '#e8e9f0'}`,
+  tabRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
+  } as const,
+
+  tab: (active: boolean): React.CSSProperties => ({
+    padding: '10px 4px',
+    textAlign: 'center',
+    fontSize: 13,
+    fontWeight: active ? 700 : 400,
+    color: active ? '#6c8ef5' : '#8b8fa8',
+    borderBottom: active ? '2px solid #6c8ef5' : '2px solid transparent',
+    cursor: 'pointer',
+    background: 'none',
+    transition: 'color 0.18s',
   }),
 
   body: {
     padding: 16,
     display: 'grid',
-    gap: 14,
+    gap: 12,
   } as const,
 
   // Gauge
   gaugeWrap: {
-    display: 'grid',
-    gap: 6,
-  } as const,
-
-  gaugeRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-  } as const,
+    position: 'relative' as const,
+    marginTop: 8,
+    marginBottom: 4,
+  },
 
   gaugeTrack: {
-    flex: 1,
-    height: 10,
+    height: 12,
     borderRadius: 99,
     background: 'linear-gradient(to right, #f08080, #f5c070, #6dbf87)',
     position: 'relative' as const,
@@ -73,39 +74,41 @@ const s = {
     top: '50%',
     left: `${pct}%`,
     transform: 'translate(-50%, -50%)',
-    width: 18,
-    height: 18,
+    width: 20,
+    height: 20,
     borderRadius: '50%',
     background: '#fff',
     border: '3px solid #6c8ef5',
     boxShadow: '0 0 0 3px rgba(108,142,245,0.3)',
   }),
 
-  gaugeScore: {
-    fontSize: 28,
-    fontWeight: 800,
-    color: '#e8e9f0',
-    lineHeight: 1,
-    minWidth: 44,
-    textAlign: 'right' as const,
-  },
-
   gaugeLegend: {
     display: 'flex',
     justifyContent: 'space-between',
+    marginTop: 6,
     fontSize: 11,
     color: '#8b8fa8',
-    paddingLeft: 56,
   } as const,
+
+  ludicScore: {
+    textAlign: 'center' as const,
+    fontSize: 48,
+    fontWeight: 800,
+    color: '#e8e9f0',
+    lineHeight: 1,
+    marginTop: 16,
+  },
 
   ludicLabel: {
     textAlign: 'center' as const,
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: 600,
     color: '#a0b4f8',
+    marginTop: 6,
+    marginBottom: 4,
   },
 
-  // Análise principal
+  // Análise
   analysisBlock: {
     fontSize: 14,
     color: '#c8cad8',
@@ -150,7 +153,17 @@ const s = {
     margin: '2px 0',
   } as const,
 
-  // Rodapé
+  levelBadge: (level: string): React.CSSProperties => ({
+    display: 'inline-block',
+    padding: '2px 10px',
+    borderRadius: 99,
+    fontSize: 12,
+    fontWeight: 700,
+    color: LEVEL_COLOR[level] ?? '#e8e9f0',
+    border: `1px solid ${LEVEL_COLOR[level] ?? '#e8e9f0'}`,
+    marginLeft: 8,
+  }),
+
   disclaimer: {
     background: 'rgba(108,142,245,0.06)',
     border: '1px solid rgba(108,142,245,0.15)',
@@ -163,6 +176,8 @@ const s = {
 };
 
 export function EvaluationReportPanel({ report }: { report: EvaluationReport }) {
+  const [tab, setTab] = useState<Tab>('ludic');
+
   // Mescla strengths e weaknesses de geral + clínico sem duplicatas
   const allStrengths = [
     ...report.general.strengths,
@@ -188,73 +203,91 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
 
   return (
     <div style={s.wrapper}>
-      {/* Cabeçalho */}
       <div style={s.header}>
-        <p style={s.title}>🤖 Avaliação IA</p>
-        <span style={s.levelBadge(report.level)}>{report.level}</span>
+        <p style={s.title}>
+          🤖 Avaliação IA
+          <span style={s.levelBadge(report.level)}>{report.level}</span>
+        </p>
+        <div style={s.tabRow}>
+          {(['ludic', 'analysis'] as Tab[]).map((t) => (
+            <button
+              key={t}
+              type="button"
+              style={s.tab(tab === t)}
+              onClick={() => setTab(t)}
+            >
+              {t === 'ludic' ? '🎯 Régua' : '📋 Análise'}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div style={s.body}>
-        {/* Gauge */}
-        <div style={s.gaugeWrap}>
-          <div style={s.gaugeRow}>
-            <div style={s.gaugeTrack}>
-              <div style={s.gaugeMarker(report.ludic.score)} />
+        {/* Aba Régua — mantida como estava */}
+        {tab === 'ludic' && (
+          <>
+            <p style={s.ludicScore}>{report.ludic.emoji} {report.ludic.score}</p>
+            <p style={s.ludicLabel}>{report.ludic.label}</p>
+            <div style={s.gaugeWrap}>
+              <div style={s.gaugeTrack}>
+                <div style={s.gaugeMarker(report.ludic.score)} />
+              </div>
+              <div style={s.gaugeLegend}>
+                <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+              </div>
             </div>
-            <span style={s.gaugeScore}>
-              {report.ludic.emoji} {report.ludic.score}
-            </span>
-          </div>
-          <div style={s.gaugeLegend}>
-            <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
-          </div>
-          <p style={s.ludicLabel}>{report.ludic.label}</p>
-        </div>
-
-        <div style={s.divider} />
-
-        {/* Análise principal — topo do conteúdo textual */}
-        <div style={s.analysisBlock}>
-          {report.clinical.clinicalNote || report.general.summary}
-        </div>
-
-        {/* Pontos positivos */}
-        {allStrengths.length > 0 && (
-          <>
-            <p style={s.sectionTitle}>✅ O que foi bem</p>
-            {allStrengths.map((item, i) => (
-              <div key={i} style={s.listItem}>
-                <span style={s.dot('#6dbf87')} />{item}
-              </div>
-            ))}
           </>
         )}
 
-        {/* Deficiências */}
-        {allWeaknesses.length > 0 && (
+        {/* Aba Análise — geral + clínico unificados */}
+        {tab === 'analysis' && (
           <>
-            <p style={s.sectionTitle}>⚠️ Pontos de atenção</p>
-            {allWeaknesses.map((item, i) => (
-              <div key={i} style={s.listItem}>
-                <span style={s.dot('#f5c070')} />{item}
-              </div>
-            ))}
+            {/* Texto de análise no topo */}
+            <div style={s.analysisBlock}>
+              {report.clinical.clinicalNote || report.general.summary}
+            </div>
+
+            {/* Pontos positivos */}
+            {allStrengths.length > 0 && (
+              <>
+                <p style={s.sectionTitle}>✅ O que foi bem</p>
+                {allStrengths.map((item, i) => (
+                  <div key={i} style={s.listItem}>
+                    <span style={s.dot('#6dbf87')} />{item}
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* Deficiências */}
+            {allWeaknesses.length > 0 && (
+              <>
+                <p style={s.sectionTitle}>⚠️ Pontos de atenção</p>
+                {allWeaknesses.map((item, i) => (
+                  <div key={i} style={s.listItem}>
+                    <span style={s.dot('#f5c070')} />{item}
+                  </div>
+                ))}
+              </>
+            )}
+
+            <div style={s.divider} />
+
+            {/* Orientação + aviso legal no rodapé */}
+            <div style={s.disclaimer}>
+              <p style={{ margin: '0 0 6px', color: '#a0b4f8', fontWeight: 600, fontSize: 13 }}>
+                📌 Orientação
+              </p>
+              <p style={{ margin: '0 0 8px' }}>{mergedRecommendation}</p>
+              <p style={{ margin: 0, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8 }}>
+                ⚠️ Este resultado reflete o desempenho em uma tarefa de treino e{' '}
+                <strong>não constitui diagnóstico clínico</strong>.
+                Para investigação aprofundada ou dúvidas, procure um profissional de saúde mental
+                certificado pelos conselhos.
+              </p>
+            </div>
           </>
         )}
-
-        <div style={s.divider} />
-
-        {/* Recomendação unificada + aviso legal */}
-        <div style={s.disclaimer}>
-          <p style={{ margin: '0 0 6px', color: '#a0b4f8', fontWeight: 600, fontSize: 13 }}>
-            📌 Orientação
-          </p>
-          <p style={{ margin: '0 0 8px' }}>{mergedRecommendation}</p>
-          <p style={{ margin: 0, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8 }}>
-            ⚠️ Este resultado reflete o desempenho em uma tarefa de treino e <strong>não constitui diagnóstico clínico</strong>.
-            Para investigação aprofundada ou dúvidas, procure um profissional de saúde mental certificado pelos conselhos.
-          </p>
-        </div>
       </div>
     </div>
   );
