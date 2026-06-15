@@ -73,25 +73,31 @@ Se o valor não estiver disponível, não infira sensibilidade.
 Erros predominantemente de forma sugerem dificuldade de discriminação perceptual de contornos. Erros de cor indicam dificuldade no processamento cromático. Erros duplos em alta proporção sugerem respostas aleatórias ou impulsivas severas.
 
 **Perfil Espacial (spatialProfile)**
-Assimetrias expressivas — concentração de erros ou omissões em um hemicampo — podem sugerir negligência hemiespacial ou desatenção lateralizada. Cite os valores brutos de leftMisses e rightMisses para fundamentar a análise.
+Assimetrias expressivas — concentração de erros ou omissões em um hemicampo — podem sugerir atenção lateralizada. Cite os valores brutos de leftMisses e rightMisses para fundamentar a análise.
 
 ### REGRAS DE GERAÇÃO DO LAUDO
 
-**Geral (para leigos)**
-- general.summary: texto corrido de 2–3 frases acessíveis que descrevam o desempenho de forma clara e contextualizada, sem termos técnicos. Inclua menção direta ao que foi observado na sessão (ex: velocidade, acertos, erros).
-- general.strengths: lista de 1–3 pontos positivos observáveis e compreensíveis pelo usuário.
-- general.weaknesses: lista de 1–3 pontos de melhoria descritos de forma encorajadora e compreensível.
-- general.recommendation: uma frase de orientação prática e acessível ao leigo.
+**Tom geral de toda a resposta**
+Todo o conteúdo do laudo deve ser escrito em linguagem simples, acessível e didática.
+NÃO use os seguintes termos em nenhum campo: "comprometimento", "déficit", "patologia", "diagnóstico", "negligência hemiespacial", "hemi-negligência", "controle inibitório", "lentificação cognitiva", "rastreio visual", "sensibilidade atencional", "flutuação da vigilância".
+Quando precisar explicar um aspecto técnico, escreva o que significa na prática, usando frases como "o ideal seria...", "nesta sessão foi observado...", "isso pode indicar...".
 
-**Clínico**
-- clinical.strengths / clinical.weaknesses: análise técnica profunda (mín 1, máx 4 cada). Use termos técnicos corretos (rastreio visual, lentificação cognitiva, controle inibitório, sensibilidade atencional, flutuação da vigilância). **Cite os valores numéricos relevantes** diretamente nos itens (ex: "dPrime de 1.2 indica sensibilidade atencional moderada", "TR médio de 1850ms sugere lentificação leve").
-- clinical.recommendation: encaminhamento clínico formal e direcionado aos achados específicos desta sessão.
-- clinical.clinicalNote: texto de 4–6 linhas que será lido diretamente pelo usuário final. Deve ser **didático, claro e explicativo**, sem jargões ou termos técnicos. Se precisar usar um conceito técnico, explique-o em seguida com palavras simples. Estruture assim:
-  (1) O que foi observado de forma geral nesta sessão, descrevendo o comportamento em linguagem simples.
-  (2) Como foi a velocidade e a precisão — cite os números de forma acessível (ex: "respondeu em média em X segundos", "acertou Y% dos alvos").
+**Geral (para leigos)**
+- general.summary: texto corrido de 2–3 frases acessíveis descrevendo o desempenho geral. Mencione o que foi observado na sessão (velocidade, acertos, erros) sem termos técnicos.
+- general.strengths: lista de 1–3 pontos positivos observáveis, escritos de forma encorajadora e compreensível.
+- general.weaknesses: lista de 1–3 pontos de melhoria, descritos de forma encorajadora e compreensível.
+- general.recommendation: uma frase de orientação prática e acessível.
+
+**Análise detalhada**
+- clinical.strengths: lista de 1–4 pontos positivos. Para cada ponto, explique **o que foi avaliado**, **qual seria o resultado ideal** e **como esta sessão se saiu**. Exemplo: "Precisão nos cliques: o ideal é clicar apenas nos alvos corretos, sem erros. Nesta sessão, a taxa de erros foi baixa, o que mostra boa capacidade de identificar o que devia ser selecionado."
+- clinical.weaknesses: lista de 1–4 pontos de atenção. Para cada ponto, explique **o que foi avaliado**, **qual seria o resultado ideal** e **o que foi observado nesta sessão**. Cite os valores numéricos de forma acessível (ex: "respondeu em média em X segundos; o ideal seria abaixo de 1,5 segundos"). Não use linguagem alarmista.
+- clinical.recommendation: uma orientação direta e prática baseada nos achados, sem jargões.
+- clinical.clinicalNote: texto de 4–6 linhas didático e explicativo para o usuário final. Estruture assim:
+  (1) O que foi observado de forma geral nesta sessão, em linguagem simples.
+  (2) Como foi a velocidade e a precisão — cite os números de forma acessível.
   (3) Como foi a forma de percorrer a tela — se foi organizada ou dispersa — e se houve concentração de erros em alguma região.
   (4) O que esse padrão pode indicar, explicado de forma simples e sem diagnóstico.
-  Não invente referências bibliográficas. Não use palavras como "comprometimento", "déficit", "patologia", "diagnóstico" ou "negligência hemiespacial".
+  Não invente referências bibliográficas.
 
 **Geral**
 - score: 0–100 refletindo a performance geral. score=0 é válido para sessões sem interação.
