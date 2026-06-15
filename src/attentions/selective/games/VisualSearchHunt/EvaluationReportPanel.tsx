@@ -165,16 +165,6 @@ const s = {
     marginLeft: 8,
   }),
 
-  recommendBox: {
-    background: 'rgba(108,142,245,0.08)',
-    border: '1px solid rgba(108,142,245,0.2)',
-    borderRadius: 10,
-    padding: '10px 12px',
-    fontSize: 13,
-    color: '#a0b4f8',
-    lineHeight: 1.6,
-  } as const,
-
   disclaimerBox: {
     fontSize: 12,
     color: '#8b8fa8',
@@ -183,18 +173,6 @@ const s = {
     textAlign: 'center' as const,
   } as const,
 };
-
-/** Remove frases de aviso/disclaimer que o Gemini às vezes inclui na recomendação */
-function cleanRecommendation(text: string): string {
-  return text
-    .replace(/aviso[^.]*\./gi, '')
-    .replace(/este resultado[^.]*\./gi, '')
-    .replace(/não constitui diagn[^.]*\./gi, '')
-    .replace(/procure um profissional[^.]*\./gi, '')
-    .replace(/para investigação aprofundada[^.]*\./gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-}
 
 export function EvaluationReportPanel({ report }: { report: EvaluationReport }) {
   const [tab, setTab] = useState<Tab>('ludic');
@@ -212,13 +190,6 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
       (c) => !report.general.weaknesses.some((g) => g.trim() === c.trim())
     ),
   ];
-
-  const generalRec  = cleanRecommendation(report.general.recommendation);
-  const clinicalRec = cleanRecommendation(report.clinical.recommendation);
-  const recommendation =
-    !clinicalRec || generalRec.toLowerCase() === clinicalRec.toLowerCase()
-      ? generalRec
-      : clinicalRec; // prefer clínico por ser mais específico
 
   return (
     <div style={s.wrapper}>
@@ -283,12 +254,6 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
                   </div>
                 ))}
               </>
-            )}
-
-            {recommendation && (
-              <div style={s.recommendBox}>
-                📌 {recommendation}
-              </div>
             )}
 
             <div style={s.divider} />
