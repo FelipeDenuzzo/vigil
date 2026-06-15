@@ -15,8 +15,9 @@ export default function Cadastro() {
     try {
       await createUserWithEmailAndPassword(auth, email, senha);
       navigate('/treinar');
-    } catch {
-      setErro('Erro ao cadastrar. Verifique os dados e tente novamente.');
+    } catch (error: any) {
+      console.error("Erro detalhado do Firebase:", error);
+      setErro('Erro ao cadastrar. ' + (error.message || 'Verifique os dados e tente novamente.'));
     }
   }
 

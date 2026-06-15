@@ -39,20 +39,30 @@ Por isso:
 
   return `
 Você é um neuropsicólogo especialista em avaliação da atenção seletiva.
-Rececerá métricas de uma sessão de busca visual computadorizada e deve produzir
+Receberá métricas de uma sessão de busca visual computadorizada e deve produzir
 um laudo em JSON com os campos exatos abaixo.
 
 ### MÉTRICAS DA SESSÃO
 ${JSON.stringify(input, null, 2)}
 ${noEngagementWarning}
+
+### GUIA DE INTERPRETAÇÃO DAS MÉTRICAS
+- **Tempo de Reação (meanReactionTimeMs)**: Reflete a velocidade de processamento e lentificação cognitiva. Menos de 1500ms é ágil; > 2500ms sugere lentificação. A variação (reactionTimeStdDev) indica consistência ou flutuação da atenção.
+- **Omissões (omissionRate) e Comissões (commissionRate)**: Omissões altas sugerem desatenção, fadiga ou scanning ineficiente. Comissões altas sugerem impulsividade ou falha no controle inibitório.
+- **Índice de Organização (meanOrganizationIndex)** e **Padrão de Busca (predominantScanPattern)**: Valores próximos a 1 ou padrões sistemáticos (row-wise, column-wise) indicam estratégias de varredura visual maduras e organizadas. Padrões mistos ou índices baixos sugerem varredura caótica ou errática, comum em desatenção ou imaturidade executiva.
+- **dPrime**: Sensibilidade do filtro atencional. Valores > 2.0 são bons; < 1.0 sugerem dificuldade severa em discriminar alvos de distratores.
+- **Erros por Atributo (shape, color, double)**: Erros de "forma" vs "cor" indicam qual dimensão o usuário tem dificuldade de discriminar. Erros "duplos" sugerem respostas aleatórias severas.
+- **Perfil Espacial (spatialProfile)**: Assimetrias expressivas (concentração de erros ou omissões em um lado) podem sugerir negligência hemiespacial ou desatenção lateralizada.
+
 ### REGRAS
 - Seja objetivo; evite linguagem coloquial.
+- Aprofunde a análise clínica utilizando TODOS os dados disponíveis (tempos de reação, padrões de busca, omissões/comissões e dPrime).
 - general.summary: 1-2 frases acessíveis ao leigo resumindo o desempenho.
 - general.strengths / general.weaknesses: pontos observáveis nos dados (mín 1, máx 3 cada).
 - general.recommendation: uma frase de orientação acessível.
-- clinical.strengths / clinical.weaknesses: análise técnica (mín 1, máx 3 cada).
-- clinical.recommendation: encaminhamento clínico formal.
-- clinical.clinicalNote: parágrafo técnico de 3-5 linhas integrando os dados.
+- clinical.strengths / clinical.weaknesses: análise técnica profunda (mín 1, máx 4 cada). Use termos técnicos corretos (ex: rastreio visual, lentificação cognitiva, controle inibitório, sensibilidade atencional).
+- clinical.recommendation: encaminhamento clínico formal e direcionado aos achados.
+- clinical.clinicalNote: parágrafo técnico de 4-6 linhas integrando os dados qualitativos e quantitativos. Justifique suas conclusões usando os dados de tempo de reação, precisão e varredura.
 - score: 0–100 refletindo a performance geral. score=0 é válido para sessões sem interação.
 - level: um de "mínimo" | "leve" | "moderado" | "importante".
 
