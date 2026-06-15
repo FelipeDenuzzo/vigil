@@ -15,7 +15,14 @@ export interface EvaluatorInput {
   totalClicks: number;
   totalHits: number;
   totalTargets: number;
+  totalMissedTargets?: number;
   commissionRate: number;
+  omissionRate?: number;
+  dPrime?: number | null;
+  meanReactionTimeMs?: number | null;
+  reactionTimeStdDev?: number | null;
+  meanOrganizationIndex?: number | null;
+  predominantScanPattern?: string | null;
   dominantErrorAttribute: 'forma' | 'cor' | 'duplo' | 'indeterminado';
   problemRegion: 'esquerda' | 'direita' | 'centro' | 'distribuido' | 'indeterminado';
   spatialNeglect: boolean;
@@ -166,7 +173,14 @@ export function buildEvaluatorInput(
     totalClicks,
     totalHits: metrics.totalHits,
     totalTargets: metrics.totalTargets,
+    totalMissedTargets: metrics.totalMissedTargets,
     commissionRate: metrics.commissionRate,
+    omissionRate: metrics.omissionRate,
+    dPrime: metrics.dPrime,
+    meanReactionTimeMs: metrics.meanReactionTimeMs,
+    reactionTimeStdDev: metrics.reactionTimeStdDev,
+    meanOrganizationIndex: metrics.meanOrganizationIndex,
+    predominantScanPattern: metrics.predominantScanPattern,
     dominantErrorAttribute: inferDominantErrorAttribute(metrics),
     problemRegion: inferProblemRegion(metrics),
     spatialNeglect: inferSpatialNeglect(metrics),

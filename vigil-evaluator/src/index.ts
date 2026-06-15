@@ -77,7 +77,7 @@ app.post('/evaluate', authGuard, async (req: Request, res: Response) => {
 });
 
 app.get('/evaluate/status/:jobId', authGuard, async (req: Request, res: Response) => {
-  const { jobId } = req.params;
+  const jobId = String(req.params.jobId);
   const snap = await db.collection(JOBS).doc(jobId).get();
   if (!snap.exists) {
     res.status(404).json({ error: 'Job não encontrado.' });

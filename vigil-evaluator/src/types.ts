@@ -5,7 +5,16 @@ export interface EvaluatorInput {
   attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida';
   roundCount: number;
   totalClicks: number;
+  totalHits?: number;
+  totalTargets?: number;
+  totalMissedTargets?: number;
   commissionRate: number;
+  omissionRate?: number;
+  dPrime?: number | null;
+  meanReactionTimeMs?: number | null;
+  reactionTimeStdDev?: number | null;
+  meanOrganizationIndex?: number | null;
+  predominantScanPattern?: string | null;
   dominantErrorAttribute: 'forma' | 'cor' | 'duplo' | 'indeterminado';
   problemRegion: 'esquerda' | 'direita' | 'centro' | 'distribuido' | 'indeterminado';
   spatialNeglect: boolean;
