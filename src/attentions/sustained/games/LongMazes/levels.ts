@@ -1,22 +1,31 @@
-import { LongMazeLevelConfig } from './types';
+import type { LongMazeLevelConfig } from './types';
 
-export const levels: LongMazeLevelConfig[] = [
+export const LONG_MAZE_LEVELS: LongMazeLevelConfig[] = [
   {
     id: 1,
-    name: "Nível 1 - Básico",
-    rows: 10,
-    cols: 10,
-    timeLimitSec: 60,
-    minPathLength: 15,
-    wallDensity: 0.3
+    name: 'Fácil',
+    rows: 11,
+    cols: 11,
+    timeLimitSec: 120,
+    minPathLength: 10,
+    wallDensity: 0.7,
   },
   {
     id: 2,
-    name: "Nível 2 - Intermediário",
+    name: 'Médio',
     rows: 15,
     cols: 15,
-    timeLimitSec: 90,
-    minPathLength: 25,
-    wallDensity: 0.35
-  }
+    timeLimitSec: 180,
+    minPathLength: 20,
+    wallDensity: 0.75,
+  },
+  {
+    id: 3,
+    name: 'Difícil',
+    rows: 21,
+    cols: 21,
+    timeLimitSec: 240,
+    minPathLength: 35,
+    wallDensity: 0.8,
+  },
 ];
