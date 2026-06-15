@@ -1,10 +1,6 @@
 // src/attentions/selective/games/VisualSearchHunt/EvaluationReportPanel.tsx
-// fix: remove propriedade 'border' duplicada no estilo tab (TS1117)
 
-import { useState } from 'react';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
-
-type Tab = 'ludic' | 'general' | 'clinical';
 
 const LEVEL_COLOR: Record<string, string> = {
   'mínimo':    '#6dbf87',
@@ -22,48 +18,51 @@ const s = {
   } as const,
 
   header: {
-    padding: '16px 16px 0',
+    padding: '16px 16px 12px',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   } as const,
 
   title: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 700,
     color: '#e8e9f0',
-    marginBottom: 12,
+    margin: 0,
   } as const,
 
-  tabRow: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
-    borderBottom: '1px solid rgba(255,255,255,0.08)',
-  } as const,
-
-  tab: (active: boolean): React.CSSProperties => ({
-    padding: '10px 4px',
-    textAlign: 'center',
-    fontSize: 13,
-    fontWeight: active ? 700 : 400,
-    color: active ? '#6c8ef5' : '#8b8fa8',
-    borderBottom: active ? '2px solid #6c8ef5' : '2px solid transparent',
-    cursor: 'pointer',
-    background: 'none',
-    transition: 'color 0.18s',
+  levelBadge: (level: string): React.CSSProperties => ({
+    display: 'inline-block',
+    padding: '2px 10px',
+    borderRadius: 99,
+    fontSize: 12,
+    fontWeight: 700,
+    color: LEVEL_COLOR[level] ?? '#e8e9f0',
+    border: `1px solid ${LEVEL_COLOR[level] ?? '#e8e9f0'}`,
   }),
 
   body: {
     padding: 16,
     display: 'grid',
+    gap: 14,
+  } as const,
+
+  // Gauge
+  gaugeWrap: {
+    display: 'grid',
+    gap: 6,
+  } as const,
+
+  gaugeRow: {
+    display: 'flex',
+    alignItems: 'center',
     gap: 12,
   } as const,
 
-  gaugeWrap: {
-    position: 'relative' as const,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-
   gaugeTrack: {
-    height: 12,
+    flex: 1,
+    height: 10,
     borderRadius: 99,
     background: 'linear-gradient(to right, #f08080, #f5c070, #6dbf87)',
     position: 'relative' as const,
@@ -74,57 +73,57 @@ const s = {
     top: '50%',
     left: `${pct}%`,
     transform: 'translate(-50%, -50%)',
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
     borderRadius: '50%',
     background: '#fff',
     border: '3px solid #6c8ef5',
     boxShadow: '0 0 0 3px rgba(108,142,245,0.3)',
   }),
 
-  gaugeLegend: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: 6,
-    fontSize: 11,
-    color: '#8b8fa8',
-  } as const,
-
-  ludicScore: {
-    textAlign: 'center' as const,
-    fontSize: 48,
+  gaugeScore: {
+    fontSize: 28,
     fontWeight: 800,
     color: '#e8e9f0',
     lineHeight: 1,
-    marginTop: 16,
+    minWidth: 44,
+    textAlign: 'right' as const,
   },
+
+  gaugeLegend: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: 11,
+    color: '#8b8fa8',
+    paddingLeft: 56,
+  } as const,
 
   ludicLabel: {
     textAlign: 'center' as const,
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: 600,
     color: '#a0b4f8',
-    marginTop: 6,
-    marginBottom: 4,
   },
 
-  summary: {
+  // Análise principal
+  analysisBlock: {
     fontSize: 14,
     color: '#c8cad8',
-    lineHeight: 1.6,
-    padding: '10px 12px',
+    lineHeight: 1.7,
+    padding: '12px 14px',
     background: 'rgba(255,255,255,0.04)',
     borderRadius: 10,
   } as const,
 
-  listTitle: {
-    fontSize: 12,
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: 700,
     color: '#8b8fa8',
     textTransform: 'uppercase' as const,
-    letterSpacing: '0.06em',
-    marginBottom: 6,
-    marginTop: 4,
-  },
+    letterSpacing: '0.07em',
+    marginBottom: 8,
+    marginTop: 2,
+  } as const,
 
   listItem: {
     display: 'flex',
@@ -132,8 +131,8 @@ const s = {
     alignItems: 'flex-start',
     fontSize: 13,
     color: '#c8cad8',
-    lineHeight: 1.5,
-    marginBottom: 6,
+    lineHeight: 1.55,
+    marginBottom: 7,
   } as const,
 
   dot: (color: string): React.CSSProperties => ({
@@ -145,118 +144,117 @@ const s = {
     marginTop: 5,
   }),
 
-  recommendBox: {
-    background: 'rgba(108,142,245,0.08)',
-    border: '1px solid rgba(108,142,245,0.2)',
-    borderRadius: 10,
-    padding: '10px 12px',
-    fontSize: 13,
-    color: '#a0b4f8',
-    lineHeight: 1.6,
+  divider: {
+    height: 1,
+    background: 'rgba(255,255,255,0.06)',
+    margin: '2px 0',
   } as const,
 
-  clinicalNote: {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.08)',
+  // Rodapé
+  disclaimer: {
+    background: 'rgba(108,142,245,0.06)',
+    border: '1px solid rgba(108,142,245,0.15)',
     borderRadius: 10,
     padding: '10px 12px',
     fontSize: 12,
-    color: '#a0a4be',
-    lineHeight: 1.7,
-    fontStyle: 'italic' as const,
-  },
-
-  levelBadge: (level: string): React.CSSProperties => ({
-    display: 'inline-block',
-    padding: '2px 10px',
-    borderRadius: 99,
-    fontSize: 12,
-    fontWeight: 700,
-    color: LEVEL_COLOR[level] ?? '#e8e9f0',
-    border: `1px solid ${LEVEL_COLOR[level] ?? '#e8e9f0'}`,
-    marginLeft: 8,
-  }),
+    color: '#8b8fa8',
+    lineHeight: 1.6,
+  } as const,
 };
 
 export function EvaluationReportPanel({ report }: { report: EvaluationReport }) {
-  const [tab, setTab] = useState<Tab>('ludic');
+  // Mescla strengths e weaknesses de geral + clínico sem duplicatas
+  const allStrengths = [
+    ...report.general.strengths,
+    ...report.clinical.strengths.filter(
+      (c) => !report.general.strengths.some((g) => g.trim() === c.trim())
+    ),
+  ];
+
+  const allWeaknesses = [
+    ...report.general.weaknesses,
+    ...report.clinical.weaknesses.filter(
+      (c) => !report.general.weaknesses.some((g) => g.trim() === c.trim())
+    ),
+  ];
+
+  // Mescla recomendações sem repetição
+  const generalRec = report.general.recommendation.trim();
+  const clinicalRec = report.clinical.recommendation.trim();
+  const mergedRecommendation =
+    generalRec.toLowerCase() === clinicalRec.toLowerCase()
+      ? clinicalRec
+      : `${generalRec} ${clinicalRec}`;
 
   return (
     <div style={s.wrapper}>
+      {/* Cabeçalho */}
       <div style={s.header}>
-        <p style={s.title}>
-          🤖 Avaliação IA
-          <span style={s.levelBadge(report.level)}>{report.level}</span>
-        </p>
-        <div style={s.tabRow}>
-          {(['ludic', 'general', 'clinical'] as Tab[]).map((t) => (
-            <button
-              key={t}
-              type="button"
-              style={s.tab(tab === t)}
-              onClick={() => setTab(t)}
-            >
-              {t === 'ludic'   ? '🎯 Régua' :
-               t === 'general' ? '📋 Geral' :
-                                 '🔬 Clínico'}
-            </button>
-          ))}
-        </div>
+        <p style={s.title}>🤖 Avaliação IA</p>
+        <span style={s.levelBadge(report.level)}>{report.level}</span>
       </div>
 
       <div style={s.body}>
-        {tab === 'ludic' && (
-          <>
-            <p style={s.ludicScore}>{report.ludic.emoji} {report.ludic.score}</p>
-            <p style={s.ludicLabel}>{report.ludic.label}</p>
-            <div style={s.gaugeWrap}>
-              <div style={s.gaugeTrack}>
-                <div style={s.gaugeMarker(report.ludic.score)} />
-              </div>
-              <div style={s.gaugeLegend}>
-                <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
-              </div>
+        {/* Gauge */}
+        <div style={s.gaugeWrap}>
+          <div style={s.gaugeRow}>
+            <div style={s.gaugeTrack}>
+              <div style={s.gaugeMarker(report.ludic.score)} />
             </div>
-          </>
-        )}
+            <span style={s.gaugeScore}>
+              {report.ludic.emoji} {report.ludic.score}
+            </span>
+          </div>
+          <div style={s.gaugeLegend}>
+            <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+          </div>
+          <p style={s.ludicLabel}>{report.ludic.label}</p>
+        </div>
 
-        {tab === 'general' && (
+        <div style={s.divider} />
+
+        {/* Análise principal — topo do conteúdo textual */}
+        <div style={s.analysisBlock}>
+          {report.clinical.clinicalNote || report.general.summary}
+        </div>
+
+        {/* Pontos positivos */}
+        {allStrengths.length > 0 && (
           <>
-            <p style={s.summary}>{report.general.summary}</p>
-            <p style={s.listTitle}>Pontos fortes</p>
-            {report.general.strengths.map((item, i) => (
+            <p style={s.sectionTitle}>✅ O que foi bem</p>
+            {allStrengths.map((item, i) => (
               <div key={i} style={s.listItem}>
                 <span style={s.dot('#6dbf87')} />{item}
               </div>
             ))}
-            <p style={s.listTitle}>Pontos de atenção</p>
-            {report.general.weaknesses.map((item, i) => (
+          </>
+        )}
+
+        {/* Deficiências */}
+        {allWeaknesses.length > 0 && (
+          <>
+            <p style={s.sectionTitle}>⚠️ Pontos de atenção</p>
+            {allWeaknesses.map((item, i) => (
               <div key={i} style={s.listItem}>
                 <span style={s.dot('#f5c070')} />{item}
               </div>
             ))}
-            <div style={s.recommendBox}>💡 {report.general.recommendation}</div>
           </>
         )}
 
-        {tab === 'clinical' && (
-          <>
-            <p style={s.listTitle}>Pontos preservados</p>
-            {report.clinical.strengths.map((item, i) => (
-              <div key={i} style={s.listItem}>
-                <span style={s.dot('#6dbf87')} />{item}
-              </div>
-            ))}
-            <p style={s.listTitle}>Achados</p>
-            {report.clinical.weaknesses.map((item, i) => (
-              <div key={i} style={s.listItem}>
-                <span style={s.dot('#f08080')} />{item}
-              </div>
-            ))}
-            <div style={s.recommendBox}>📋 {report.clinical.recommendation}</div>
-            <div style={s.clinicalNote}>{report.clinical.clinicalNote}</div>
-          </>
-        )}
+        <div style={s.divider} />
+
+        {/* Recomendação unificada + aviso legal */}
+        <div style={s.disclaimer}>
+          <p style={{ margin: '0 0 6px', color: '#a0b4f8', fontWeight: 600, fontSize: 13 }}>
+            📌 Orientação
+          </p>
+          <p style={{ margin: '0 0 8px' }}>{mergedRecommendation}</p>
+          <p style={{ margin: 0, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8 }}>
+            ⚠️ Este resultado reflete o desempenho em uma tarefa de treino e <strong>não constitui diagnóstico clínico</strong>.
+            Para investigação aprofundada ou dúvidas, procure um profissional de saúde mental certificado pelos conselhos.
+          </p>
+        </div>
       </div>
     </div>
   );
