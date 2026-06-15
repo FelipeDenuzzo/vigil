@@ -47,22 +47,49 @@ ${JSON.stringify(input, null, 2)}
 ${noEngagementWarning}
 
 ### GUIA DE INTERPRETAÇÃO DAS MÉTRICAS
-- **Tempo de Reação (meanReactionTimeMs)**: Reflete a velocidade de processamento e lentificação cognitiva. Menos de 1500ms é ágil; > 2500ms sugere lentificação. A variação (reactionTimeStdDev) indica consistência ou flutuação da atenção.
-- **Omissões (omissionRate) e Comissões (commissionRate)**: Omissões altas sugerem desatenção, fadiga ou scanning ineficiente. Comissões altas sugerem impulsividade ou falha no controle inibitório.
-- **Índice de Organização (meanOrganizationIndex)** e **Padrão de Busca (predominantScanPattern)**: Valores próximos a 1 ou padrões sistemáticos (row-wise, column-wise) indicam estratégias de varredura visual maduras e organizadas. Padrões mistos ou índices baixos sugerem varredura caótica ou errática, comum em desatenção ou imaturidade executiva.
-- **dPrime**: Sensibilidade do filtro atencional. Valores > 2.0 são bons; < 1.0 sugerem dificuldade severa em discriminar alvos de distratores.
-- **Erros por Atributo (shape, color, double)**: Erros de "forma" vs "cor" indicam qual dimensão o usuário tem dificuldade de discriminar. Erros "duplos" sugerem respostas aleatórias severas.
-- **Perfil Espacial (spatialProfile)**: Assimetrias expressivas (concentração de erros ou omissões em um lado) podem sugerir negligência hemiespacial ou desatenção lateralizada.
 
-### REGRAS
-- Seja objetivo; evite linguagem coloquial.
-- Aprofunde a análise clínica utilizando TODOS os dados disponíveis (tempos de reação, padrões de busca, omissões/comissões e dPrime).
-- general.summary: 1-2 frases acessíveis ao leigo resumindo o desempenho.
-- general.strengths / general.weaknesses: pontos observáveis nos dados (mín 1, máx 3 cada).
-- general.recommendation: uma frase de orientação acessível.
-- clinical.strengths / clinical.weaknesses: análise técnica profunda (mín 1, máx 4 cada). Use termos técnicos corretos (ex: rastreio visual, lentificação cognitiva, controle inibitório, sensibilidade atencional).
-- clinical.recommendation: encaminhamento clínico formal e direcionado aos achados.
-- clinical.clinicalNote: parágrafo técnico de 4-6 linhas integrando os dados qualitativos e quantitativos. Justifique suas conclusões usando os dados de tempo de reação, precisão e varredura.
+**Tempo de Reação (meanReactionTimeMs)**
+Reflete a velocidade de processamento visuoespacial e cognitivo. Use os limiares abaixo como referência orientativa para busca visual computadorizada:
+- < 800ms: resposta muito rápida, pode indicar impulsividade
+- 800–1500ms: faixa de agilidade adequada
+- 1500–2500ms: faixa de lentidão leve
+- > 2500ms: sugere lentificação cognitiva relevante
+A variação do TR (reactionTimeStdDev) é clinicamente importante: valores altos indicam inconsistência atencional e flutuação do foco.
+
+**Omissões (omissionRate) e Comissões (commissionRate)**
+Omissões altas (> 20%) sugerem desatenção, fadiga ou varredura ineficiente. Comissões altas (> 15%) sugerem impulsividade ou falha no controle inibitório. A combinação de ambas em níveis elevados é indicativa de perfil atencional difuso.
+
+**Índice de Organização (meanOrganizationIndex) e Padrão de Busca (predominantScanPattern)**
+Valores próximos a 1.0 ou padrões sistemáticos (row-wise, column-wise) indicam estratégias de varredura visual maduras. Padrões mistos ou índices baixos (< 0.4) sugerem varredura caótica, comum em desatenção ou imaturidade executiva.
+
+**dPrime (Sensibilidade do Sinal)**
+Medida da capacidade de discriminar alvos de distratores, derivada da Teoria de Detecção de Sinal. Use os limiares abaixo como referência orientativa:
+- > 2.0: boa sensibilidade atencional
+- 1.0–2.0: sensibilidade moderada
+- < 1.0: dificuldade severa em discriminar alvos
+Se o valor não estiver disponível, não infira sensibilidade.
+
+**Erros por Atributo (shapeErrors, colorErrors, doubleErrors)**
+Erros predominantemente de forma sugerem dificuldade de discriminação perceptual de contornos. Erros de cor indicam dificuldade no processamento cromático. Erros duplos em alta proporção sugerem respostas aleatórias ou impulsivas severas.
+
+**Perfil Espacial (spatialProfile)**
+Assimetrias expressivas — concentração de erros ou omissões em um hemicampo — podem sugerir negligência hemiespacial ou desatenção lateralizada. Cite os valores brutos de leftMisses e rightMisses para fundamentar a análise.
+
+### REGRAS DE GERAÇÃO DO LAUDO
+
+**Geral (para leigos)**
+- general.summary: texto corrido de 2–3 frases acessíveis que descrevam o desempenho de forma clara e contextualizada, sem termos técnicos. Inclua menção direta ao que foi observado na sessão (ex: velocidade, acertos, erros).
+- general.strengths: lista de 1–3 pontos positivos observáveis e compreensíveis pelo usuário.
+- general.weaknesses: lista de 1–3 pontos de melhoria descritos de forma encorajadora e compreensível.
+- general.recommendation: uma frase de orientação prática e acessível ao leigo.
+
+**Clínico (para profissionais)**
+- clinical.strengths / clinical.weaknesses: análise técnica profunda (mín 1, máx 4 cada). Use termos técnicos corretos (rastreio visual, lentificação cognitiva, controle inibitório, sensibilidade atencional, flutuação da vigilância). **Cite os valores numéricos relevantes** diretamente nos itens (ex: "dPrime de 1.2 indica sensibilidade atencional moderada", "TR médio de 1850ms sugere lentificação leve").
+- clinical.recommendation: encaminhamento clínico formal e direcionado aos achados específicos desta sessão.
+- clinical.clinicalNote: parágrafo técnico de 4–6 linhas integrando os dados quantitativos e qualitativos. Estruture em: (1) Impressão Clínica geral, (2) achados de precisão e velocidade com valores numéricos, (3) padrão de varredura e organização espacial, (4) hipótese interpretativa. Não invente referências bibliográficas — baseie-se apenas nos dados fornecidos.
+
+**Geral**
+- Seja objetivo e técnico no laudo clínico; use linguagem acessível apenas no laudo geral.
 - score: 0–100 refletindo a performance geral. score=0 é válido para sessões sem interação.
 - level: um de "mínimo" | "leve" | "moderado" | "importante".
 
