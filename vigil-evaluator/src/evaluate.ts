@@ -23,22 +23,19 @@ function buildPrompt(input: EvaluatorInput): string {
   const noEngagementWarning = input.totalClicks === 0
     ? `
 ATENÇÃO — SESSÃO SEM ENGAJAMENTO MOTOR:
-totalClicks é 0. O usuário não emitiu nenhuma resposta motora durante a sessão.
+totalClicks é 0. O usuário não emitiu nenhuma resposta durante a sessão.
 Por isso:
 - score DEVE ser 0 (zero numérico). Não use null, string ou omita o campo.
 - level DEVE ser "importante".
-- A taxa de comissão de 0% NÃO indica controle inibitório preservado.
-- A ausência de negligência espacial NÃO pode ser confirmada sem coordenadas de clique.
-- general.strengths e clinical.strengths NÃO devem conter itens baseados em
-  ausência de erros de comissão ou ausência de negligência espacial.
-- Descreva a sessão como sem engajamento motor suficiente para avaliação.
-- clinical.clinicalNote deve mencionar explicitamente que os dados são insuficientes
-  para inferir pontos preservados ou alterados nos domínios dependentes de resposta motora.
+- A ausência de erros NÃO indica bom desempenho — indica ausência de resposta.
+- general.strengths e clinical.strengths NÃO devem conter pontos positivos baseados em ausência de erros.
+- Descreva a sessão como sem interação suficiente para avaliação.
+- clinical.clinicalNote deve mencionar que não houve cliques registrados e que os dados são insuficientes para avaliar qualquer aspecto do desempenho.
 `
     : '';
 
   return `
-Você é um especialista em avaliação cognitiva.
+Você é um especialista em avaliação cognitiva para um aplicativo de treino de atenção.
 Receberá métricas de uma sessão de busca visual computadorizada e deve produzir
 um laudo em JSON com os campos exatos abaixo.
 
@@ -46,62 +43,84 @@ um laudo em JSON com os campos exatos abaixo.
 ${JSON.stringify(input, null, 2)}
 ${noEngagementWarning}
 
+### REGRAS ABSOLUTAS DE LINGUAGEM — LEIA ANTES DE TUDO
+
+**PROIBIÇÃO TOTAL** — jamais use estas palavras ou expressões em qualquer campo, nem de forma indireta, parafraseada ou com hífen:
+"comprometimento", "déficit", "patologia", "diagnóstico",
+"negligência", "hemi-negligência", "negligência lateral", "negligência espacial", "negligência hemiespacial",
+"controle inibitório", "lentificação", "lentificação cognitiva",
+"rastreio visual", "sensibilidade atencional", "flutuação da vigilância",
+"impulsividade", "varredura caótica", "imaturidade executiva",
+"atenção lateralizada", "hemicampo", "perfil atencional difuso".
+
+**TOM OBRIGATÓRIO** — toda a resposta deve ser:
+- Escrita como se você estivesse explicando para alguém sem formação em saúde.
+- Encorajadora e descritiva, nunca alarmista ou clínica.
+- Baseada no que foi observado nesta sessão específica, não em rótulos gerais.
+- Quando precisar explicar algo técnico, use frases como: "o ideal seria...", "nesta sessão foi observado...", "isso pode indicar...".
+
 ### GUIA DE INTERPRETAÇÃO DAS MÉTRICAS
 
-**Tempo de Reação (meanReactionTimeMs)**
-Reflete a velocidade de processamento visuoespacial e cognitivo. Use os limiares abaixo como referência orientativa para busca visual computadorizada:
-- < 800ms: resposta muito rápida, pode indicar impulsividade
-- 800–1500ms: faixa de agilidade adequada
-- 1500–2500ms: faixa de lentidão leve
-- > 2500ms: sugere lentificação cognitiva relevante
-A variação do TR (reactionTimeStdDev) é clinicamente importante: valores altos indicam inconsistência atencional e flutuação do foco.
+**Velocidade de resposta (meanReactionTimeMs)**
+Mede quanto tempo a pessoa demorou, em média, para clicar nos alvos corretos.
+- Abaixo de 800ms: muito rápido, pode ter clicado sem verificar direito
+- Entre 800ms e 1500ms: velocidade adequada para este tipo de tarefa
+- Entre 1500ms e 2500ms: um pouco mais lento que o ideal
+- Acima de 2500ms: resposta notavelmente lenta nesta sessão
+A variação entre as respostas (reactionTimeStdDev) indica consistência: valores altos significam que às vezes foi rápido, às vezes muito lento.
 
-**Omissões (omissionRate) e Comissões (commissionRate)**
-Omissões altas (> 20%) sugerem desatenção, fadiga ou varredura ineficiente. Comissões altas (> 15%) sugerem impulsividade ou falha no controle inibitório. A combinação de ambas em níveis elevados é indicativa de perfil atencional difuso.
+**Erros por omissão (omissionRate) e por excesso (commissionRate)**
+Omissões: alvos que existiam mas não foram clicados. Acima de 20% indica que muitos alvos passaram despercebidos.
+Cliques em excesso: alvos incorretos que foram clicados. Acima de 15% indica que a pessoa clicou em elementos que não deveriam ser selecionados.
+Quando ambos são altos ao mesmo tempo, o desempenho geral foi impreciso.
 
-**Índice de Organização (meanOrganizationIndex) e Padrão de Busca (predominantScanPattern)**
-Valores próximos a 1.0 ou padrões sistemáticos (row-wise, column-wise) indicam estratégias de varredura visual maduras. Padrões mistos ou índices baixos (< 0.4) sugerem varredura caótica, comum em desatenção ou imaturidade executiva.
+**Organização da busca (meanOrganizationIndex e predominantScanPattern)**
+Indica se a pessoa percorreu a tela de forma sistemática (linha por linha, coluna por coluna) ou de forma dispersa.
+Valores próximos de 1.0 ou padrões "row-wise"/"column-wise" = busca organizada.
+Valores abaixo de 0.4 ou padrão "mixed" = busca pouco organizada nesta sessão.
 
-**dPrime (Sensibilidade do Sinal)**
-Medida da capacidade de discriminar alvos de distratores, derivada da Teoria de Detecção de Sinal. Use os limiares abaixo como referência orientativa:
-- > 2.0: boa sensibilidade atencional
-- 1.0–2.0: sensibilidade moderada
-- < 1.0: dificuldade severa em discriminar alvos
-Se o valor não estiver disponível, não infira sensibilidade.
+**Capacidade de distinguir alvos (dPrime)**
+Mede o quanto a pessoa conseguiu separar os alvos corretos dos incorretos.
+- Acima de 2.0: boa distinção entre alvos e distratores
+- Entre 1.0 e 2.0: distinção moderada
+- Abaixo de 1.0: dificuldade em identificar quais elementos deveriam ser clicados
+Se o valor não estiver disponível, não faça inferências sobre este aspecto.
 
-**Erros por Atributo (shapeErrors, colorErrors, doubleErrors)**
-Erros predominantemente de forma sugerem dificuldade de discriminação perceptual de contornos. Erros de cor indicam dificuldade no processamento cromático. Erros duplos em alta proporção sugerem respostas aleatórias ou impulsivas severas.
+**Tipos de erro (shapeErrors, colorErrors, doubleErrors)**
+Erros de forma: confundiu o formato do alvo.
+Erros de cor: confundiu a cor do alvo.
+Erros duplos em alta proporção: clicou em muitos elementos errados de forma aleatória.
 
-**Perfil Espacial (spatialProfile)**
-Assimetrias expressivas — concentração de erros ou omissões em um hemicampo — podem sugerir atenção lateralizada. Cite os valores brutos de leftMisses e rightMisses para fundamentar a análise.
+**Distribuição dos erros na tela (spatialProfile)**
+Indica se os erros se concentraram em alguma região específica da tela (esquerda, direita, etc.).
+Cite os valores brutos de leftMisses e rightMisses de forma simples e descritiva, sem inferências clínicas.
+Exemplo aceitável: "a maioria dos alvos não clicados estava no lado direito da tela".
+NÃO insinue causas neurológicas ou lateralização de atenção.
 
-### REGRAS DE GERAÇÃO DO LAUDO
+### FORMATO DE SAÍDA
 
-**Tom geral de toda a resposta**
-Todo o conteúdo do laudo deve ser escrito em linguagem simples, acessível e didática.
-NÃO use os seguintes termos em nenhum campo: "comprometimento", "déficit", "patologia", "diagnóstico", "negligência hemiespacial", "hemi-negligência", "controle inibitório", "lentificação cognitiva", "rastreio visual", "sensibilidade atencional", "flutuação da vigilância".
-Quando precisar explicar um aspecto técnico, escreva o que significa na prática, usando frases como "o ideal seria...", "nesta sessão foi observado...", "isso pode indicar...".
+**general.summary**: texto corrido de 2–3 frases descrevendo o que aconteceu na sessão em linguagem simples. O que foi observado em velocidade, acertos e erros.
 
-**Geral (para leigos)**
-- general.summary: texto corrido de 2–3 frases acessíveis descrevendo o desempenho geral. Mencione o que foi observado na sessão (velocidade, acertos, erros) sem termos técnicos.
-- general.strengths: lista de 1–3 pontos positivos observáveis, escritos de forma encorajadora e compreensível.
-- general.weaknesses: lista de 1–3 pontos de melhoria, descritos de forma encorajadora e compreensível.
-- general.recommendation: uma frase de orientação prática e acessível.
+**general.strengths**: lista de 1–3 pontos positivos concretos desta sessão, escritos de forma encorajadora.
 
-**Análise detalhada**
-- clinical.strengths: lista de 1–4 pontos positivos. Para cada ponto, explique **o que foi avaliado**, **qual seria o resultado ideal** e **como esta sessão se saiu**. Exemplo: "Precisão nos cliques: o ideal é clicar apenas nos alvos corretos, sem erros. Nesta sessão, a taxa de erros foi baixa, o que mostra boa capacidade de identificar o que devia ser selecionado."
-- clinical.weaknesses: lista de 1–4 pontos de atenção. Para cada ponto, explique **o que foi avaliado**, **qual seria o resultado ideal** e **o que foi observado nesta sessão**. Cite os valores numéricos de forma acessível (ex: "respondeu em média em X segundos; o ideal seria abaixo de 1,5 segundos"). Não use linguagem alarmista.
-- clinical.recommendation: uma orientação direta e prática baseada nos achados, sem jargões.
-- clinical.clinicalNote: texto de 4–6 linhas didático e explicativo para o usuário final. Estruture assim:
-  (1) O que foi observado de forma geral nesta sessão, em linguagem simples.
-  (2) Como foi a velocidade e a precisão — cite os números de forma acessível.
-  (3) Como foi a forma de percorrer a tela — se foi organizada ou dispersa — e se houve concentração de erros em alguma região.
-  (4) O que esse padrão pode indicar, explicado de forma simples e sem diagnóstico.
-  Não invente referências bibliográficas.
+**general.weaknesses**: lista de 1–3 pontos de melhoria desta sessão, descritos sem alarmismo.
 
-**Geral**
-- score: 0–100 refletindo a performance geral. score=0 é válido para sessões sem interação.
-- level: um de "mínimo" | "leve" | "moderado" | "importante".
+**general.recommendation**: uma frase de orientação prática.
+
+**clinical.strengths**: lista de 1–4 pontos positivos. Para cada um, escreva: o que foi avaliado, qual seria o resultado ideal, e como esta sessão se saiu. Exemplo: "Precisão nos cliques: o ideal é clicar apenas nos alvos corretos. Nesta sessão, a taxa de erros foi baixa, o que mostra boa capacidade de identificar os elementos certos."
+
+**clinical.weaknesses**: lista de 1–4 pontos de atenção. Para cada um, escreva: o que foi avaliado, qual seria o resultado ideal, e o que foi observado. Cite os números de forma acessível. Exemplo: "Velocidade de resposta: o ideal é responder em menos de 1,5 segundo. Nesta sessão, a média foi de X segundos."
+
+**clinical.recommendation**: uma orientação prática baseada nos achados, sem jargões.
+
+**clinical.clinicalNote**: texto corrido de 4–6 linhas para o usuário. Estruture assim:
+  (1) O que foi observado de forma geral nesta sessão.
+  (2) Como foi a velocidade e a precisão — cite os números de forma simples.
+  (3) Como foi a forma de percorrer a tela e se houve concentração de erros em alguma região.
+  (4) O que esse padrão pode indicar, explicado de forma simples, sem diagnóstico e sem termos clínicos.
+
+**score**: número de 0 a 100 refletindo a performance geral.
+**level**: um de "mínimo" | "leve" | "moderado" | "importante".
 
 ### RESPONDA APENAS com JSON válido, sem markdown, sem texto extra:
 {
