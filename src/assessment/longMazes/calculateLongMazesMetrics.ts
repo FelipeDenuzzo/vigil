@@ -1,85 +1,82 @@
-import type { MazeFullSessionLog } from '../../attentions/sustained/games/LongMazes/types';
-import type { MazePhaseMetrics, MazeAggregatedMetrics } from './types';
-import { LONG_MAZES_THRESHOLDS, SEVERITY_SCORE_RANGE } from './longMazesScaleDefinitions';
-import type { MazeSeverity } from './types';
+// Artefato 1 — Cálculo determinístico das métricas do LongMazes
+// Entrada:  MazeFullSessionLog (saída direta do jogo)
+// Saída:   MazeAggregatedMetrics (entrada do Artefato 2 e dos componentes UI)
 
-function efficiencyPct(steps: number, shortest: number): number {
-  if (shortest <= 0 || steps <= 0) return 0;
-  // efficiency = steps/shortest (1.0 = perfeito, maior = pior)
-  // Converte para %: quanto menor efficiency, maior a nota
-  const raw = (1 / (steps / shortest)) * 100;
-  return Math.min(100, Math.round(raw));
+import type { MazeFullSessionLog } from '../../attentions/sustained/games/LongMazes/types';
+import type { MazeAggregatedMetrics, MazePhaseMetrics, LongMazesSeverity } from './types';
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
 }
 
-function resolveSeverity(
+function calcEfficiencyPct(steps: number, shortestPathLength: number): number {
+  if (steps <= 0 || shortestPathLength <= 0) return 0;
+  return clamp(Math.round((shortestPathLength / steps) * 100), 0, 100);
+}
+
+function calcSeverity(
   completedPhases: number,
   totalRevisits: number,
-  avgEffPct: number,
+  avgEfficiencyPct: number,
   totalLongStops: number
-): MazeSeverity {
-  // Hierarquia 1: se não concluiu nenhuma fase
-  if (completedPhases === 0) return 'importante';
-
-  // Hierarquia 2: revisitas totais indicam perseveração
-  if (totalRevisits > 5) return 'importante';
-  if (totalRevisits >= 3) return 'moderado';
-
-  // Hierarquia 3: eficiência média
-  const t = LONG_MAZES_THRESHOLDS.efficiency;
-  if (avgEffPct >= t.minimo.min) {
-    // Verifica se lapsos não puxam para baixo
-    if (totalLongStops <= LONG_MAZES_THRESHOLDS.longStops.minimo.max) return 'minimo';
-    return 'leve';
-  }
-  if (avgEffPct >= t.leve.min) return 'leve';
-  if (avgEffPct >= t.moderado.min) return 'moderado';
+): LongMazesSeverity {
+  if (completedPhases === 0)                             return 'importante';
+  if (totalRevisits > 5)                                 return 'importante';
+  if (totalRevisits >= 3)                                return 'moderado';
+  if (avgEfficiencyPct >= 85 && totalLongStops <= 1)     return 'minimo';
+  if (avgEfficiencyPct >= 70)                            return 'leve';
+  if (avgEfficiencyPct >= 50)                            return 'moderado';
   return 'importante';
-}
-
-function resolveScore(severity: MazeSeverity, avgEffPct: number): number {
-  const range = SEVERITY_SCORE_RANGE[severity];
-  // Interpola o score dentro da faixa com base na eficiência
-  const normalized = Math.min(1, Math.max(0, avgEffPct / 100));
-  return Math.round(range.min + normalized * (range.max - range.min));
 }
 
 export function calculateLongMazesMetrics(
   log: MazeFullSessionLog
 ): MazeAggregatedMetrics {
   const phases: MazePhaseMetrics[] = log.phases.map((p) => ({
-    levelId: p.levelId,
-    success: p.success,
-    efficiencyPct: efficiencyPct(p.steps, p.shortestPathLength),
-    revisits: p.revisits,
-    deadEndEntries: p.deadEndEntries,
-    longStops: p.longStops,
+    levelId:          p.levelId,
+    success:          p.success,
+    efficiencyPct:    calcEfficiencyPct(p.steps, p.shortestPathLength),
+    revisits:         p.revisits,
+    deadEndEntries:   p.deadEndEntries,
+    longStops:        p.longStops,
     postErrorPauseMs: p.postErrorPause,
-    elapsedMs: p.elapsedMs,
+    elapsedMs:        p.elapsedMs,
+    elapsedSec:       Math.round(p.elapsedMs / 1000),
   }));
 
-  const completedPhases = phases.filter((p) => p.success).length;
-  const avgEfficiencyPct = Math.round(
-    phases.reduce((acc, p) => acc + p.efficiencyPct, 0) / phases.length
-  );
-  const totalRevisits = phases.reduce((acc, p) => acc + p.revisits, 0);
-  const totalDeadEndEntries = phases.reduce((acc, p) => acc + p.deadEndEntries, 0);
-  const totalLongStops = phases.reduce((acc, p) => acc + p.longStops, 0);
-  const avgPostErrorPauseMs = Math.round(
-    phases.reduce((acc, p) => acc + p.postErrorPauseMs, 0) / phases.length
-  );
+  const completedPhases     = phases.filter((p) => p.success).length;
+  const totalPhases         = phases.length;
+  const totalRevisits       = phases.reduce((s, p) => s + p.revisits, 0);
+  const totalDeadEndEntries = phases.reduce((s, p) => s + p.deadEndEntries, 0);
+  const totalLongStops      = phases.reduce((s, p) => s + p.longStops, 0);
 
-  const severity = resolveSeverity(completedPhases, totalRevisits, avgEfficiencyPct, totalLongStops);
-  const score = resolveScore(severity, avgEfficiencyPct);
+  const avgEfficiencyPct =
+    phases.length > 0
+      ? Math.round(phases.reduce((s, p) => s + p.efficiencyPct, 0) / phases.length)
+      : 0;
+
+  const pauseValues = phases.map((p) => p.postErrorPauseMs).filter((v) => v > 0);
+  const avgPostErrorPauseMs =
+    pauseValues.length > 0
+      ? Math.round(pauseValues.reduce((s, v) => s + v, 0) / pauseValues.length)
+      : 0;
+
+  const severity = calcSeverity(
+    completedPhases,
+    totalRevisits,
+    avgEfficiencyPct,
+    totalLongStops
+  );
 
   return {
     phases,
     completedPhases,
+    totalPhases,
     avgEfficiencyPct,
     totalRevisits,
     totalDeadEndEntries,
     totalLongStops,
     avgPostErrorPauseMs,
     severity,
-    score,
   };
 }

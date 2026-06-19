@@ -1,28 +1,27 @@
-import type { MazeFullSessionLog } from '../../attentions/sustained/games/LongMazes/types';
+// Tipos de saída dos artefatos 1 e 2 do pipeline LongMazes
 
-export type { MazeFullSessionLog };
-
-export type MazeSeverity = 'minimo' | 'leve' | 'moderado' | 'importante';
+export type LongMazesSeverity = 'minimo' | 'leve' | 'moderado' | 'importante';
 
 export interface MazePhaseMetrics {
   levelId: number;
   success: boolean;
-  efficiencyPct: number;    // 0–100
+  efficiencyPct: number;      // shortestPathLength / steps * 100, limitado 0-100
   revisits: number;
   deadEndEntries: number;
   longStops: number;
   postErrorPauseMs: number;
   elapsedMs: number;
+  elapsedSec: number;
 }
 
 export interface MazeAggregatedMetrics {
   phases: MazePhaseMetrics[];
-  completedPhases: number;       // quantas fases foram concluídas com success=true
+  completedPhases: number;
+  totalPhases: number;
   avgEfficiencyPct: number;
   totalRevisits: number;
   totalDeadEndEntries: number;
   totalLongStops: number;
   avgPostErrorPauseMs: number;
-  severity: MazeSeverity;
-  score: number;                 // 0–100
+  severity: LongMazesSeverity;
 }
