@@ -5,6 +5,7 @@ import { Home } from './pages/Home';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
 import { SelectAttention } from './pages/SelectAttention';
+import { Historico } from './pages/Historico';
 import { SelectiveHub } from './attentions/selective/SelectiveHub';
 import VisualSearchPlay from './attentions/selective/VisualSearchPlay';
 import VisualSearchEvaluationContainer from './attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationContainer';
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/treinar/sustentada" element={<ProtectedRoute><SustainedHub /></ProtectedRoute>} />
           <Route path="/treinar/alternada" element={<ProtectedRoute><AlternatingHub /></ProtectedRoute>} />
           <Route path="/treinar/dividida" element={<ProtectedRoute><DividedHub /></ProtectedRoute>} />
+          <Route path="/historico" element={<ProtectedRoute><Historico /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>
