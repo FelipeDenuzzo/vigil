@@ -12,9 +12,10 @@ export function buildLongMazesTechnicalReport(
   return {
     sessionId,
     attentionType: 'sustentada',
+    game: 'long-mazes' as any, // campo livre — Firestore usa para filtrar histórico por jogo
     severity: metrics.severity,
 
-    // Campos sustentada
+    // ── Campos sustentada ─────────────────────────────────────────────
     completedPhases:     metrics.completedPhases,
     totalPhases:         metrics.totalPhases,
     avgEfficiencyPct:    metrics.avgEfficiencyPct,
