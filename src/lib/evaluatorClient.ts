@@ -1,33 +1,36 @@
 // src/lib/evaluatorClient.ts
 // Atualizado: tipagem refletindo os 3 níveis do vigil-evaluator (ludic, general, clinical)
+// + campos de atenção sustentada (LongMazes)
 
 import type {
   VisualSearchTechnicalReport,
   VisualSearchMetrics,
 } from '../attentions/selective/games/VisualSearchHunt/assessment/visualSearchScale.types';
 
-// ─── Tipos de entrada ────────────────────────────────────────────────────────
+// ── Tipos de entrada ───────────────────────────────────────────────────────────────────
 export interface EvaluatorInput {
-  game: 'visual-search';
   sessionId: string;
   attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida';
-  roundCount: number;
-  totalClicks: number;
-  totalHits: number;
-  totalTargets: number;
+  severity?: 'minimo' | 'leve' | 'moderado' | 'importante';
+
+  // ── Campos seletiva ───────────────────────────────────────────────────────────────
+  game?: 'visual-search';
+  roundCount?: number;
+  totalClicks?: number;
+  totalHits?: number;
+  totalTargets?: number;
   totalMissedTargets?: number;
-  commissionRate: number;
+  commissionRate?: number;
   omissionRate?: number;
   dPrime?: number | null;
   meanReactionTimeMs?: number | null;
   reactionTimeStdDev?: number | null;
   meanOrganizationIndex?: number | null;
   predominantScanPattern?: string | null;
-  dominantErrorAttribute: 'forma' | 'cor' | 'duplo' | 'indeterminado';
-  problemRegion: 'esquerda' | 'direita' | 'centro' | 'distribuido' | 'indeterminado';
-  spatialNeglect: boolean;
-  severity: 'minimo' | 'leve' | 'moderado' | 'importante';
-  errorProfile: {
+  dominantErrorAttribute?: 'forma' | 'cor' | 'duplo' | 'indeterminado';
+  problemRegion?: 'esquerda' | 'direita' | 'centro' | 'distribuido' | 'indeterminado';
+  spatialNeglect?: boolean;
+  errorProfile?: {
     shapeErrors: number;
     colorErrors: number;
     doubleErrors: number;
@@ -35,19 +38,38 @@ export interface EvaluatorInput {
     colorErrorRate: number;
     doubleErrorRate: number;
   };
-  spatialProfile: {
+  spatialProfile?: {
     byQuadrant: Record<string, { hits: number; errors: number; errorRate: number }>;
     spatialNeglectSide: string;
     leftMisses: number;
     rightMisses: number;
   };
+
+  // ── Campos sustentada (LongMazes) ───────────────────────────────────────────────
+  completedPhases?: number;
+  totalPhases?: number;
+  avgEfficiencyPct?: number;
+  totalRevisits?: number;
+  totalDeadEndEntries?: number;
+  totalLongStops?: number;
+  avgPostErrorPauseMs?: number;
+  phaseDetail?: {
+    levelId: number;
+    success: boolean;
+    efficiencyPct: number;
+    revisits: number;
+    deadEndEntries: number;
+    longStops: number;
+    postErrorPauseMs: number;
+    elapsedSec: number;
+  }[];
 }
 
-// ─── Tipos de retorno — 3 níveis ─────────────────────────────────────────────
+// ── Tipos de retorno — 3 níveis ────────────────────────────────────────────────────
 export interface LudicReport {
-  score: number;    // 0-100
-  label: string;   // ex: "Muito bom!"
-  emoji: string;   // ex: "⭐"
+  score: number;
+  label: string;
+  emoji: string;
 }
 
 export interface GeneralReport {
@@ -72,7 +94,7 @@ export interface EvaluationReport {
   clinical: ClinicalReport;
 }
 
-// ─── Tipo raw retornado pelo Cloud Run ────────────────────────────────────────
+// ── Tipo raw retornado pelo Cloud Run ────────────────────────────────────────────────
 interface RawEvaluatorResponse {
   score: number;
   severity: string;
@@ -83,8 +105,7 @@ interface RawEvaluatorResponse {
   };
 }
 
-// ─── Helpers internos ─────────────────────────────────────────────────────────
-
+// ── Helpers internos ───────────────────────────────────────────────────────────────────
 const VALID_LEVELS: EvaluationReport['level'][] = ['mínimo', 'leve', 'moderado', 'importante'];
 
 function parseSeverity(raw: string): EvaluationReport['level'] {
@@ -95,7 +116,7 @@ function parseSeverity(raw: string): EvaluationReport['level'] {
 
 function inferDominantErrorAttribute(
   m: VisualSearchMetrics
-): EvaluatorInput['dominantErrorAttribute'] {
+): NonNullable<EvaluatorInput['dominantErrorAttribute']> {
   const shape  = m.shapeErrorRate  ?? 0;
   const color  = m.colorErrorRate  ?? 0;
   const double = m.doubleErrorRate ?? 0;
@@ -107,7 +128,7 @@ function inferDominantErrorAttribute(
 
 function inferProblemRegion(
   m: VisualSearchMetrics
-): EvaluatorInput['problemRegion'] {
+): NonNullable<EvaluatorInput['problemRegion']> {
   const left  = m.totalLeftMisses  ?? 0;
   const right = m.totalRightMisses ?? 0;
   const total = left + right;
@@ -135,7 +156,7 @@ function inferNeglectSide(m: VisualSearchMetrics): string {
   return left > right ? 'esquerdo' : 'direito';
 }
 
-// ─── Mapeamento principal ─────────────────────────────────────────────────────
+// ── Mapeamento principal (seletiva) ──────────────────────────────────────────────────
 export function buildEvaluatorInput(
   sessionId: string,
   metrics: VisualSearchMetrics,
@@ -153,7 +174,7 @@ export function buildEvaluatorInput(
   const doubleErrors = Math.round(doubleErrorRate * totalErrors);
 
   const rawQuadrant = metrics.quadrantErrorMap ?? {};
-  const byQuadrant: EvaluatorInput['spatialProfile']['byQuadrant'] =
+  const byQuadrant: NonNullable<EvaluatorInput['spatialProfile']>['byQuadrant'] =
     Object.fromEntries(
       Object.entries(rawQuadrant).map(([k, errorCount]) => [
         k,
@@ -202,13 +223,13 @@ export function buildEvaluatorInput(
   };
 }
 
-// ─── Chamada ao Cloud Run ─────────────────────────────────────────────────────
+// ── Chamada ao Cloud Run ───────────────────────────────────────────────────────────────────
 export async function callEvaluator(
   input: EvaluatorInput
 ): Promise<EvaluationReport | null> {
   const url    = import.meta.env.VITE_EVALUATOR_URL;
   const secret = import.meta.env.VITE_EVALUATOR_SECRET;
-  
+
   if (!url || !secret) {
     console.warn('[callEvaluator] VITE_EVALUATOR_URL ou VITE_EVALUATOR_SECRET não configurados');
     return null;
