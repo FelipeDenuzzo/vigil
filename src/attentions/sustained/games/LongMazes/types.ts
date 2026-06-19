@@ -1,6 +1,6 @@
 export type MazeDirection = "up" | "down" | "left" | "right";
 
-export type MazeCellGrid = number[][]; // 0 = caminho, 1 = parede (ajuste se necessário)
+export type MazeCellGrid = number[][]; // 0 = caminho, 1 = parede
 
 export interface MazePoint {
   x: number;
@@ -11,7 +11,9 @@ export interface MazeData {
   grid: MazeCellGrid;
   start: MazePoint;
   end: MazePoint;
-  shortestPathLength: number; // usado para calcular eficiência
+  shortestPathLength: number;
+  // Células que são beco (1 único vizinho) — usadas para detectar deadEndEntries
+  deadEndCells: Set<string>;
 }
 
 export interface LongMazeLevelConfig {
@@ -21,7 +23,7 @@ export interface LongMazeLevelConfig {
   cols: number;
   timeLimitSec: number;
   minPathLength: number;
-  wallDensity: number; // 0–1, opcional, ajusta densidade de paredes
+  wallDensity: number;
 }
 
 export interface MazeSessionResult {
@@ -29,7 +31,15 @@ export interface MazeSessionResult {
   success: boolean;
   elapsedMs: number;
   steps: number;
-  revisits: number;
+  revisits: number;          // revisitas a células já visitadas (perseveração)
+  deadEndEntries: number;    // entradas inéditas em becos (impulsividade)
+  longStops: number;         // paradas > 3s sem mover (lapsos de atenção)
+  postErrorPause: number;    // tempo médio após bater em parede (ms)
   shortestPathLength: number;
-  efficiency?: number;
+  efficiency: number;        // steps / shortestPathLength
+}
+
+// Log consolidado das 3 fases — enviado ao avaliador
+export interface MazeFullSessionLog {
+  phases: MazeSessionResult[];
 }
