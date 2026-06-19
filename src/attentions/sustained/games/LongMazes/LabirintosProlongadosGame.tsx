@@ -1,33 +1,27 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { LONG_MAZE_LEVELS } from './levels';
 import { generateMaze, movePlayer, hasReachedEnd, registerVisit, buildResult } from './logic';
-import type { MazeData, MazeDirection, MazePoint, MazeSessionResult } from './types';
+import type { MazeData, MazeDirection, MazePoint, MazeSessionResult, MazeFullSessionLog } from './types';
 
 interface Props {
-  onComplete?: (result: MazeSessionResult) => void;
+  onComplete?: (log: MazeFullSessionLog) => void;
   onClose?: () => void;
 }
 
-const CELL = 28; // px por célula
+const CELL = 28;
 const WALL_COLOR   = '#2a2d3e';
 const PATH_COLOR   = '#1a1c28';
 const PLAYER_COLOR = '#6c8ef5';
 const END_COLOR    = '#6dbf87';
 const START_COLOR  = '#f5c070';
 const BORDER_COLOR = '#3a3d52';
+const LONG_STOP_MS = 3000; // parada > 3s = lapso de atenção
 
-function drawMaze(
-  ctx: CanvasRenderingContext2D,
-  maze: MazeData,
-  player: MazePoint,
-  cellSize: number
-) {
+function drawMaze(ctx: CanvasRenderingContext2D, maze: MazeData, player: MazePoint, cellSize: number) {
   const { grid, start, end } = maze;
   const rows = grid.length;
   const cols = grid[0].length;
-
   ctx.clearRect(0, 0, cols * cellSize, rows * cellSize);
-
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       ctx.fillStyle = grid[y][x] === 1 ? WALL_COLOR : PATH_COLOR;
@@ -39,29 +33,22 @@ function drawMaze(
       }
     }
   }
-
-  // Start
   ctx.fillStyle = START_COLOR;
   ctx.beginPath();
   ctx.roundRect(start.x * cellSize + 3, start.y * cellSize + 3, cellSize - 6, cellSize - 6, 3);
   ctx.fill();
-
-  // End
   ctx.fillStyle = END_COLOR;
   ctx.beginPath();
   ctx.roundRect(end.x * cellSize + 3, end.y * cellSize + 3, cellSize - 6, cellSize - 6, 3);
   ctx.fill();
-  // flag icon
   ctx.fillStyle = '#fff';
   ctx.font = `${cellSize * 0.6}px serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('🏁', end.x * cellSize + cellSize / 2, end.y * cellSize + cellSize / 2);
-
-  // Player
   const px = player.x * cellSize + cellSize / 2;
   const py = player.y * cellSize + cellSize / 2;
-  const r  = cellSize * 0.36;
+  const r = cellSize * 0.36;
   ctx.beginPath();
   ctx.arc(px, py, r + 3, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(108,142,245,0.25)';
@@ -72,36 +59,41 @@ function drawMaze(
   ctx.fill();
 }
 
-type Phase = 'menu' | 'playing' | 'result';
+type Phase = 'menu' | 'playing' | 'confirm_abandon' | 'final_result';
 
 export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose }) => {
   const canvasRef   = useRef<HTMLCanvasElement>(null);
   const touchStart  = useRef<{ x: number; y: number } | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const longStopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [phase,    setPhase]    = useState<Phase>('menu');
-  const [levelIdx, setLevelIdx] = useState(0);
-  const [maze,     setMaze]     = useState<MazeData | null>(null);
-  const [player,   setPlayer]   = useState<MazePoint>({ x: 0, y: 0 });
-  const [elapsed,  setElapsed]  = useState(0);
-  const [steps,    setSteps]    = useState(0);
-  const [revisits, setRevisits] = useState(0);
-  const [result,   setResult]   = useState<MazeSessionResult | null>(null);
+  const [phase,       setPhase]      = useState<Phase>('menu');
+  const [levelIdx,    setLevelIdx]   = useState(0);
+  const [maze,        setMaze]       = useState<MazeData | null>(null);
+  const [player,      setPlayer]     = useState<MazePoint>({ x: 0, y: 0 });
+  const [elapsed,     setElapsed]    = useState(0);
+  const [steps,       setSteps]      = useState(0);
+  const [revisits,    setRevisits]   = useState(0);
+  const [phaseResults, setPhaseResults] = useState<MazeSessionResult[]>([]);
 
-  const visited = useRef(new Set<string>());
-  const stepsRef   = useRef(0);
-  const revisitsRef = useRef(0);
-  const playerRef  = useRef<MazePoint>({ x: 0, y: 0 });
-  const mazeRef    = useRef<MazeData | null>(null);
-  const elapsedRef = useRef(0);
+  const visited        = useRef(new Set<string>());
+  const visitedDeadEnds = useRef(new Set<string>());
+  const stepsRef       = useRef(0);
+  const revisitsRef    = useRef(0);
+  const deadEndRef     = useRef(0);
+  const longStopsRef   = useRef(0);
+  const wallHitTimeRef = useRef<number | null>(null);
+  const postErrorPausesRef = useRef<number[]>([]);
+  const playerRef      = useRef<MazePoint>({ x: 0, y: 0 });
+  const mazeRef        = useRef<MazeData | null>(null);
+  const elapsedRef     = useRef(0);
+  const lastMoveRef    = useRef<number>(Date.now());
 
   const level = LONG_MAZE_LEVELS[levelIdx];
 
-  // Sync refs
   useEffect(() => { playerRef.current = player; }, [player]);
   useEffect(() => { mazeRef.current = maze; }, [maze]);
 
-  // Draw whenever player or maze changes
   useEffect(() => {
     if (!maze || !canvasRef.current) return;
     const ctx = canvasRef.current.getContext('2d');
@@ -109,67 +101,119 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
     drawMaze(ctx, maze, player, CELL);
   }, [maze, player]);
 
-  const finishGame = useCallback((success: boolean) => {
+  const finishPhase = useCallback((success: boolean) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
+    if (longStopRef.current) clearTimeout(longStopRef.current);
     const m = mazeRef.current;
     if (!m) return;
+
+    const avgPostError = postErrorPausesRef.current.length > 0
+      ? postErrorPausesRef.current.reduce((a, b) => a + b, 0) / postErrorPausesRef.current.length
+      : 0;
+
     const res = buildResult({
       success,
       level,
       elapsedMs: elapsedRef.current,
       steps: stepsRef.current,
       revisits: revisitsRef.current,
+      deadEndEntries: deadEndRef.current,
+      longStops: longStopsRef.current,
+      postErrorPause: Math.round(avgPostError),
       shortestPathLength: m.shortestPathLength,
     });
-    setResult(res);
-    setPhase('result');
-    onComplete?.(res);
-  }, [level, onComplete]);
+
+    const updated = [...phaseResults, res];
+    setPhaseResults(updated);
+
+    if (levelIdx < LONG_MAZE_LEVELS.length - 1) {
+      // Avança para próxima fase
+      setLevelIdx(levelIdx + 1);
+      setPhase('menu');
+    } else {
+      // Última fase — gera log final
+      const log: import('./types').MazeFullSessionLog = { phases: updated };
+      onComplete?.(log);
+      setPhase('final_result');
+    }
+  }, [level, levelIdx, phaseResults, onComplete]);
 
   const startGame = useCallback(() => {
     const m = generateMaze(level);
     visited.current = new Set();
-    stepsRef.current   = 0;
+    visitedDeadEnds.current = new Set();
+    stepsRef.current = 0;
     revisitsRef.current = 0;
+    deadEndRef.current = 0;
+    longStopsRef.current = 0;
+    postErrorPausesRef.current = [];
+    wallHitTimeRef.current = null;
     elapsedRef.current = 0;
+    lastMoveRef.current = Date.now();
     registerVisit(visited.current, m.start);
     setMaze(m);
     setPlayer(m.start);
     setSteps(0);
     setRevisits(0);
     setElapsed(0);
-    setResult(null);
     setPhase('playing');
 
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       elapsedRef.current += 100;
       setElapsed(elapsedRef.current);
-      if (elapsedRef.current >= level.timeLimitSec * 1000) {
-        finishGame(false);
-      }
+      if (elapsedRef.current >= level.timeLimitSec * 1000) finishPhase(false);
     }, 100);
-  }, [level, finishGame]);
+  }, [level, finishPhase]);
+
+  const resetLongStopTimer = useCallback(() => {
+    if (longStopRef.current) clearTimeout(longStopRef.current);
+    longStopRef.current = setTimeout(() => {
+      longStopsRef.current += 1;
+    }, LONG_STOP_MS);
+  }, []);
 
   const move = useCallback((dir: MazeDirection) => {
     const m = mazeRef.current;
     if (!m) return;
+
+    const now = Date.now();
+
+    // postErrorPause: se havia uma batida em parede, registra quanto tempo levou até mover
+    if (wallHitTimeRef.current !== null) {
+      postErrorPausesRef.current.push(now - wallHitTimeRef.current);
+      wallHitTimeRef.current = null;
+    }
+
     const { blocked, position } = movePlayer(m.grid, playerRef.current, dir);
-    if (blocked) return;
+
+    if (blocked) {
+      // Registra momento da batida para cálculo de postErrorPause
+      if (wallHitTimeRef.current === null) wallHitTimeRef.current = now;
+      return;
+    }
+
+    lastMoveRef.current = now;
+    resetLongStopTimer();
 
     stepsRef.current += 1;
     const isRevisit = registerVisit(visited.current, position);
     if (isRevisit) revisitsRef.current += 1;
+
+    // deadEndEntries: entrada inédita em beco
+    const key = `${position.x},${position.y}`;
+    if (m.deadEndCells.has(key) && !visitedDeadEnds.current.has(key)) {
+      visitedDeadEnds.current.add(key);
+      deadEndRef.current += 1;
+    }
+
     setSteps(stepsRef.current);
     setRevisits(revisitsRef.current);
     setPlayer(position);
 
-    if (hasReachedEnd(position, m.end)) {
-      finishGame(true);
-    }
-  }, [finishGame]);
+    if (hasReachedEnd(position, m.end)) finishPhase(true);
+  }, [finishPhase, resetLongStopTimer]);
 
-  // Keyboard
   useEffect(() => {
     if (phase !== 'playing') return;
     const handler = (e: KeyboardEvent) => {
@@ -184,10 +228,11 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
     return () => window.removeEventListener('keydown', handler);
   }, [phase, move]);
 
-  // Cleanup
-  useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); }, []);
+  useEffect(() => () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (longStopRef.current) clearTimeout(longStopRef.current);
+  }, []);
 
-  // Touch handlers
   const onTouchStart = (e: React.TouchEvent) => {
     touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   };
@@ -201,67 +246,68 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
     else move(dy > 0 ? 'down' : 'up');
   };
 
+  const handleAbandonRequest = () => setPhase('confirm_abandon');
+  const handleAbandonConfirm = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (longStopRef.current) clearTimeout(longStopRef.current);
+    onClose?.();
+  };
+  const handleAbandonCancel = () => setPhase('playing');
+
   const timeLeft = Math.max(0, level.timeLimitSec - Math.floor(elapsed / 1000));
   const cols = maze?.grid[0].length ?? level.cols;
   const rows = maze?.grid.length    ?? level.rows;
 
-  // ── MENU ──────────────────────────────────────────────────────────────────
+  // ── MENU
   if (phase === 'menu') return (
     <div style={css.screen}>
       <p style={css.title}>🧩 Labirintos</p>
-      <p style={css.sub}>Treino de atenção sustentada</p>
-      <div style={css.levelRow}>
-        {LONG_MAZE_LEVELS.map((l, i) => (
-          <button
-            key={l.id}
-            style={{ ...css.levelBtn, ...(i === levelIdx ? css.levelBtnActive : {}) }}
-            onClick={() => setLevelIdx(i)}
-          >
-            {l.name}
-          </button>
-        ))}
-      </div>
+      <p style={css.sub}>Treino de atenção sustentada — Fase {levelIdx + 1} de {LONG_MAZE_LEVELS.length}</p>
       <div style={css.infoBox}>
         <span>⏱ {level.timeLimitSec}s</span>
-        <span>📐 {level.cols}×{level.rows}</span>
+        <span>💹 {level.cols}×{level.rows}</span>
+        <span>📈 {level.name}</span>
       </div>
-      <p style={css.hint}>Deslize na tela ou use as setas do teclado para mover.</p>
-      <button style={css.startBtn} onClick={startGame}>Iniciar</button>
+      <p style={css.hint}>Use as setas do teclado ou deslize na tela para mover.</p>
+      <button style={css.startBtn} onClick={startGame}>Iniciar Fase {levelIdx + 1}</button>
       {onClose && <button style={css.backBtn} onClick={onClose}>Voltar</button>}
     </div>
   );
 
-  // ── RESULT ────────────────────────────────────────────────────────────────
-  if (phase === 'result' && result) {
-    const efficiency = result.efficiency ?? 0;
-    const effPct = Math.min(100, Math.round((1 / Math.max(efficiency, 1)) * 100));
-    return (
-      <div style={css.screen}>
-        <p style={{ fontSize: 48 }}>{result.success ? '🏆' : '⏰'}</p>
-        <p style={css.title}>{result.success ? 'Concluído!' : 'Tempo esgotado'}</p>
-        <div style={css.statsBox}>
-          <Stat label="Tempo" value={`${(result.elapsedMs / 1000).toFixed(1)}s`} />
-          <Stat label="Passos" value={String(result.steps)} />
-          <Stat label="Revisitas" value={String(result.revisits)} />
-          <Stat label="Caminho mínimo" value={String(result.shortestPathLength)} />
-          <Stat label="Eficiência" value={`${effPct}%`} />
-        </div>
-        <button style={css.startBtn} onClick={startGame}>Jogar novamente</button>
-        <button style={css.backBtn} onClick={() => setPhase('menu')}>Trocar nível</button>
-        {onClose && <button style={css.backBtn} onClick={onClose}>Sair</button>}
+  // ── CONFIRMAÇÃO DE ABANDONO
+  if (phase === 'confirm_abandon') return (
+    <div style={css.screen}>
+      <p style={{ fontSize: 36 }}>⚠️</p>
+      <p style={css.title}>Abandonar treino?</p>
+      <p style={{ ...css.sub, textAlign: 'center', maxWidth: 280 }}>
+        Se sair agora, o progresso desta sessão não será salvo e o resultado final não será gerado.
+      </p>
+      <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+        <button style={css.startBtn} onClick={handleAbandonCancel}>Continuar</button>
+        <button style={css.backBtn} onClick={handleAbandonConfirm}>Sair mesmo assim</button>
       </div>
-    );
-  }
+    </div>
+  );
 
-  // ── PLAYING ───────────────────────────────────────────────────────────────
+  // ── RESULTADO FINAL (após fase 3)
+  if (phase === 'final_result') return (
+    <div style={css.screen}>
+      <p style={{ fontSize: 48 }}>🏆</p>
+      <p style={css.title}>Treino concluído!</p>
+      <p style={css.sub}>Avaliação sendo processada...</p>
+      {onClose && <button style={{ ...css.backBtn, marginTop: 16 }} onClick={onClose}>Sair</button>}
+    </div>
+  );
+
+  // ── PLAYING
   return (
     <div style={css.screen}>
       <div style={css.hud}>
         <span>⏱ {timeLeft}s</span>
         <span>👣 {steps}</span>
         <span style={{ color: '#f08080' }}>↩ {revisits}</span>
+        <span style={{ color: '#8b8fa8' }}>Fase {levelIdx + 1}/{LONG_MAZE_LEVELS.length}</span>
       </div>
-
       <div
         style={{ overflow: 'auto', maxWidth: '100%', maxHeight: '55vh', borderRadius: 8 }}
         onTouchStart={onTouchStart}
@@ -274,8 +320,6 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
           style={{ display: 'block', touchAction: 'none' }}
         />
       </div>
-
-      {/* D-pad */}
       <div style={css.dpad}>
         <div style={css.dpadRow}>
           <button style={css.dpadBtn} onClick={() => move('up')}>▲</button>
@@ -289,49 +333,23 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
           <button style={css.dpadBtn} onClick={() => move('down')}>▼</button>
         </div>
       </div>
-
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        <button style={css.backBtn} onClick={startGame}>↺ Reiniciar</button>
-        {onClose && <button style={css.backBtn} onClick={onClose}>Sair</button>}
+        <button style={css.backBtn} onClick={startGame}>↺ Reiniciar fase</button>
+        <button style={css.backBtn} onClick={handleAbandonRequest}>Sair</button>
       </div>
     </div>
   );
 };
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-      <span style={{ color: '#8b8fa8', fontSize: 13 }}>{label}</span>
-      <span style={{ color: '#e8e9f0', fontWeight: 700, fontSize: 13 }}>{value}</span>
-    </div>
-  );
-}
-
 const css: Record<string, React.CSSProperties> = {
   screen: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    padding: 16,
-    minHeight: '100%',
-    background: '#12131e',
-    color: '#e8e9f0',
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    justifyContent: 'center', gap: 12, padding: 16,
+    minHeight: '100%', background: '#12131e', color: '#e8e9f0',
   },
   title: { fontSize: 22, fontWeight: 800, margin: 0 },
   sub:   { fontSize: 13, color: '#8b8fa8', margin: 0 },
   hint:  { fontSize: 12, color: '#6b6f88', textAlign: 'center', maxWidth: 260 },
-  levelRow: { display: 'flex', gap: 8 },
-  levelBtn: {
-    padding: '6px 16px', borderRadius: 99, fontSize: 13,
-    background: 'rgba(255,255,255,0.06)', color: '#8b8fa8',
-    border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer',
-  },
-  levelBtnActive: {
-    background: 'rgba(108,142,245,0.15)', color: '#6c8ef5',
-    border: '1px solid rgba(108,142,245,0.4)',
-  },
   infoBox: {
     display: 'flex', gap: 16, fontSize: 13, color: '#8b8fa8',
     background: 'rgba(255,255,255,0.04)', padding: '6px 16px', borderRadius: 8,
@@ -348,12 +366,6 @@ const css: Record<string, React.CSSProperties> = {
   hud: {
     display: 'flex', gap: 20, fontSize: 14, fontWeight: 600,
     color: '#a0b4f8', width: '100%', justifyContent: 'center',
-  },
-  statsBox: {
-    width: '100%', maxWidth: 320,
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 12, padding: '8px 16px',
   },
   dpad: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, marginTop: 8 },
   dpadRow: { display: 'flex', gap: 2 },
