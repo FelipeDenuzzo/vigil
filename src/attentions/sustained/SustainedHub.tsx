@@ -1,24 +1,36 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 import { Button } from '../../shared/components/Button';
 import { Card } from '../../shared/components/Card';
 import { LabirintosProlongadosGame } from './games/LongMazes/LabirintosProlongadosGame';
+import { LongMazesEvaluationContainer } from './games/LongMazes/LongMazesEvaluationContainer';
+import type { MazeFullSessionLog } from './games/LongMazes/types';
 
-type ActiveGame = 'long-mazes' | null;
+type ActiveGame = 'long-mazes' | 'result' | null;
 
-// Feature flag para isolar o jogo até que esteja concluído
 const ENABLE_LONG_MAZES = true;
 
 export const SustainedHub: React.FC = () => {
   const navigate = useNavigate();
-  const [activeGame, setActiveGame] = useState<ActiveGame>(null);
+  const [activeGame,  setActiveGame]  = useState<ActiveGame>(null);
+  const [sessionLog,  setSessionLog]  = useState<MazeFullSessionLog | null>(null);
+  const [sessionId,   setSessionId]   = useState<string>('');
 
   const handleBack = () => {
     if (activeGame !== null) {
       setActiveGame(null);
+      setSessionLog(null);
     } else {
       navigate('/treinar');
     }
+  };
+
+  const handleComplete = (log: MazeFullSessionLog) => {
+    const id = uuidv4();
+    setSessionId(id);
+    setSessionLog(log);
+    setActiveGame('result');
   };
 
   return (
@@ -34,22 +46,36 @@ export const SustainedHub: React.FC = () => {
       </header>
 
       <section>
-        {activeGame === 'long-mazes' ? (
+        {activeGame === 'long-mazes' && (
           <div style={{ height: '600px' }}>
-            <LabirintosProlongadosGame 
+            <LabirintosProlongadosGame
               onClose={() => setActiveGame(null)}
-              onComplete={(result) => {
-                console.log('Sessão finalizada', result);
-                setActiveGame(null);
-              }}
+              onComplete={handleComplete}
             />
           </div>
-        ) : (
+        )}
+
+        {activeGame === 'result' && sessionLog && (
+          <LongMazesEvaluationContainer
+            log={sessionLog}
+            sessionId={sessionId}
+            onRepeat={() => {
+              setSessionLog(null);
+              setActiveGame('long-mazes');
+            }}
+            onBack={() => {
+              setSessionLog(null);
+              setActiveGame(null);
+            }}
+          />
+        )}
+
+        {activeGame === null && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
               {ENABLE_LONG_MAZES && (
-                <Card 
-                  interactive 
+                <Card
+                  interactive
                   accent="var(--color-sustained)"
                   onClick={() => setActiveGame('long-mazes')}
                 >
