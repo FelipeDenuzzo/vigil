@@ -12,7 +12,12 @@ export const SelectAttention: React.FC = () => {
         ← Voltar
       </Button>
 
-      <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-2)' }}>Escolha o treino</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-4)', marginBottom: 'var(--space-2)' }}>
+        <h1 style={{ fontSize: 'var(--text-2xl)' }}>Escolha o treino</h1>
+        <Button variant="ghost" onClick={() => navigate('/historico')} style={{ fontSize: 'var(--text-sm)' }}>
+          📊 Histórico
+        </Button>
+      </div>
       <p style={{ fontSize: 'var(--text-lg)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-8)' }}>
         Selecione qual tipo de atenção você deseja praticar agora.
       </p>
@@ -21,14 +26,14 @@ export const SelectAttention: React.FC = () => {
         <Card accent="var(--color-selective)" interactive onClick={() => navigate('/treinar/seletiva')}>
           <div style={{ fontSize: '2rem', marginBottom: 'var(--space-2)' }}>🎯</div>
           <h2 style={{ color: 'var(--color-text)', marginBottom: 'var(--space-1)' }}>Seletiva</h2>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-selective)', marginBottom: 'var(--space-4)' }}>Em breve</p>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-selective)', marginBottom: 'var(--space-4)' }}>Disponível</p>
           <p style={{ color: 'var(--color-text-muted)' }}>Foco no alvo, ignorando distrações do ambiente.</p>
         </Card>
 
         <Card accent="var(--color-sustained)" interactive onClick={() => navigate('/treinar/sustentada')}>
           <div style={{ fontSize: '2rem', marginBottom: 'var(--space-2)' }}>⏱</div>
           <h2 style={{ color: 'var(--color-text)', marginBottom: 'var(--space-1)' }}>Sustentada</h2>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-sustained)', marginBottom: 'var(--space-4)' }}>Em breve</p>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-sustained)', marginBottom: 'var(--space-4)' }}>Disponível</p>
           <p style={{ color: 'var(--color-text-muted)' }}>Manter a atenção ativa por períodos prolongados.</p>
         </Card>
 
