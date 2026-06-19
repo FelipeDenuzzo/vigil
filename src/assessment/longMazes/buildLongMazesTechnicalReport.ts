@@ -1,55 +1,37 @@
-import type { MazeAggregatedMetrics } from './types';
+// Artefato 2 — Monta o payload EvaluatorInput para o vigil-evaluator
+// Entrada:  MazeAggregatedMetrics (saída do Artefato 1)
+// Saída:   EvaluatorInput com attentionType 'sustentada'
 
-// EvaluatorInput adaptado para o LongMazes — estrutura enviada ao vigil-evaluator
-export interface LongMazesEvaluatorInput {
-  sessionId: string;
-  attentionType: 'sustentada';
-  completedPhases: number;
-  totalPhases: number;
-  avgEfficiencyPct: number;
-  totalRevisits: number;
-  totalDeadEndEntries: number;
-  totalLongStops: number;
-  avgPostErrorPauseMs: number;
-  severity: string;
-  score: number;
-  phaseDetail: {
-    levelId: number;
-    success: boolean;
-    efficiencyPct: number;
-    revisits: number;
-    deadEndEntries: number;
-    longStops: number;
-    postErrorPauseMs: number;
-    elapsedSec: number;
-  }[];
-}
+import type { MazeAggregatedMetrics } from './types';
+import type { EvaluatorInput } from '../../lib/evaluatorClient';
 
 export function buildLongMazesTechnicalReport(
   metrics: MazeAggregatedMetrics,
   sessionId: string
-): LongMazesEvaluatorInput {
+): EvaluatorInput {
   return {
     sessionId,
     attentionType: 'sustentada',
-    completedPhases: metrics.completedPhases,
-    totalPhases: metrics.phases.length,
-    avgEfficiencyPct: metrics.avgEfficiencyPct,
-    totalRevisits: metrics.totalRevisits,
-    totalDeadEndEntries: metrics.totalDeadEndEntries,
-    totalLongStops: metrics.totalLongStops,
-    avgPostErrorPauseMs: metrics.avgPostErrorPauseMs,
     severity: metrics.severity,
-    score: metrics.score,
+
+    // Campos sustentada
+    completedPhases:     metrics.completedPhases,
+    totalPhases:         metrics.totalPhases,
+    avgEfficiencyPct:    metrics.avgEfficiencyPct,
+    totalRevisits:       metrics.totalRevisits,
+    totalDeadEndEntries: metrics.totalDeadEndEntries,
+    totalLongStops:      metrics.totalLongStops,
+    avgPostErrorPauseMs: metrics.avgPostErrorPauseMs,
+
     phaseDetail: metrics.phases.map((p) => ({
-      levelId: p.levelId,
-      success: p.success,
-      efficiencyPct: p.efficiencyPct,
-      revisits: p.revisits,
-      deadEndEntries: p.deadEndEntries,
-      longStops: p.longStops,
+      levelId:          p.levelId,
+      success:          p.success,
+      efficiencyPct:    p.efficiencyPct,
+      revisits:         p.revisits,
+      deadEndEntries:   p.deadEndEntries,
+      longStops:        p.longStops,
       postErrorPauseMs: p.postErrorPauseMs,
-      elapsedSec: Math.round(p.elapsedMs / 1000),
+      elapsedSec:       p.elapsedSec,
     })),
   };
 }
