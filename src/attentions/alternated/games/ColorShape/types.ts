@@ -25,13 +25,12 @@ export interface TrialResult extends TrialConfig {
 
 export interface ColorShapeSessionLog {
   sessionId:      string;
-  /** Bloco A — puro cor (20 trials) */
+  /** Bloco A — puro cor (10 trials) */
   blockATrials:   TrialResult[];
-  /** Bloco B — puro forma (20 trials) */
+  /** Bloco B — puro forma (10 trials) */
   blockBTrials:   TrialResult[];
-  /** Bloco Misto (60 trials) */
+  /** Bloco Misto (40 trials) */
   mixedTrials:    TrialResult[];
-  /** Mantidos por compatibilidade com avaliação */
   practiceTrials: TrialResult[];
   mainTrials:     TrialResult[];
   startedAt:      string;
@@ -67,4 +66,12 @@ export interface ColorShapeMetrics {
   timeoutCount:         number;
   timeoutPct:           number;
   severity:             ColorShapeSeverity;
+  /** IES = avgRtMs / (accuracy/100) */
+  ies:                  number;
+  /** RT primeiro terço dos repeat trials do misto */
+  vigilanceEarlyRtMs:   number;
+  /** RT último terço dos repeat trials do misto */
+  vigilanceLateRtMs:    number;
+  /** late - early (positivo = fadiga) */
+  vigilanceDeclineMs:   number;
 }

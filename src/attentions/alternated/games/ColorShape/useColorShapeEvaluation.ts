@@ -47,7 +47,6 @@ async function callEvaluator(payload: object): Promise<EvaluationReport | null> 
 export async function useColorShapeEvaluation(
   log: ColorShapeSessionLog
 ): Promise<ColorShapeEvaluationResult> {
-  // Métricas: pureTrials = bloco A + B (baseline isolado), mixedTrials = bloco misto
   const metrics = calculateColorShapeMetrics({
     pureTrials:  [...log.blockATrials, ...log.blockBTrials],
     mixedTrials: log.mixedTrials,
@@ -56,6 +55,9 @@ export async function useColorShapeEvaluation(
   const analysisInput   = adaptSessionToColorShape(log);
   const technicalReport = buildColorShapeTechnicalReport(analysisInput);
 
+  const m = technicalReport.metrics;
+  const s = technicalReport.scaleResult;
+
   const payload = {
     game:          'color-shape',
     attentionType: 'alternada' as const,
@@ -63,44 +65,59 @@ export async function useColorShapeEvaluation(
     startedAt:     technicalReport.startedAt,
     severity:      metrics.severity,
 
-    totalTrials:   technicalReport.metrics.totalTrials,
-    accuracy:      technicalReport.metrics.accuracy,
-    avgRtMs:       technicalReport.metrics.avgRtMs,
-    timeoutCount:  technicalReport.metrics.timeoutCount,
-    timeoutPct:    technicalReport.metrics.timeoutPct,
+    // Global
+    totalTrials:   m.totalTrials,
+    accuracy:      m.accuracy,
+    avgRtMs:       m.avgRtMs,
+    timeoutCount:  m.timeoutCount,
+    timeoutPct:    m.timeoutPct,
 
-    switchTrials:      technicalReport.metrics.switchTrials,
-    repeatTrials:      technicalReport.metrics.repeatTrials,
-    switchAccuracy:    technicalReport.metrics.switchAccuracy,
-    repeatAccuracy:    technicalReport.metrics.repeatAccuracy,
-    switchAvgRtMs:     technicalReport.metrics.switchAvgRtMs,
-    repeatAvgRtMs:     technicalReport.metrics.repeatAvgRtMs,
-    switchCostRtMs:    technicalReport.metrics.switchCostRtMs,
-    switchCostErrorPp: technicalReport.metrics.switchCostErrorPp,
+    // IES
+    ies:     m.ies,
+    iesNote: s.iesNote,
 
-    pureTrials:        technicalReport.metrics.pureTrials,
-    pureAccuracy:      technicalReport.metrics.pureAccuracy,
-    pureAvgRtMs:       technicalReport.metrics.pureAvgRtMs,
-    mixingCostRtMs:    technicalReport.metrics.mixingCostRtMs,
-    mixingCostErrorPp: technicalReport.metrics.mixingCostErrorPp,
+    // Switching Cost
+    switchTrials:      m.switchTrials,
+    repeatTrials:      m.repeatTrials,
+    switchAccuracy:    m.switchAccuracy,
+    repeatAccuracy:    m.repeatAccuracy,
+    switchAvgRtMs:     m.switchAvgRtMs,
+    repeatAvgRtMs:     m.repeatAvgRtMs,
+    switchCostRtMs:    m.switchCostRtMs,
+    switchCostErrorPp: m.switchCostErrorPp,
+    switchingCostNote: s.switchingCostNote,
 
-    perseverationErrors: technicalReport.metrics.perseverationErrors,
-    perseverationPct:    technicalReport.metrics.perseverationPct,
+    // Mixing Cost
+    pureTrials:        m.pureTrials,
+    pureAccuracy:      m.pureAccuracy,
+    pureAvgRtMs:       m.pureAvgRtMs,
+    mixingCostRtMs:    m.mixingCostRtMs,
+    mixingCostErrorPp: m.mixingCostErrorPp,
+    mixingCostNote:    s.mixingCostNote,
 
-    bivalentTrials:      technicalReport.metrics.bivalentTrials,
-    bivalentAvgRtMs:     technicalReport.metrics.bivalentAvgRtMs,
-    nonBivalentAvgRtMs:  technicalReport.metrics.nonBivalentAvgRtMs,
-    bivalencyEffectMs:   technicalReport.metrics.bivalencyEffectMs,
+    // Perseveração
+    perseverationErrors: m.perseverationErrors,
+    perseverationPct:    m.perseverationPct,
+    perseverationNote:   s.perseverationNote,
 
-    colorAccuracy:  technicalReport.metrics.colorAccuracy,
-    shapeAccuracy:  technicalReport.metrics.shapeAccuracy,
-    colorAvgRtMs:   technicalReport.metrics.colorAvgRtMs,
-    shapeAvgRtMs:   technicalReport.metrics.shapeAvgRtMs,
+    // Bivalência
+    bivalentTrials:     m.bivalentTrials,
+    bivalentAvgRtMs:    m.bivalentAvgRtMs,
+    nonBivalentAvgRtMs: m.nonBivalentAvgRtMs,
+    bivalencyEffectMs:  m.bivalencyEffectMs,
+    bivalencyNote:      s.bivalencyNote,
 
-    switchingCostNote:  technicalReport.scaleResult.switchingCostNote,
-    mixingCostNote:     technicalReport.scaleResult.mixingCostNote,
-    perseverationNote:  technicalReport.scaleResult.perseverationNote,
-    bivalencyNote:      technicalReport.scaleResult.bivalencyNote,
+    // Por regra
+    colorAccuracy: m.colorAccuracy,
+    shapeAccuracy: m.shapeAccuracy,
+    colorAvgRtMs:  m.colorAvgRtMs,
+    shapeAvgRtMs:  m.shapeAvgRtMs,
+
+    // Fadiga atencional
+    vigilanceEarlyRtMs:  m.vigilanceEarlyRtMs,
+    vigilanceLateRtMs:   m.vigilanceLateRtMs,
+    vigilanceDeclineMs:  m.vigilanceDeclineMs,
+    vigilanceNote:       s.vigilanceNote,
 
     trialSummary: technicalReport.trialSummary,
   };
