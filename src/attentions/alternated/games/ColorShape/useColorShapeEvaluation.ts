@@ -2,9 +2,9 @@
 
 import type { ColorShapeSessionLog, ColorShapeMetrics } from './types';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
-import { calculateColorShapeMetrics } from './calculateColorShapeMetrics';
-import { adaptSessionToColorShape }    from '../../../../assessment/colorShape/adaptSessionToColorShape';
-import { buildColorShapeTechnicalReport } from '../../../../assessment/colorShape/buildColorShapeTechnicalReport';
+import { adaptSessionToColorShape }        from '../../../../assessment/colorShape/adaptSessionToColorShape';
+import { buildColorShapeTechnicalReport }  from '../../../../assessment/colorShape/buildColorShapeTechnicalReport';
+import { calculateColorShapeMetrics }      from '../../../../assessment/colorShape/calculateColorShapeMetrics';
 
 const EVALUATOR_URL    = import.meta.env.VITE_EVALUATOR_URL    as string | undefined;
 const EVALUATOR_SECRET = import.meta.env.VITE_EVALUATOR_SECRET as string | undefined;
@@ -47,13 +47,12 @@ async function callEvaluator(payload: object): Promise<EvaluationReport | null> 
 export async function useColorShapeEvaluation(
   log: ColorShapeSessionLog
 ): Promise<ColorShapeEvaluationResult> {
-  const metrics = calculateColorShapeMetrics({
-    pureTrials:  [...log.blockATrials, ...log.blockBTrials],
-    mixedTrials: log.mixedTrials,
-  });
-
   const analysisInput   = adaptSessionToColorShape(log);
   const technicalReport = buildColorShapeTechnicalReport(analysisInput);
+  const metrics         = calculateColorShapeMetrics({
+    pureTrials:  analysisInput.pureTrials,
+    mixedTrials: analysisInput.mixedTrials,
+  });
 
   const m = technicalReport.metrics;
   const s = technicalReport.scaleResult;
@@ -63,18 +62,14 @@ export async function useColorShapeEvaluation(
     attentionType: 'alternada' as const,
     sessionId:     technicalReport.sessionId,
     startedAt:     technicalReport.startedAt,
-    severity:      metrics.severity,
+    severity:      s.severity,
 
     // Global
-    totalTrials:   m.totalTrials,
-    accuracy:      m.accuracy,
-    avgRtMs:       m.avgRtMs,
-    timeoutCount:  m.timeoutCount,
-    timeoutPct:    m.timeoutPct,
-
-    // IES
-    ies:     m.ies,
-    iesNote: s.iesNote,
+    totalTrials:  m.totalTrials,
+    accuracy:     m.accuracy,
+    avgRtMs:      m.avgRtMs,
+    timeoutCount: m.timeoutCount,
+    timeoutPct:   m.timeoutPct,
 
     // Switching Cost
     switchTrials:      m.switchTrials,
@@ -100,24 +95,14 @@ export async function useColorShapeEvaluation(
     perseverationPct:    m.perseverationPct,
     perseverationNote:   s.perseverationNote,
 
-    // Bivalência
-    bivalentTrials:     m.bivalentTrials,
-    bivalentAvgRtMs:    m.bivalentAvgRtMs,
-    nonBivalentAvgRtMs: m.nonBivalentAvgRtMs,
-    bivalencyEffectMs:  m.bivalencyEffectMs,
-    bivalencyNote:      s.bivalencyNote,
+    // Acurácia
+    accuracyNote: s.accuracyNote,
 
-    // Por regra
+    // Por regra (blocos puros)
     colorAccuracy: m.colorAccuracy,
     shapeAccuracy: m.shapeAccuracy,
     colorAvgRtMs:  m.colorAvgRtMs,
     shapeAvgRtMs:  m.shapeAvgRtMs,
-
-    // Fadiga atencional
-    vigilanceEarlyRtMs:  m.vigilanceEarlyRtMs,
-    vigilanceLateRtMs:   m.vigilanceLateRtMs,
-    vigilanceDeclineMs:  m.vigilanceDeclineMs,
-    vigilanceNote:       s.vigilanceNote,
 
     trialSummary: technicalReport.trialSummary,
   };
