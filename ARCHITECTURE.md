@@ -122,7 +122,7 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 |---|---|---|
 | `selective.ts` | ✅ Implementado | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/prompts/selective.ts) |
 | `sustained.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/prompts/sustained.ts) |
-| `alternating.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/prompts/alternating.ts) |
+| `alternating.ts` | ✅ Implementado | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/prompts/alternating.ts) |
 | `divided.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/prompts/divided.ts) |
 
 **Regra de expansão:** ao criar o prompt de um novo tipo de atenção, adicionar o `case` correspondente na função `resolvePromptAndSchema()` dentro de `src/evaluate.ts`.
@@ -179,3 +179,96 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 | Vertex AI / Gemini 2.5 Flash | Gera o texto do laudo | [GEMINI.md](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/GEMINI.md) |
 | Vercel | Hospeda o frontend vigil | [vercel.json](https://github.com/FelipeDenuzzo/vigil/blob/main/vercel.json) |
 | GitHub Actions | CI/CD automático | `.github/` em ambos os repositórios |
+
+---
+
+## Aprendizados Arquiteturais
+
+> Esta seção registra riscos e armadilhas identificados em sessões reais de desenvolvimento. São princípios transversais — aplicáveis a qualquer treino ou artefato futuro, independentemente do código envolvido.
+
+---
+
+### 1 — Métricas sem diretriz científica não devem existir
+
+Campos foram adicionados ao pipeline sem respaldo em artigos ou definição do responsável do produto. A existência do campo implica que ele será calculado, enviado, interpretado e exibido — gerando uma cadeia de dependências sobre algo que não tem base real.
+
+**Regra:** antes de criar qualquer métrica, a diretriz científica precisa existir primeiro. Campo sem diretriz = campo proibido.
+
+---
+
+### 2 — Duplicação de responsabilidade cria divergência silenciosa
+
+Havia dois lugares calculando a mesma coisa. Como o pipeline só usa um deles, o outro existia sem efeito — mas ambos podiam divergir silenciosamente sem gerar erro.
+
+**Regra:** cada cálculo deve ter exatamente um dono. Duplicação de lógica é dívida técnica disfarçada de redundância.
+
+---
+
+### 3 — O contrato entre frontend e backend é um artefato de arquitetura, não detalhe de implementação
+
+Quando o contrato entre sistemas diverge, o sistema falha silenciosamente — campos são ignorados, dados chegam zerados — em vez de falhar com erro detectável.
+
+**Regra:** o contrato de comunicação entre sistemas deve ser definido e validado como parte da arquitetura, não descoberto na integração.
+
+---
+
+### 4 — Um servidor compartilhado precisa de roteamento explícito por domínio
+
+Quando um servidor cresce para atender múltiplos tipos de dado sem roteamento explícito, o segundo caso de uso herda as regras de validação e interpretação do primeiro.
+
+**Regra:** ao adicionar um segundo tipo de dado a um servidor existente, a primeira pergunta deve ser: o que muda no contrato, na validação e na interpretação?
+
+---
+
+### 5 — A camada de apresentação revela o que falta na camada de geração
+
+O painel de exibição esperava dados em duas camadas (leigo e técnico), mas a camada de geração entregava dados planos duplicados para preencher os dois blocos. O resultado era linguagem técnica onde deveria haver linguagem acessível.
+
+**Regra:** a interface de apresentação é um espelho do contrato de dados. Se ela renderiza mal, o problema está upstream na geração, não na exibição.
+
+---
+
+### 6 — Linguagem técnica e linguagem para leigos são produtos diferentes, não formatos diferentes
+
+Não basta reformatar o mesmo conteúdo para públicos diferentes. Um resumo para o usuário e uma nota clínica para o profissional exigem instruções de geração distintas, campos distintos e revisão distinta.
+
+**Regra:** tratar as duas camadas como o mesmo dado com formatação diferente garante que nenhuma das duas será adequada.
+
+---
+
+### 7 — A arquitetura documentada é o checklist de conformidade
+
+Os problemas encontrados em sessões de desenvolvimento eram exatamente os pontos que a arquitetura marcava como pendentes ou em risco.
+
+**Regra:** a documentação arquitetural não é histórico — é o checklist de conformidade de cada novo artefato criado. Consultá-la antes de começar é obrigatório.
+
+---
+
+### 8 — Campos opcionais sem uso ativo são ruído com custo
+
+Campos declarados como opcionais, nunca enviados e nunca lidos pelo receptor existem apenas como confusão — quem lê o contrato não sabe se eles deveriam estar presentes ou não.
+
+**Regra:** todo campo opcional deve ter uma justificativa de quando e por quem é preenchido. Sem essa justificativa, deve ser removido.
+
+---
+
+### 9 — Código gerado por analogia com outro contexto é o risco mais difícil de detectar
+
+Este é o risco mais grave e mais silencioso do pipeline. Campos e cálculos foram criados **por analogia com outro treino** — estruturas que faziam sentido em um contexto foram transportadas para outro porque "pareciam equivalentes". O problema não gera erro de compilação, não quebra testes e os dados aparecem preenchidos. A inconsistência só é detectável por quem conhece a teoria por trás de cada treino.
+
+Isso é diferente de inventar código aleatório — é mais perigoso porque tem aparência de legitimidade. A estrutura é coerente, os nomes fazem sentido, os valores são calculados. Mas a **semântica está errada** porque o conceito não pertence àquele domínio.
+
+**Regra:** antes de criar um campo ou cálculo em um novo treino, a pergunta não é *"existe algo parecido em outro treino?"* — a pergunta é *"existe uma diretriz científica específica para este treino que justifica este campo?"*. Analogia com outro contexto é ponto de partida para investigação, nunca para implementação direta.
+
+---
+
+### Checklist de conformidade — aplicar antes de criar qualquer novo artefato
+
+- [ ] A métrica tem diretriz científica aprovada pelo responsável do produto?
+- [ ] Existe exatamente um lugar calculando cada coisa?
+- [ ] O contrato de entrada e saída está explicitamente definido?
+- [ ] O servidor sabe diferenciar este caso dos outros que já atende?
+- [ ] A camada de geração produz dados distintos para públicos distintos (leigo vs. clínico)?
+- [ ] Os campos opcionais têm dono e condição de preenchimento definidos?
+- [ ] A arquitetura documentada foi consultada antes de começar?
+- [ ] Cada campo novo foi justificado por diretriz científica própria deste treino — não por analogia com outro?
