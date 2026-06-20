@@ -20,17 +20,25 @@ export const AlternatingHub: React.FC = () => {
 
       <section>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
-          {/* Empty state list - Exercícios aqui futuramente */}
-        </div>
 
-        <Card style={{ textAlign: 'center', padding: 'var(--space-12) var(--space-6)' }}>
-          <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)' }}>
-            Exercícios chegando em breve. Volte para a tela principal e explore outro tipo de atenção.
-          </p>
-          <Button variant="secondary" onClick={() => navigate('/treinar')}>
-            Voltar à seleção
-          </Button>
-        </Card>
+          {/* ─ Cor ou Forma ─ */}
+          <Card
+            style={{ cursor: 'pointer', transition: 'opacity 0.15s' }}
+            onClick={() => navigate('/treinar/alternada/color-shape')}
+          >
+            <div style={{ fontSize: 40, marginBottom: 'var(--space-3)' }}>🎨</div>
+            <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-2)', color: 'var(--color-alternating)' }}>
+              Cor ou Forma
+            </h2>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)', lineHeight: 1.6 }}>
+              Alterne rapidamente entre responder pela cor ou pela forma da figura conforme a pista visual muda. Treina switching cognitivo e flexibilidade mental.
+            </p>
+            <Button variant="primary" onClick={(e) => { e.stopPropagation(); navigate('/treinar/alternada/color-shape'); }}>
+              Jogar
+            </Button>
+          </Card>
+
+        </div>
       </section>
     </div>
   );
