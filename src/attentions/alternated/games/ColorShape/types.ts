@@ -37,41 +37,34 @@ export interface ColorShapeSessionLog {
 }
 
 export interface ColorShapeMetrics {
-  totalTrials:          number;
-  accuracy:             number;
-  avgRtMs:              number;
-  switchTrials:         number;
-  repeatTrials:         number;
-  switchAccuracy:       number;
-  repeatAccuracy:       number;
-  switchAvgRtMs:        number;
-  repeatAvgRtMs:        number;
-  switchCostRtMs:       number;
-  switchCostErrorPp:    number;
-  pureTrials:           number;
-  pureAccuracy:         number;
-  pureAvgRtMs:          number;
-  mixingCostRtMs:       number;
-  mixingCostErrorPp:    number;
-  perseverationErrors:  number;
-  perseverationPct:     number;
-  bivalentTrials:       number;
-  bivalentAvgRtMs:      number;
-  nonBivalentAvgRtMs:   number;
-  bivalencyEffectMs:    number;
-  colorAccuracy:        number;
-  shapeAccuracy:        number;
-  colorAvgRtMs:         number;
-  shapeAvgRtMs:         number;
-  timeoutCount:         number;
-  timeoutPct:           number;
-  severity:             ColorShapeSeverity;
-  /** IES = avgRtMs / (accuracy/100) */
-  ies:                  number;
-  /** RT primeiro terço dos repeat trials do misto */
-  vigilanceEarlyRtMs:   number;
-  /** RT último terço dos repeat trials do misto */
-  vigilanceLateRtMs:    number;
-  /** late - early (positivo = fadiga) */
-  vigilanceDeclineMs:   number;
+  totalTrials:         number;
+  accuracy:            number;
+  avgRtMs:             number;
+  // Bloco misto — switch trials
+  switchTrials:        number;
+  switchAccuracy:      number;
+  switchAvgRtMs:       number;
+  switchCostRtMs:      number;
+  switchCostErrorPp:   number;
+  // Bloco misto — repeat trials
+  repeatTrials:        number;
+  repeatAccuracy:      number;
+  repeatAvgRtMs:       number;
+  // Blocos puros (baseline)
+  pureTrials:          number;
+  pureAccuracy:        number;
+  pureAvgRtMs:         number;
+  mixingCostRtMs:      number;
+  mixingCostErrorPp:   number;
+  // Perseveração
+  perseverationErrors: number;
+  perseverationPct:    number;
+  // Acurácia por regra
+  colorAccuracy:       number;
+  shapeAccuracy:       number;
+  colorAvgRtMs:        number;
+  shapeAvgRtMs:        number;
+  // Abandono / tempo esgotado
+  timeoutCount:        number;
+  timeoutPct:          number;
 }
