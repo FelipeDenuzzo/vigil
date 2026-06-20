@@ -1,21 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   COLOR_HEX, COLOR_KEYS, SHAPE_KEYS,
-  CUE_COLOR_BG, CUE_SHAPE_BG, NEUTRAL_BG,
+  NEUTRAL_BG,
   FIXATION_MS, MAX_RESPONSE_MS, FEEDBACK_MS, ITI_MS,
-  MAIN_TRIALS,
 } from './constants';
-import { buildTrials, buildPracticeTrials, isCorrect } from './logic';
+import { buildPureTrials, buildMixedTrials, isCorrect } from './logic';
 import { useColorShapeEvaluation } from './useColorShapeEvaluation';
 import type { TrialConfig, TrialResult, ColorShapeSessionLog, RuleType, ShapeType, ColorName } from './types';
 
+type BlockName = 'A' | 'B' | 'mixed';
+
 type GamePhase =
   | 'instructions'
-  | 'practice_trial'
-  | 'practice_feedback'
-  | 'practice_done'
+  | 'block_intro'    // tela de transição entre blocos
   | 'fixation'
   | 'stimulus'
+  | 'feedback'       // só no treino / bloco puro
   | 'iti'
   | 'done';
 
@@ -24,6 +24,10 @@ interface Props {
   onComplete?: (log: ColorShapeSessionLog) => void;
   onClose?:    () => void;
 }
+
+const BLOCK_A_TRIALS  = 20;
+const BLOCK_B_TRIALS  = 20;
+const MIXED_TRIALS    = 60;
 
 // ── SVG shapes ──────────────────────────────────────────────────────────────────
 function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: ColorName; size?: number }) {
@@ -72,27 +76,59 @@ function RuleBadge({ rule }: { rule: RuleType }) {
   );
 }
 
-// ── Instruções ──────────────────────────────────────────────────────────────────
+// ── Tela de instruções iniciais ─────────────────────────────────────────────────
 function Instructions({ onStart }: { onStart: () => void }) {
   return (
     <div style={css.screen}>
-      <p style={css.title}>🎨 Cor ou Forma</p>
+      <p style={css.title}>Cor ou Forma</p>
       <p style={{ ...css.sub, maxWidth: 340, textAlign: 'center' }}>
-        Você verá uma figura colorida na tela.
-        O <b>badge no topo</b> diz qual regra seguir naquela rodada.
+        Este jogo tem <b>3 blocos</b>:
       </p>
       <div style={css.ruleBox}>
-        <div style={{ ...css.rulePill, background: 'rgba(255,255,255,0.05)' }}>
-          <span>“Qual é a COR?” → toque na <b>cor</b> da figura</span>
+        <div style={css.rulePill}>
+          <b>Bloco A</b> — responda sempre a <b>COR</b> da figura (20 telas)
         </div>
-        <div style={{ ...css.rulePill, background: 'rgba(255,255,255,0.05)' }}>
-          <span>“Qual é a FORMA?” → toque na <b>forma</b> da figura</span>
+        <div style={css.rulePill}>
+          <b>Bloco B</b> — responda sempre a <b>FORMA</b> da figura (20 telas)
+        </div>
+        <div style={css.rulePill}>
+          <b>Bloco Misto</b> — o jogo avisa em cada tela se você deve responder
+          a <b>cor</b> ou a <b>forma</b> (60 telas)
         </div>
       </div>
       <p style={{ ...css.sub, color: '#6b6f88', fontSize: 12, textAlign: 'center', maxWidth: 300 }}>
-        Primeiro vamos praticar algumas rodadas. Use os botões que aparecem na tela para responder.
+        Use os botões que aparecem na tela para responder.
       </p>
-      <button style={css.primaryBtn} onClick={onStart}>Iniciar treino</button>
+      <button style={css.primaryBtn} onClick={onStart}>Começar Bloco A</button>
+    </div>
+  );
+}
+
+// ── Tela de transição entre blocos ──────────────────────────────────────────────
+function BlockIntro({ block, onStart }: { block: BlockName; onStart: () => void }) {
+  const content: Record<BlockName, { title: string; desc: string; btn: string }> = {
+    A: {
+      title: 'Bloco A — Cor',
+      desc:  'Responda sempre a COR da figura. A forma é apenas um detalhe visual. (20 telas)',
+      btn:   'Iniciar Bloco A',
+    },
+    B: {
+      title: 'Bloco B — Forma',
+      desc:  'Responda sempre a FORMA da figura. A cor é apenas um detalhe visual. (20 telas)',
+      btn:   'Iniciar Bloco B',
+    },
+    mixed: {
+      title: 'Bloco Misto',
+      desc:  'Agora a regra muda a cada tela. Preste atenção ao badge que indica se deve responder a COR ou a FORMA. (60 telas)',
+      btn:   'Iniciar Bloco Misto',
+    },
+  };
+  const { title, desc, btn } = content[block];
+  return (
+    <div style={css.screen}>
+      <p style={css.title}>{title}</p>
+      <p style={{ ...css.sub, textAlign: 'center', maxWidth: 320 }}>{desc}</p>
+      <button style={css.primaryBtn} onClick={onStart}>{btn}</button>
     </div>
   );
 }
@@ -125,63 +161,99 @@ function ResponseButtons({ rule, onAnswer, disabled }: {
 // ── Componente principal ────────────────────────────────────────────────────────
 export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose }) => {
   const [phase,        setPhase]        = useState<GamePhase>('instructions');
+  const [currentBlock, setCurrentBlock] = useState<BlockName>('A');
+  const [nextBlock,    setNextBlock]    = useState<BlockName | null>(null);
   const [trialQueue,   setTrialQueue]   = useState<TrialConfig[]>([]);
   const [trialIdx,     setTrialIdx]     = useState(0);
-  const [isPractice,   setIsPractice]   = useState(true);
   const [currentTrial, setCurrentTrial] = useState<TrialConfig | null>(null);
   const [lastCorrect,  setLastCorrect]  = useState<boolean | null>(null);
-  const [bgColor,      setBgColor]      = useState(NEUTRAL_BG);
-  const [practiceLog,  setPracticeLog]  = useState<TrialResult[]>([]);
-  const [mainLog,      setMainLog]      = useState<TrialResult[]>([]);
   const [evaluating,   setEvaluating]   = useState(false);
+
+  // logs por bloco
+  const blockARef   = useRef<TrialResult[]>([]);
+  const blockBRef   = useRef<TrialResult[]>([]);
+  const mixedRef    = useRef<TrialResult[]>([]);
+  const [blockALog, setBlockALog] = useState<TrialResult[]>([]);
+  const [blockBLog, setBlockBLog] = useState<TrialResult[]>([]);
+  const [mixedLog,  setMixedLog]  = useState<TrialResult[]>([]);
 
   const stimulusTimeRef = useRef<number>(0);
   const timeoutRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const practiceLogRef  = useRef<TrialResult[]>([]);
-  const mainLogRef      = useRef<TrialResult[]>([]);
 
   const clearTO = () => {
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
   };
 
+  // devolve log/setter do bloco atual
+  const blockAccessors = (block: BlockName) => {
+    if (block === 'A')     return { ref: blockARef,  setLog: setBlockALog,  log: blockALog };
+    if (block === 'B')     return { ref: blockBRef,  setLog: setBlockBLog,  log: blockBLog };
+    return                        { ref: mixedRef,   setLog: setMixedLog,   log: mixedLog  };
+  };
+
+  const isPureBlock = (b: BlockName) => b === 'A' || b === 'B';
+
+  const finishSession = useCallback((aLog: TrialResult[], bLog: TrialResult[], mLog: TrialResult[]) => {
+    setPhase('done');
+    setEvaluating(true);
+    const log: ColorShapeSessionLog = {
+      sessionId,
+      blockATrials:   aLog,
+      blockBTrials:   bLog,
+      mixedTrials:    mLog,
+      practiceTrials: [],
+      mainTrials:     [...aLog, ...bLog, ...mLog],
+      startedAt:      new Date().toISOString(),
+    };
+    useColorShapeEvaluation(log)
+      .then(() => { setEvaluating(false); onComplete?.(log); })
+      .catch(() => { setEvaluating(false); onComplete?.(log); });
+  }, [sessionId, onComplete]);
+
   const advanceTrial = useCallback((
-    results: TrialResult[], queue: TrialConfig[], idx: number, practice: boolean,
+    results: TrialResult[], queue: TrialConfig[], idx: number, block: BlockName,
   ) => {
     if (idx >= queue.length) {
-      if (practice) {
-        setPhase('practice_done');
+      // bloco terminou
+      if (block === 'A') {
+        setNextBlock('B');
+        setPhase('block_intro');
+      } else if (block === 'B') {
+        setNextBlock('mixed');
+        setPhase('block_intro');
       } else {
-        setPhase('done'); setEvaluating(true);
-        const log: ColorShapeSessionLog = {
-          sessionId, practiceTrials: practiceLogRef.current,
-          mainTrials: results, startedAt: new Date().toISOString(),
-        };
-        useColorShapeEvaluation(log)
-          .then(() => { setEvaluating(false); onComplete?.(log); })
-          .catch(() => { setEvaluating(false); onComplete?.(log); });
+        finishSession(blockARef.current, blockBRef.current, results);
       }
       return;
     }
+
     const trial = queue[idx];
-    setCurrentTrial(trial); setTrialIdx(idx); setBgColor(NEUTRAL_BG); setPhase('fixation');
+    setCurrentTrial(trial);
+    setTrialIdx(idx);
+    setPhase('fixation');
+
     timeoutRef.current = setTimeout(() => {
-      setBgColor(trial.rule === 'color' ? CUE_COLOR_BG : CUE_SHAPE_BG);
-      setPhase(practice ? 'practice_trial' : 'stimulus');
+      setPhase('stimulus');
       stimulusTimeRef.current = Date.now();
       timeoutRef.current = setTimeout(() => {
-        handleResponse(null, trial, results, queue, idx, practice);
+        handleResponse(null, trial, results, queue, idx, block);
       }, MAX_RESPONSE_MS);
     }, FIXATION_MS);
-  }, [sessionId, onComplete]); // eslint-disable-line
+  }, [finishSession]); // eslint-disable-line
 
   const handleResponse = useCallback((
-    key: string | null, trial: TrialConfig, results: TrialResult[],
-    queue: TrialConfig[], idx: number, practice: boolean,
+    key: string | null,
+    trial: TrialConfig,
+    results: TrialResult[],
+    queue: TrialConfig[],
+    idx: number,
+    block: BlockName,
   ) => {
     clearTO();
-    const rt = key === null ? -1 : Date.now() - stimulusTimeRef.current;
+    const rt       = key === null ? -1 : Date.now() - stimulusTimeRef.current;
     const correct  = key !== null && isCorrect(trial, key);
     const timedOut = key === null;
+
     const prevRule = idx > 0 ? queue[idx - 1].rule : null;
     let isPersev = false;
     if (!correct && !timedOut && trial.trialType === 'switch' && prevRule !== null && key !== null) {
@@ -189,50 +261,56 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       if (prevRule === 'color') isPersev = COLOR_KEYS[trial.color] === k;
       else                      isPersev = SHAPE_KEYS[trial.shape] === k;
     }
-    const result: TrialResult = { ...trial, keyPressed: key ?? '', correct, reactionMs: rt, timedOut, isPerseveration: isPersev };
+
+    const result: TrialResult = {
+      ...trial, keyPressed: key ?? '', correct, reactionMs: rt, timedOut, isPerseveration: isPersev,
+    };
     const updated = [...results, result];
-    if (practice) {
-      practiceLogRef.current = updated; setPracticeLog(updated);
-      setLastCorrect(timedOut ? false : correct); setPhase('practice_feedback');
+
+    const { ref, setLog } = blockAccessors(block);
+    ref.current = updated;
+    setLog(updated);
+
+    if (isPureBlock(block)) {
+      // blocos puros mostram feedback brevemente
+      setLastCorrect(timedOut ? false : correct);
+      setPhase('feedback');
       timeoutRef.current = setTimeout(() => {
-        setBgColor(NEUTRAL_BG); setPhase('iti');
-        timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1, true), ITI_MS);
+        setPhase('iti');
+        timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1, block), ITI_MS);
       }, FEEDBACK_MS);
     } else {
-      mainLogRef.current = updated; setMainLog(updated); setBgColor(NEUTRAL_BG); setPhase('iti');
-      timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1, false), ITI_MS);
+      setPhase('iti');
+      timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1, block), ITI_MS);
     }
-  }, [advanceTrial]);
+  }, [advanceTrial]); // eslint-disable-line
 
   useEffect(() => () => clearTO(), []);
 
-  const startPractice = () => {
-    const q = buildPracticeTrials();
-    setTrialQueue(q); setIsPractice(true); setPracticeLog([]); practiceLogRef.current = [];
-    advanceTrial([], q, 0, true);
+  const startBlock = (block: BlockName) => {
+    setCurrentBlock(block);
+    let queue: TrialConfig[];
+    if (block === 'A')     queue = buildPureTrials('color', BLOCK_A_TRIALS);
+    else if (block === 'B') queue = buildPureTrials('shape', BLOCK_B_TRIALS);
+    else                    queue = buildMixedTrials(MIXED_TRIALS);
+    setTrialQueue(queue);
+    advanceTrial(
+      block === 'A' ? [] : block === 'B' ? [] : [],
+      queue, 0, block,
+    );
   };
-  const startMain = () => {
-    const q = buildTrials(MAIN_TRIALS);
-    setTrialQueue(q); setIsPractice(false); setMainLog([]); mainLogRef.current = [];
-    advanceTrial([], q, 0, false);
-  };
+
   const handleBtnAnswer = (key: string) => {
     if (!currentTrial) return;
-    handleResponse(key, currentTrial, isPractice ? practiceLog : mainLog, trialQueue, trialIdx, isPractice);
+    const { log } = blockAccessors(currentBlock);
+    handleResponse(key, currentTrial, log, trialQueue, trialIdx, currentBlock);
   };
 
-  if (phase === 'instructions') return <Instructions onStart={startPractice} />;
+  // ── Telas estáticas ────────────────────────────────────────────────────────
+  if (phase === 'instructions') return <Instructions onStart={() => startBlock('A')} />;
 
-  if (phase === 'practice_done') return (
-    <div style={css.screen}>
-      <p style={{ fontSize: 40 }}>✅</p>
-      <p style={css.title}>Treino concluído!</p>
-      <p style={{ ...css.sub, textAlign: 'center', maxWidth: 300 }}>
-        Ótimo! Agora começa a sessão de verdade — o jogo não vai mais mostrar se você acertou ou errou.
-      </p>
-      <button style={css.primaryBtn} onClick={startMain}>Começar</button>
-      {onClose && <button style={css.ghostBtn} onClick={onClose}>Sair</button>}
-    </div>
+  if (phase === 'block_intro' && nextBlock) return (
+    <BlockIntro block={nextBlock} onStart={() => startBlock(nextBlock)} />
   );
 
   if (phase === 'done') return (
@@ -246,35 +324,39 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     </div>
   );
 
+  // ── Tela de jogo ───────────────────────────────────────────────────────────
   const totalQ      = trialQueue.length;
   const progress    = totalQ > 0 ? Math.round((trialIdx / totalQ) * 100) : 0;
-  const showStim    = phase === 'stimulus' || phase === 'practice_trial' || phase === 'practice_feedback';
-  const isPure      = currentTrial?.trialType === 'pure';
-  const btnDisabled = phase === 'practice_feedback' || phase === 'fixation' || phase === 'iti';
+  const showStim    = phase === 'stimulus' || phase === 'feedback';
+  const btnDisabled = phase === 'feedback' || phase === 'fixation' || phase === 'iti';
+
+  const blockLabel: Record<BlockName, string> = {
+    A: 'Bloco A — Cor', B: 'Bloco B — Forma', mixed: 'Bloco Misto',
+  };
 
   return (
-    <div style={{ ...css.gameScreen, background: bgColor }}>
+    <div style={{ ...css.gameScreen, background: NEUTRAL_BG }}>
+
+      {/* Topo */}
       <div style={css.topBar}>
         <span style={{ color: '#8b8fa8', fontSize: 12 }}>
-          {isPractice
-            ? `Treino ${trialIdx + 1}/12${isPure ? ' — Regra fixa' : ''}`
-            : `${trialIdx} / ${totalQ}`}
+          {blockLabel[currentBlock]} — {trialIdx + 1} / {totalQ}
         </span>
-        {!isPractice && (
-          <div style={css.progressTrack}>
-            <div style={{ ...css.progressBar, width: `${progress}%` }} />
-          </div>
-        )}
+        <div style={css.progressTrack}>
+          <div style={{ ...css.progressBar, width: `${progress}%` }} />
+        </div>
       </div>
 
+      {/* Badge de regra — sempre visível no misto; fixo nos blocos puros */}
       {currentTrial && <RuleBadge rule={currentTrial.rule} />}
 
+      {/* Área da figura */}
       <div style={css.stimulusArea}>
         {phase === 'fixation' && <div style={css.fixation}>·</div>}
         {showStim && currentTrial && (
           <div style={css.stimulusWrap}>
             <ShapeSVG shape={currentTrial.shape} color={currentTrial.color} size={130} />
-            {phase === 'practice_feedback' && (
+            {phase === 'feedback' && (
               <div style={{ marginTop: 16, fontSize: 22, fontWeight: 800, color: lastCorrect ? '#6dbf87' : '#f08080' }}>
                 {lastCorrect ? '✓ Certo' : '✗ Errado'}
               </div>
@@ -284,6 +366,7 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
         {phase === 'iti' && <div style={{ height: 130 }} />}
       </div>
 
+      {/* Botões */}
       {currentTrial && (
         <ResponseButtons rule={currentTrial.rule} onAnswer={handleBtnAnswer} disabled={btnDisabled} />
       )}
@@ -310,7 +393,6 @@ const css: Record<string, React.CSSProperties> = {
     gap: 20, padding: '60px 20px 24px',
     minHeight: '100%', minWidth: '100%',
     color: '#e8e9f0', position: 'relative',
-    transition: 'background 0.12s',
   },
   topBar: {
     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: '100%',
@@ -320,11 +402,11 @@ const css: Record<string, React.CSSProperties> = {
   },
   title:   { fontSize: 22, fontWeight: 800, margin: 0 },
   sub:     { fontSize: 14, color: '#8b8fa8', margin: 0, lineHeight: 1.6 },
-  ruleBox: { display: 'flex', flexDirection: 'column', gap: 8, width: '100%', maxWidth: 320 },
+  ruleBox: { display: 'flex', flexDirection: 'column', gap: 8, width: '100%', maxWidth: 360 },
   rulePill: {
-    display: 'flex', alignItems: 'center', gap: 12,
-    padding: '10px 16px', borderRadius: 12, fontSize: 14, color: '#e8e9f0',
-    border: '1px solid rgba(255,255,255,0.08)',
+    padding: '10px 16px', borderRadius: 12, fontSize: 13, color: '#c0c4d8',
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.08)', lineHeight: 1.5,
   },
   primaryBtn: {
     padding: '12px 36px', borderRadius: 99, fontSize: 15, fontWeight: 700,
