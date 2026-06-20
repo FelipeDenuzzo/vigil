@@ -18,7 +18,7 @@ function rtOf(arr: TrialResult[]): number[] {
 }
 function errorRate(arr: TrialResult[]): number {
   if (arr.length === 0) return 0;
-  return Math.round(((arr.filter(t => !t.correct).length) / arr.length) * 100);
+  return Math.round((arr.filter(t => !t.correct).length / arr.length) * 100);
 }
 
 export function classifySeverity(
@@ -41,8 +41,26 @@ export function classifySeverity(
   return 'minimo';
 }
 
-export function calculateColorShapeMetrics(trials: TrialResult[]): ColorShapeMetrics {
-  if (trials.length === 0) {
+export interface ColorShapeTrialGroups {
+  /** Trials do bloco A (puro cor) + bloco B (puro forma) — baseline isolado */
+  pureTrials:  TrialResult[];
+  /** Trials do bloco Misto */
+  mixedTrials: TrialResult[];
+}
+
+/**
+ * Calcula todas as métricas do ColorShape.
+ *
+ * Recebe os grupos separados para garantir que o baseline puro
+ * (mixing cost) venha exclusivamente dos blocos A e B,
+ * sem misturar com trials do bloco misto.
+ */
+export function calculateColorShapeMetrics(
+  { pureTrials, mixedTrials }: ColorShapeTrialGroups,
+): ColorShapeMetrics {
+  const allTrials = [...pureTrials, ...mixedTrials];
+
+  if (allTrials.length === 0) {
     return {
       totalTrials: 0, accuracy: 0, avgRtMs: 0,
       switchTrials: 0, repeatTrials: 0,
@@ -61,41 +79,50 @@ export function calculateColorShapeMetrics(trials: TrialResult[]): ColorShapeMet
     };
   }
 
-  const pure     = trials.filter(t => t.trialType === 'pure');
-  const repeats  = trials.filter(t => t.trialType === 'repeat');
-  const switches = trials.filter(t => t.trialType === 'switch');
-  const colors   = trials.filter(t => t.rule === 'color');
-  const shapes   = trials.filter(t => t.rule === 'shape');
-
-  const bivalent    = trials.filter(t => t.isBivalent);
-  const nonBivalent = trials.filter(t => !t.isBivalent && t.trialType !== 'first');
-  const bivalentRt    = avg(rtOf(bivalent));
-  const nonBivalentRt = avg(rtOf(nonBivalent));
-
-  const perseverations = trials.filter(t => t.isPerseveration).length;
+  // ─ Switch / Repeat vem apenas do bloco misto ────────────────────────────────
+  const repeats  = mixedTrials.filter(t => t.trialType === 'repeat');
+  const switches = mixedTrials.filter(t => t.trialType === 'switch');
 
   const repeatRt    = avg(rtOf(repeats));
   const switchRt    = avg(rtOf(switches));
-  const pureRt      = avg(rtOf(pure));
-  const switchErrPp = errorRate(switches) - errorRate(repeats);
-  const mixingErrPp = errorRate(repeats)  - errorRate(pure);
-
   const switchCostRt = switchRt - repeatRt;
+  const switchErrPp  = errorRate(switches) - errorRate(repeats);
+
+  // ─ Mixing Cost: baseline puro (A+B) vs repeat do misto ──────────────────────
+  const pureRt      = avg(rtOf(pureTrials));
   const mixingCostRt = repeatRt - pureRt;
+  const mixingErrPp  = errorRate(repeats) - errorRate(pureTrials);
 
-  const mixed = [...repeats, ...switches];
-  const mixedAccuracy = pct(mixed.filter(t => t.correct).length, mixed.length);
+  // ─ Perseveração (apenas switches do misto) ────────────────────────────────
+  const perseverations = switches.filter(t => t.isPerseveration).length;
 
-  const timedOut = trials.filter(t => t.timedOut);
+  // ─ Bivalência (todos os trials) ───────────────────────────────────────────
+  const bivalent      = allTrials.filter(t => t.isBivalent);
+  const nonBivalent   = allTrials.filter(t => !t.isBivalent && t.trialType !== 'first');
+  const bivalentRt    = avg(rtOf(bivalent));
+  const nonBivalentRt = avg(rtOf(nonBivalent));
+
+  // ─ Por regra (todos os trials) ─────────────────────────────────────────────
+  const colors = allTrials.filter(t => t.rule === 'color');
+  const shapes = allTrials.filter(t => t.rule === 'shape');
+
+  // ─ Acurácia do bloco misto (switch + repeat) ────────────────────────────
+  const mixedWithoutFirst = mixedTrials.filter(t => t.trialType !== 'first');
+  const mixedAccuracy = pct(
+    mixedWithoutFirst.filter(t => t.correct).length,
+    mixedWithoutFirst.length,
+  );
+
+  const timedOut = allTrials.filter(t => t.timedOut);
 
   const severity = classifySeverity(
     switchCostRt, mixingCostRt, perseverations, mixedAccuracy,
   );
 
   return {
-    totalTrials:          trials.length,
-    accuracy:             pct(trials.filter(t => t.correct).length, trials.length),
-    avgRtMs:              avg(rtOf(trials)),
+    totalTrials:          allTrials.length,
+    accuracy:             pct(allTrials.filter(t => t.correct).length, allTrials.length),
+    avgRtMs:              avg(rtOf(allTrials)),
     switchTrials:         switches.length,
     repeatTrials:         repeats.length,
     switchAccuracy:       pct(switches.filter(t => t.correct).length, switches.length),
@@ -104,8 +131,8 @@ export function calculateColorShapeMetrics(trials: TrialResult[]): ColorShapeMet
     repeatAvgRtMs:        repeatRt,
     switchCostRtMs:       switchCostRt,
     switchCostErrorPp:    switchErrPp,
-    pureTrials:           pure.length,
-    pureAccuracy:         pct(pure.filter(t => t.correct).length, pure.length),
+    pureTrials:           pureTrials.length,
+    pureAccuracy:         pct(pureTrials.filter(t => t.correct).length, pureTrials.length),
     pureAvgRtMs:          pureRt,
     mixingCostRtMs:       mixingCostRt,
     mixingCostErrorPp:    mixingErrPp,
@@ -120,7 +147,7 @@ export function calculateColorShapeMetrics(trials: TrialResult[]): ColorShapeMet
     colorAvgRtMs:         avg(rtOf(colors)),
     shapeAvgRtMs:         avg(rtOf(shapes)),
     timeoutCount:         timedOut.length,
-    timeoutPct:           pct(timedOut.length, trials.length),
+    timeoutPct:           pct(timedOut.length, allTrials.length),
     severity,
   };
 }

@@ -1,7 +1,4 @@
-// src/attentions/alternated/games/ColorShape/useColorShapeEvaluation.ts
-// Hook de avaliação pós-sessão.
-// Usa buildColorShapeTechnicalReport (assessment layer) para montar o payload
-// em vez de recalcular notas e custos inline.
+// Hook de avaliação pós-sessão ColorShape.
 
 import type { ColorShapeSessionLog, ColorShapeMetrics } from './types';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
@@ -50,29 +47,28 @@ async function callEvaluator(payload: object): Promise<EvaluationReport | null> 
 export async function useColorShapeEvaluation(
   log: ColorShapeSessionLog
 ): Promise<ColorShapeEvaluationResult> {
-  // Métricas do jogo (inclui severity via constants.ts do jogo)
-  const metrics = calculateColorShapeMetrics(log.mainTrials);
+  // Métricas: pureTrials = bloco A + B (baseline isolado), mixedTrials = bloco misto
+  const metrics = calculateColorShapeMetrics({
+    pureTrials:  [...log.blockATrials, ...log.blockBTrials],
+    mixedTrials: log.mixedTrials,
+  });
 
-  // Assessment layer: adapta → constrói relatório técnico completo
-  const analysisInput  = adaptSessionToColorShape(log);
+  const analysisInput   = adaptSessionToColorShape(log);
   const technicalReport = buildColorShapeTechnicalReport(analysisInput);
 
-  // Payload para o vigil-evaluator — usa o technicalReport como fonte única
   const payload = {
     game:          'color-shape',
     attentionType: 'alternada' as const,
     sessionId:     technicalReport.sessionId,
     startedAt:     technicalReport.startedAt,
-    severity:      metrics.severity,               // fonte: jogo (constants.ts)
+    severity:      metrics.severity,
 
-    // Métricas globais
     totalTrials:   technicalReport.metrics.totalTrials,
     accuracy:      technicalReport.metrics.accuracy,
     avgRtMs:       technicalReport.metrics.avgRtMs,
     timeoutCount:  technicalReport.metrics.timeoutCount,
     timeoutPct:    technicalReport.metrics.timeoutPct,
 
-    // Switching Cost
     switchTrials:      technicalReport.metrics.switchTrials,
     repeatTrials:      technicalReport.metrics.repeatTrials,
     switchAccuracy:    technicalReport.metrics.switchAccuracy,
@@ -82,36 +78,30 @@ export async function useColorShapeEvaluation(
     switchCostRtMs:    technicalReport.metrics.switchCostRtMs,
     switchCostErrorPp: technicalReport.metrics.switchCostErrorPp,
 
-    // Mixing Cost
     pureTrials:        technicalReport.metrics.pureTrials,
     pureAccuracy:      technicalReport.metrics.pureAccuracy,
     pureAvgRtMs:       technicalReport.metrics.pureAvgRtMs,
     mixingCostRtMs:    technicalReport.metrics.mixingCostRtMs,
     mixingCostErrorPp: technicalReport.metrics.mixingCostErrorPp,
 
-    // Perseveração
     perseverationErrors: technicalReport.metrics.perseverationErrors,
     perseverationPct:    technicalReport.metrics.perseverationPct,
 
-    // Bivalência
     bivalentTrials:      technicalReport.metrics.bivalentTrials,
     bivalentAvgRtMs:     technicalReport.metrics.bivalentAvgRtMs,
     nonBivalentAvgRtMs:  technicalReport.metrics.nonBivalentAvgRtMs,
     bivalencyEffectMs:   technicalReport.metrics.bivalencyEffectMs,
 
-    // Por regra
     colorAccuracy:  technicalReport.metrics.colorAccuracy,
     shapeAccuracy:  technicalReport.metrics.shapeAccuracy,
     colorAvgRtMs:   technicalReport.metrics.colorAvgRtMs,
     shapeAvgRtMs:   technicalReport.metrics.shapeAvgRtMs,
 
-    // Notas interpretativas (via assessment/colorShapeScaleDefinitions)
     switchingCostNote:  technicalReport.scaleResult.switchingCostNote,
     mixingCostNote:     technicalReport.scaleResult.mixingCostNote,
     perseverationNote:  technicalReport.scaleResult.perseverationNote,
     bivalencyNote:      technicalReport.scaleResult.bivalencyNote,
 
-    // Resumo de tentativas
     trialSummary: technicalReport.trialSummary,
   };
 
