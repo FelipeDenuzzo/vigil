@@ -8,15 +8,7 @@ import { buildPureTrials, buildMixedTrials, isCorrect } from './logic';
 import { useColorShapeEvaluation } from './useColorShapeEvaluation';
 import type { TrialConfig, TrialResult, ColorShapeSessionLog, RuleType, ShapeType, ColorName } from './types';
 
-type BlockName = 'A' | 'B' | 'mixed';
-
-type GamePhase =
-  | 'instructions'
-  | 'block_intro'
-  | 'fixation'
-  | 'stimulus'
-  | 'iti'
-  | 'done';
+type GamePhase = 'instructions' | 'fixation' | 'stimulus' | 'iti' | 'done';
 
 interface Props {
   sessionId: string;
@@ -27,6 +19,17 @@ interface Props {
 const BLOCK_A_TRIALS = 20;
 const BLOCK_B_TRIALS = 20;
 const MIXED_TRIALS   = 60;
+
+// ── Constrói a fila única com marca de bloco ──────────────────────────────────────
+type BlockName = 'A' | 'B' | 'mixed';
+interface TaggedTrial extends TrialConfig { block: BlockName; }
+
+function buildFullQueue(): TaggedTrial[] {
+  const a     = buildPureTrials('color', BLOCK_A_TRIALS).map(t => ({ ...t, block: 'A'     as BlockName }));
+  const b     = buildPureTrials('shape', BLOCK_B_TRIALS).map(t => ({ ...t, block: 'B'     as BlockName }));
+  const mixed = buildMixedTrials(MIXED_TRIALS)          .map(t => ({ ...t, block: 'mixed' as BlockName }));
+  return [...a, ...b, ...mixed];
+}
 
 // ── SVG shapes ──────────────────────────────────────────────────────────────────
 function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: ColorName; size?: number }) {
@@ -90,23 +93,6 @@ function Instructions({ onStart }: { onStart: () => void }) {
   );
 }
 
-// ── Transição entre blocos ─────────────────────────────────────────────────────
-function BlockIntro({ block, onStart }: { block: BlockName; onStart: () => void }) {
-  const desc: Record<BlockName, string> = {
-    A:     'Responda sempre a COR da figura.',
-    B:     'Responda sempre a FORMA da figura.',
-    mixed: 'A pergunta em cada tela indica o que deve responder.',
-  };
-  return (
-    <div style={css.screen}>
-      <p style={{ ...css.sub, textAlign: 'center', maxWidth: 300, fontSize: 16, color: '#c0c4d8' }}>
-        {desc[block]}
-      </p>
-      <button style={css.primaryBtn} onClick={onStart}>Continuar</button>
-    </div>
-  );
-}
-
 // ── Botões de resposta ──────────────────────────────────────────────────────────
 const COLOR_LABELS: Record<ColorName, string> = {
   red: 'Vermelho', blue: 'Azul', green: 'Verde', yellow: 'Amarelo',
@@ -135,20 +121,12 @@ function ResponseButtons({ rule, onAnswer, disabled }: {
 // ── Componente principal ────────────────────────────────────────────────────────
 export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose }) => {
   const [phase,        setPhase]        = useState<GamePhase>('instructions');
-  const [currentBlock, setCurrentBlock] = useState<BlockName>('A');
-  const [nextBlock,    setNextBlock]    = useState<BlockName | null>(null);
-  const [trialQueue,   setTrialQueue]   = useState<TrialConfig[]>([]);
+  const [trialQueue,   setTrialQueue]   = useState<TaggedTrial[]>([]);
   const [trialIdx,     setTrialIdx]     = useState(0);
-  const [currentTrial, setCurrentTrial] = useState<TrialConfig | null>(null);
+  const [currentTrial, setCurrentTrial] = useState<TaggedTrial | null>(null);
   const [evaluating,   setEvaluating]   = useState(false);
 
-  const blockARef   = useRef<TrialResult[]>([]);
-  const blockBRef   = useRef<TrialResult[]>([]);
-  const mixedRef    = useRef<TrialResult[]>([]);
-  const [blockALog, setBlockALog] = useState<TrialResult[]>([]);
-  const [blockBLog, setBlockBLog] = useState<TrialResult[]>([]);
-  const [mixedLog,  setMixedLog]  = useState<TrialResult[]>([]);
-
+  const resultsRef      = useRef<(TrialResult & { block: BlockName })[]>([]);
   const stimulusTimeRef = useRef<number>(0);
   const timeoutRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -156,22 +134,19 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
   };
 
-  const blockAccessors = (block: BlockName) => {
-    if (block === 'A') return { ref: blockARef, setLog: setBlockALog, log: blockALog };
-    if (block === 'B') return { ref: blockBRef, setLog: setBlockBLog, log: blockBLog };
-    return               { ref: mixedRef,  setLog: setMixedLog,  log: mixedLog  };
-  };
-
-  const finishSession = useCallback((aLog: TrialResult[], bLog: TrialResult[], mLog: TrialResult[]) => {
+  const finishSession = useCallback((all: (TrialResult & { block: BlockName })[]) => {
     setPhase('done');
     setEvaluating(true);
+    const blockA = all.filter(r => r.block === 'A');
+    const blockB = all.filter(r => r.block === 'B');
+    const mixed  = all.filter(r => r.block === 'mixed');
     const log: ColorShapeSessionLog = {
       sessionId,
-      blockATrials:   aLog,
-      blockBTrials:   bLog,
-      mixedTrials:    mLog,
+      blockATrials:   blockA,
+      blockBTrials:   blockB,
+      mixedTrials:    mixed,
       practiceTrials: [],
-      mainTrials:     [...aLog, ...bLog, ...mLog],
+      mainTrials:     all,
       startedAt:      new Date().toISOString(),
     };
     useColorShapeEvaluation(log)
@@ -180,16 +155,12 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   }, [sessionId, onComplete]);
 
   const advanceTrial = useCallback((
-    results: TrialResult[], queue: TrialConfig[], idx: number, block: BlockName,
+    results: (TrialResult & { block: BlockName })[],
+    queue: TaggedTrial[],
+    idx: number,
   ) => {
     if (idx >= queue.length) {
-      if (block === 'A') {
-        setNextBlock('B'); setPhase('block_intro');
-      } else if (block === 'B') {
-        setNextBlock('mixed'); setPhase('block_intro');
-      } else {
-        finishSession(blockARef.current, blockBRef.current, results);
-      }
+      finishSession(results);
       return;
     }
     const trial = queue[idx];
@@ -198,14 +169,17 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       setPhase('stimulus');
       stimulusTimeRef.current = Date.now();
       timeoutRef.current = setTimeout(() => {
-        handleResponse(null, trial, results, queue, idx, block);
+        handleResponse(null, trial, results, queue, idx);
       }, MAX_RESPONSE_MS);
     }, FIXATION_MS);
   }, [finishSession]); // eslint-disable-line
 
   const handleResponse = useCallback((
-    key: string | null, trial: TrialConfig, results: TrialResult[],
-    queue: TrialConfig[], idx: number, block: BlockName,
+    key: string | null,
+    trial: TaggedTrial,
+    results: (TrialResult & { block: BlockName })[],
+    queue: TaggedTrial[],
+    idx: number,
   ) => {
     clearTO();
     const rt      = key === null ? -1 : Date.now() - stimulusTimeRef.current;
@@ -218,41 +192,30 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       if (prevRule === 'color') isPersev = COLOR_KEYS[trial.color] === k;
       else                      isPersev = SHAPE_KEYS[trial.shape] === k;
     }
-    const result: TrialResult = {
+    const result = {
       ...trial, keyPressed: key ?? '', correct, reactionMs: rt, timedOut, isPerseveration: isPersev,
     };
     const updated = [...results, result];
-    const { ref, setLog } = blockAccessors(block);
-    ref.current = updated;
-    setLog(updated);
-    // sem feedback visual — avança direto para ITI
+    resultsRef.current = updated;
     setPhase('iti');
-    timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1, block), ITI_MS);
+    timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1), ITI_MS);
   }, [advanceTrial]); // eslint-disable-line
 
   useEffect(() => () => clearTO(), []);
 
-  const startBlock = (block: BlockName) => {
-    setCurrentBlock(block);
-    let queue: TrialConfig[];
-    if (block === 'A')      queue = buildPureTrials('color', BLOCK_A_TRIALS);
-    else if (block === 'B') queue = buildPureTrials('shape', BLOCK_B_TRIALS);
-    else                    queue = buildMixedTrials(MIXED_TRIALS);
+  const startSession = () => {
+    const queue = buildFullQueue();
     setTrialQueue(queue);
-    advanceTrial([], queue, 0, block);
+    resultsRef.current = [];
+    advanceTrial([], queue, 0);
   };
 
   const handleBtnAnswer = (key: string) => {
     if (!currentTrial) return;
-    const { log } = blockAccessors(currentBlock);
-    handleResponse(key, currentTrial, log, trialQueue, trialIdx, currentBlock);
+    handleResponse(key, currentTrial, resultsRef.current, trialQueue, trialIdx);
   };
 
-  if (phase === 'instructions') return <Instructions onStart={() => startBlock('A')} />;
-
-  if (phase === 'block_intro' && nextBlock) return (
-    <BlockIntro block={nextBlock} onStart={() => startBlock(nextBlock)} />
-  );
+  if (phase === 'instructions') return <Instructions onStart={startSession} />;
 
   if (phase === 'done') return (
     <div style={css.screen}>
