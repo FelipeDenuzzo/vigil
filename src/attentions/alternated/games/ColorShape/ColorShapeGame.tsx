@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   COLOR_HEX, COLOR_KEYS, SHAPE_KEYS,
   NEUTRAL_BG,
-  FIXATION_MS, MAX_RESPONSE_MS, FEEDBACK_MS, ITI_MS,
+  FIXATION_MS, MAX_RESPONSE_MS, ITI_MS,
 } from './constants';
 import { buildPureTrials, buildMixedTrials, isCorrect } from './logic';
 import { useColorShapeEvaluation } from './useColorShapeEvaluation';
@@ -15,7 +15,6 @@ type GamePhase =
   | 'block_intro'
   | 'fixation'
   | 'stimulus'
-  | 'feedback'
   | 'iti'
   | 'done';
 
@@ -25,9 +24,9 @@ interface Props {
   onClose?:    () => void;
 }
 
-const BLOCK_A_TRIALS  = 20;
-const BLOCK_B_TRIALS  = 20;
-const MIXED_TRIALS    = 60;
+const BLOCK_A_TRIALS = 20;
+const BLOCK_B_TRIALS = 20;
+const MIXED_TRIALS   = 60;
 
 // ── SVG shapes ──────────────────────────────────────────────────────────────────
 function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: ColorName; size?: number }) {
@@ -76,7 +75,7 @@ function RuleBadge({ rule }: { rule: RuleType }) {
   );
 }
 
-// ── Tela de instruções — apenas o essencial para o paciente ───────────────────
+// ── Instruções ──────────────────────────────────────────────────────────────────
 function Instructions({ onStart }: { onStart: () => void }) {
   return (
     <div style={css.screen}>
@@ -91,7 +90,7 @@ function Instructions({ onStart }: { onStart: () => void }) {
   );
 }
 
-// ── Tela de transição entre blocos — instrução mínima ───────────────────────
+// ── Transição entre blocos ─────────────────────────────────────────────────────
 function BlockIntro({ block, onStart }: { block: BlockName; onStart: () => void }) {
   const desc: Record<BlockName, string> = {
     A:     'Responda sempre a COR da figura.',
@@ -141,7 +140,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   const [trialQueue,   setTrialQueue]   = useState<TrialConfig[]>([]);
   const [trialIdx,     setTrialIdx]     = useState(0);
   const [currentTrial, setCurrentTrial] = useState<TrialConfig | null>(null);
-  const [lastCorrect,  setLastCorrect]  = useState<boolean | null>(null);
   const [evaluating,   setEvaluating]   = useState(false);
 
   const blockARef   = useRef<TrialResult[]>([]);
@@ -163,8 +161,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     if (block === 'B') return { ref: blockBRef, setLog: setBlockBLog, log: blockBLog };
     return               { ref: mixedRef,  setLog: setMixedLog,  log: mixedLog  };
   };
-
-  const isPureBlock = (b: BlockName) => b === 'A' || b === 'B';
 
   const finishSession = useCallback((aLog: TrialResult[], bLog: TrialResult[], mLog: TrialResult[]) => {
     setPhase('done');
@@ -229,17 +225,9 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     const { ref, setLog } = blockAccessors(block);
     ref.current = updated;
     setLog(updated);
-    if (isPureBlock(block)) {
-      setLastCorrect(timedOut ? false : correct);
-      setPhase('feedback');
-      timeoutRef.current = setTimeout(() => {
-        setPhase('iti');
-        timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1, block), ITI_MS);
-      }, FEEDBACK_MS);
-    } else {
-      setPhase('iti');
-      timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1, block), ITI_MS);
-    }
+    // sem feedback visual — avança direto para ITI
+    setPhase('iti');
+    timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1, block), ITI_MS);
   }, [advanceTrial]); // eslint-disable-line
 
   useEffect(() => () => clearTO(), []);
@@ -272,14 +260,14 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       <p style={{ ...css.sub, textAlign: 'center' }}>
         {evaluating ? 'Processando...' : 'Atividade concluída.'}
       </p>
-      {onClose && !evaluating && <button style={{ ...css.ghostBtn, marginTop: 16 }} onClick={onClose}>Sair</button>}
+      {onClose && !evaluating && <button style={css.ghostBtn} onClick={onClose}>Sair</button>}
     </div>
   );
 
   const totalQ      = trialQueue.length;
   const progress    = totalQ > 0 ? Math.round((trialIdx / totalQ) * 100) : 0;
-  const showStim    = phase === 'stimulus' || phase === 'feedback';
-  const btnDisabled = phase === 'feedback' || phase === 'fixation' || phase === 'iti';
+  const showStim    = phase === 'stimulus';
+  const btnDisabled = phase === 'fixation' || phase === 'iti';
 
   return (
     <div style={{ ...css.gameScreen, background: NEUTRAL_BG }}>
@@ -294,27 +282,13 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       <div style={css.stimulusArea}>
         {phase === 'fixation' && <div style={css.fixation}>·</div>}
         {showStim && currentTrial && (
-          <div style={css.stimulusWrap}>
-            <ShapeSVG shape={currentTrial.shape} color={currentTrial.color} size={130} />
-            {phase === 'feedback' && (
-              <div style={{ marginTop: 16, fontSize: 22, fontWeight: 800, color: lastCorrect ? '#6dbf87' : '#f08080' }}>
-                {lastCorrect ? '✓ Certo' : '✗ Errado'}
-              </div>
-            )}
-          </div>
+          <ShapeSVG shape={currentTrial.shape} color={currentTrial.color} size={130} />
         )}
         {phase === 'iti' && <div style={{ height: 130 }} />}
       </div>
 
       {currentTrial && (
         <ResponseButtons rule={currentTrial.rule} onAnswer={handleBtnAnswer} disabled={btnDisabled} />
-      )}
-
-      {onClose && (
-        <button
-          style={{ ...css.ghostBtn, position: 'absolute', top: 12, right: 12, padding: '6px 14px', fontSize: 12 }}
-          onClick={onClose}>Sair
-        </button>
       )}
     </div>
   );
@@ -361,9 +335,6 @@ const css: Record<string, React.CSSProperties> = {
     fontSize: 48, color: 'rgba(255,255,255,0.4)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     width: 130, height: 130,
-  },
-  stimulusWrap: {
-    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
   },
   btnGrid: {
     display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
