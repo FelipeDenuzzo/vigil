@@ -11,6 +11,8 @@ import VisualSearchPlay from './attentions/selective/VisualSearchPlay';
 import VisualSearchEvaluationContainer from './attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationContainer';
 import { SustainedHub } from './attentions/sustained/SustainedHub';
 import { AlternatingHub } from './attentions/alternating/AlternatingHub';
+import ColorShapePlay from './attentions/alternating/ColorShapePlay';
+import ColorShapeEvaluationContainer from './attentions/alternated/games/ColorShape/ColorShapeEvaluationContainer';
 import { DividedHub } from './attentions/divided/DividedHub';
 import { NotFound } from './pages/NotFound';
 import './shared/base.css';
@@ -24,13 +26,24 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/treinar" element={<ProtectedRoute><SelectAttention /></ProtectedRoute>} />
+
+          {/* Seletiva */}
           <Route path="/treinar/seletiva" element={<ProtectedRoute><SelectiveHub /></ProtectedRoute>} />
           <Route path="/treinar/seletiva/visual-search" element={<ProtectedRoute><VisualSearchPlay /></ProtectedRoute>} />
           <Route path="/treinar/seletiva/visual-search/resultado" element={<ProtectedRoute><VisualSearchEvaluationContainer /></ProtectedRoute>} />
           <Route path="/treinar/seletiva/visual-search/evaluation" element={<ProtectedRoute><VisualSearchEvaluationContainer /></ProtectedRoute>} />
+
+          {/* Sustentada */}
           <Route path="/treinar/sustentada" element={<ProtectedRoute><SustainedHub /></ProtectedRoute>} />
+
+          {/* Alternada */}
           <Route path="/treinar/alternada" element={<ProtectedRoute><AlternatingHub /></ProtectedRoute>} />
+          <Route path="/treinar/alternada/color-shape" element={<ProtectedRoute><ColorShapePlay /></ProtectedRoute>} />
+          <Route path="/treinar/alternada/color-shape/resultado" element={<ProtectedRoute><ColorShapeEvaluationContainer /></ProtectedRoute>} />
+
+          {/* Dividida */}
           <Route path="/treinar/dividida" element={<ProtectedRoute><DividedHub /></ProtectedRoute>} />
+
           <Route path="/historico" element={<ProtectedRoute><Historico /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
