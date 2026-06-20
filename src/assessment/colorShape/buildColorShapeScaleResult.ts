@@ -30,22 +30,44 @@ function resolveBivalencyNote(ms: number): string {
   return 'marcado';
 }
 
+/** IES: menor é melhor. Limiares calibrados para 10+10+40 trials */
+function resolveIesNote(ies: number): string {
+  if (ies === 0)      return 'indisponível';
+  if (ies <= 900)     return 'eficiente';
+  if (ies <= 1300)    return 'moderado';
+  if (ies <= 1800)    return 'lento';
+  return 'muito lento';
+}
+
+/** Fadiga: positivo = piora de RT. Limiares conservadores para n=40 */
+function resolveVigilanceNote(declineMs: number): string {
+  if (declineMs <= 0)   return 'sem fadiga';
+  if (declineMs <= 80)  return 'leve';
+  if (declineMs <= 180) return 'moderada';
+  return 'acentuada';
+}
+
 function classifySeverity(
   persevNote: string,
   switchNote: string,
   mixingNote: string,
   mixedAccuracy: number,
+  iesNote: string,
+  vigilanceNote: string,
 ): ColorShapeSeverity {
   if (persevNote === 'critica' || mixedAccuracy <= MIXED_ACCURACY_FLOOR) return 'importante';
   if (
     persevNote === 'frequente' ||
     switchNote === 'muito alto' ||
-    mixingNote === 'muito alto'
+    mixingNote === 'muito alto' ||
+    iesNote === 'muito lento'
   ) return 'moderado';
   if (
     persevNote === 'rara' ||
     switchNote === 'alto' ||
-    mixingNote === 'alto'
+    mixingNote === 'alto' ||
+    iesNote === 'lento' ||
+    vigilanceNote === 'acentuada'
   ) return 'leve';
   return 'minimo';
 }
@@ -68,13 +90,17 @@ export function buildColorShapeScaleResult(
     ? Math.round((mixedCorrect / mixedTotal) * 100)
     : 0;
 
-  const switchingNote = resolveSwitchingNote(metrics.switchCostRtMs);
-  const mixingNote    = resolveMixingNote(metrics.mixingCostRtMs);
-  const persevNote    = resolvePersonNote(metrics.perseverationErrors);
-  const bivalencyNote = resolveBivalencyNote(metrics.bivalencyEffectMs);
+  const switchingNote  = resolveSwitchingNote(metrics.switchCostRtMs);
+  const mixingNote     = resolveMixingNote(metrics.mixingCostRtMs);
+  const persevNote     = resolvePersonNote(metrics.perseverationErrors);
+  const bivalencyNote  = resolveBivalencyNote(metrics.bivalencyEffectMs);
+  const iesNote        = resolveIesNote(metrics.ies);
+  const vigilanceNote  = resolveVigilanceNote(metrics.vigilanceDeclineMs);
 
-  const severity = classifySeverity(persevNote, switchingNote, mixingNote, mixedAccuracy);
-  const score    = computeScore(severity, metrics);
+  const severity = classifySeverity(
+    persevNote, switchingNote, mixingNote, mixedAccuracy, iesNote, vigilanceNote,
+  );
+  const score = computeScore(severity, metrics);
 
   return {
     severity,
@@ -83,5 +109,7 @@ export function buildColorShapeScaleResult(
     mixingCostNote:    MIXING_COST_NOTES[mixingNote as keyof typeof MIXING_COST_NOTES],
     perseverationNote: PERSEVERATION_NOTES[persevNote as keyof typeof PERSEVERATION_NOTES],
     bivalencyNote:     BIVALENCY_NOTES[bivalencyNote as keyof typeof BIVALENCY_NOTES],
+    iesNote,
+    vigilanceNote,
   };
 }
