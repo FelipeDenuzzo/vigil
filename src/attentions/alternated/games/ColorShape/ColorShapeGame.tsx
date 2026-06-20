@@ -5,7 +5,7 @@ import {
   FIXATION_MS, MAX_RESPONSE_MS, FEEDBACK_MS, ITI_MS,
   MAIN_TRIALS,
 } from './constants';
-import { buildTrials, buildPracticeTrials, isCorrect, allValidKeys } from './logic';
+import { buildTrials, buildPracticeTrials, isCorrect } from './logic';
 import { useColorShapeEvaluation } from './useColorShapeEvaluation';
 import type { TrialConfig, TrialResult, ColorShapeSessionLog, RuleType, ShapeType, ColorName } from './types';
 
@@ -25,7 +25,7 @@ interface Props {
   onClose?:    () => void;
 }
 
-// ── SVG shapes ─────────────────────────────────────────────────────────────────────────
+// ── SVG shapes ──────────────────────────────────────────────────────────────────
 function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: ColorName; size?: number }) {
   const fill = COLOR_HEX[color];
   const s = size, c = s / 2;
@@ -46,59 +46,83 @@ function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: Color
   );
 }
 
-// ── Tela de instruções ───────────────────────────────────────────────────────────────────
+// ── Tela de instruções ─────────────────────────────────────────────────────────
 function Instructions({ onStart }: { onStart: () => void }) {
   return (
     <div style={css.screen}>
-      <p style={css.title}>🎯 Cor ou Forma</p>
+      <p style={css.title}>🎨 Cor ou Forma</p>
       <p style={{ ...css.sub, maxWidth: 340, textAlign: 'center' }}>
-        Em cada tentativa você verá uma figura no centro da tela.
-        A <b style={{ color: '#5588e0' }}>cor de fundo</b> indica qual regra usar:
+        Você verá uma figura colorida na tela.
+        A <b style={{ color: '#5588e0' }}>cor de fundo</b> diz qual regra seguir:
       </p>
       <div style={css.ruleBox}>
         <div style={{ ...css.rulePill, background: CUE_COLOR_BG }}>
           <span style={{ fontSize: 22 }}>🎨</span>
-          <span>Fundo <b>azul</b> → responda a <b>cor</b></span>
+          <span>Fundo <b>azul</b> → toque na <b>cor</b> da figura</span>
         </div>
         <div style={{ ...css.rulePill, background: CUE_SHAPE_BG }}>
           <span style={{ fontSize: 22 }}>🔷</span>
-          <span>Fundo <b>cinza</b> → responda a <b>forma</b></span>
-        </div>
-      </div>
-      <div style={css.keyBox}>
-        <p style={css.keyTitle}>Teclas — Cor</p>
-        <div style={css.keyRow}>
-          {(['red','blue','green','yellow'] as ColorName[]).map(cl => (
-            <span key={cl} style={{ ...css.keyChip, borderColor: COLOR_HEX[cl] }}>
-              <span style={{ color: COLOR_HEX[cl], fontWeight: 700 }}>
-                {cl === 'red' ? 'Verm' : cl === 'blue' ? 'Azul' : cl === 'green' ? 'Verde' : 'Amar'}
-              </span>
-              <kbd style={css.kbd}>{COLOR_KEYS[cl].toUpperCase()}</kbd>
-            </span>
-          ))}
-        </div>
-        <p style={{ ...css.keyTitle, marginTop: 12 }}>Teclas — Forma</p>
-        <div style={css.keyRow}>
-          {(['circle','square','triangle'] as ShapeType[]).map(sh => (
-            <span key={sh} style={css.keyChip}>
-              <span style={{ color: '#c8cad8', fontWeight: 700 }}>
-                {sh === 'circle' ? 'Círculo' : sh === 'square' ? 'Quadrado' : 'Triângulo'}
-              </span>
-              <kbd style={css.kbd}>{SHAPE_KEYS[sh].toUpperCase()}</kbd>
-            </span>
-          ))}
+          <span>Fundo <b>cinza</b> → toque na <b>forma</b> da figura</span>
         </div>
       </div>
       <p style={{ ...css.sub, color: '#6b6f88', fontSize: 12, textAlign: 'center', maxWidth: 300 }}>
-        Começaremos com 12 tentativas de treino (4 com regra fixa + 8 alternando).
-        Você receberá feedback em cada resposta.
+        Primeiro vamos praticar algumas rodadas. Use os botões que aparecem na tela para responder.
       </p>
       <button style={css.primaryBtn} onClick={onStart}>Iniciar treino</button>
     </div>
   );
 }
 
-// ── Componente principal ────────────────────────────────────────────────────────────────────
+// ── Botões de resposta ───────────────────────────────────────────────────────────
+const COLOR_LABELS: Record<ColorName, string> = {
+  red: 'Vermelho', blue: 'Azul', green: 'Verde', yellow: 'Amarelo',
+};
+const SHAPE_LABELS: Record<ShapeType, string> = {
+  circle: 'Círculo', square: 'Quadrado', triangle: 'Triângulo',
+};
+
+function ResponseButtons({
+  rule,
+  onAnswer,
+  disabled,
+}: {
+  rule: RuleType;
+  onAnswer: (key: string) => void;
+  disabled: boolean;
+}) {
+  if (rule === 'color') {
+    return (
+      <div style={css.btnGrid}>
+        {(['red', 'blue', 'green', 'yellow'] as ColorName[]).map(cl => (
+          <button
+            key={cl}
+            disabled={disabled}
+            style={{ ...css.answerBtn, borderColor: COLOR_HEX[cl], color: COLOR_HEX[cl] }}
+            onClick={() => onAnswer(COLOR_KEYS[cl])}
+          >
+            {COLOR_LABELS[cl]}
+          </button>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div style={css.btnGrid}>
+      {(['circle', 'square', 'triangle'] as ShapeType[]).map(sh => (
+        <button
+          key={sh}
+          disabled={disabled}
+          style={css.answerBtn}
+          onClick={() => onAnswer(SHAPE_KEYS[sh])}
+        >
+          {SHAPE_LABELS[sh]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Componente principal ─────────────────────────────────────────────────────────
 export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose }) => {
   const [phase,        setPhase]        = useState<GamePhase>('instructions');
   const [trialQueue,   setTrialQueue]   = useState<TrialConfig[]>([]);
@@ -113,15 +137,8 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
 
   const stimulusTimeRef = useRef<number>(0);
   const timeoutRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const phaseRef        = useRef<GamePhase>('instructions');
-  const currentRef      = useRef<TrialConfig | null>(null);
-  const practiceRef     = useRef(true);
   const practiceLogRef  = useRef<TrialResult[]>([]);
   const mainLogRef      = useRef<TrialResult[]>([]);
-
-  useEffect(() => { phaseRef.current    = phase;        }, [phase]);
-  useEffect(() => { currentRef.current  = currentTrial; }, [currentTrial]);
-  useEffect(() => { practiceRef.current = isPractice;   }, [isPractice]);
 
   const clearTO = () => {
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
@@ -181,7 +198,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     const correct  = key !== null && isCorrect(trial, key);
     const timedOut = key === null;
 
-    // Perseveração: switch + errou + tecla = resposta certa pela regra anterior
     const prevRule = idx > 0 ? queue[idx - 1].rule : null;
     let isPersev = false;
     if (!correct && !timedOut && trial.trialType === 'switch' && prevRule !== null && key !== null) {
@@ -215,28 +231,8 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     }
   }, [advanceTrial]);
 
-  // Listener de teclado
-  useEffect(() => {
-    if (phase !== 'stimulus' && phase !== 'practice_trial') return;
-    const validKeys = allValidKeys();
-    const handler = (e: KeyboardEvent) => {
-      const k = e.key.toLowerCase();
-      if (!validKeys.includes(k)) return;
-      e.preventDefault();
-      clearTO();
-      handleResponse(
-        k, currentTrial!,
-        isPractice ? practiceLog : mainLog,
-        trialQueue, trialIdx, isPractice,
-      );
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [phase, currentTrial, trialQueue, trialIdx, isPractice, practiceLog, mainLog, handleResponse]);
-
   useEffect(() => () => clearTO(), []);
 
-  // ── Handlers de fase ───────────────────────────────────────────────────────────────────
   const startPractice = () => {
     const q = buildPracticeTrials();
     setTrialQueue(q); setIsPractice(true);
@@ -250,7 +246,16 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     advanceTrial([], q, 0, false);
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────────────────────
+  const handleBtnAnswer = (key: string) => {
+    if (!currentTrial) return;
+    handleResponse(
+      key, currentTrial,
+      isPractice ? practiceLog : mainLog,
+      trialQueue, trialIdx, isPractice,
+    );
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────────
   if (phase === 'instructions') return <Instructions onStart={startPractice} />;
 
   if (phase === 'practice_done') return (
@@ -258,10 +263,9 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       <p style={{ fontSize: 40 }}>✅</p>
       <p style={css.title}>Treino concluído!</p>
       <p style={{ ...css.sub, textAlign: 'center', maxWidth: 300 }}>
-        Você completou as 12 tentativas de treino.<br />
-        Agora começa a fase principal — sem feedback após cada resposta.
+        Ótimo! Agora começa a sessão de verdade — o jogo não vai mais mostrar se você acertou ou errou.
       </p>
-      <button style={css.primaryBtn} onClick={startMain}>Iniciar fase principal</button>
+      <button style={css.primaryBtn} onClick={startMain}>Começar</button>
       {onClose && <button style={css.ghostBtn} onClick={onClose}>Sair</button>}
     </div>
   );
@@ -278,12 +282,12 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     </div>
   );
 
-  // ── Tela de jogo ─────────────────────────────────────────────────────────────────────────────
   const ruleLabelText: Record<RuleType, string> = { color: 'Responda a COR', shape: 'Responda a FORMA' };
   const totalQ   = trialQueue.length;
   const progress = totalQ > 0 ? Math.round((trialIdx / totalQ) * 100) : 0;
   const showStim = phase === 'stimulus' || phase === 'practice_trial' || phase === 'practice_feedback';
   const isPure   = currentTrial?.trialType === 'pure';
+  const btnDisabled = phase === 'practice_feedback' || phase === 'fixation' || phase === 'iti';
 
   return (
     <div style={{ ...css.screen, background: bgColor, transition: 'background 0.12s' }}>
@@ -329,12 +333,13 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
 
       {phase === 'iti' && <div style={{ height: 130 }} />}
 
-      {showStim && (
-        <div style={css.keyGuide}>
-          <span style={{ color: '#6b6f88', fontSize: 11 }}>
-            Cor: Verm=J Azul=K Verde=L Amar=H&nbsp;&nbsp;|&nbsp;&nbsp;Forma: Círculo=A Quadrado=S Triângulo=D
-          </span>
-        </div>
+      {/* Botões de resposta */}
+      {currentTrial && (showStim || phase === 'iti') && (
+        <ResponseButtons
+          rule={currentTrial.rule}
+          onAnswer={handleBtnAnswer}
+          disabled={btnDisabled}
+        />
       )}
 
       {onClose && (
@@ -360,24 +365,6 @@ const css: Record<string, React.CSSProperties> = {
     display: 'flex', alignItems: 'center', gap: 12,
     padding: '10px 16px', borderRadius: 12, fontSize: 14, color: '#e8e9f0',
     border: '1px solid rgba(255,255,255,0.08)',
-  },
-  keyBox: {
-    background: 'rgba(255,255,255,0.04)', borderRadius: 12,
-    padding: '12px 16px', width: '100%', maxWidth: 360,
-    border: '1px solid rgba(255,255,255,0.07)',
-  },
-  keyTitle: { fontSize: 11, fontWeight: 700, color: '#8b8fa8', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 8px' },
-  keyRow:   { display: 'flex', gap: 6, flexWrap: 'wrap' },
-  keyChip:  {
-    display: 'flex', alignItems: 'center', gap: 6,
-    background: 'rgba(255,255,255,0.05)', borderRadius: 8,
-    padding: '4px 8px', fontSize: 12,
-    border: '1px solid rgba(255,255,255,0.10)',
-  },
-  kbd: {
-    background: 'rgba(255,255,255,0.12)', borderRadius: 4,
-    padding: '2px 6px', fontSize: 12, fontFamily: 'monospace',
-    border: '1px solid rgba(255,255,255,0.15)', color: '#e8e9f0',
   },
   primaryBtn: {
     padding: '12px 36px', borderRadius: 99, fontSize: 15, fontWeight: 700,
@@ -407,8 +394,16 @@ const css: Record<string, React.CSSProperties> = {
   stimulusWrap: {
     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
   },
-  keyGuide: {
-    position: 'absolute', bottom: 12, left: 0, right: 0,
-    textAlign: 'center', padding: '0 12px',
+  btnGrid: {
+    display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center',
+    maxWidth: 360, width: '100%', marginTop: 8,
+  },
+  answerBtn: {
+    flex: '1 1 140px', minHeight: 48,
+    borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer',
+    background: 'rgba(255,255,255,0.07)',
+    border: '2px solid rgba(255,255,255,0.18)',
+    color: '#e8e9f0',
+    transition: 'opacity 0.15s',
   },
 };

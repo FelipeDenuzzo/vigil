@@ -1,3 +1,4 @@
+// src/attentions/alternating/AlternatingHub.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../shared/components/Button';
@@ -21,7 +22,6 @@ export const AlternatingHub: React.FC = () => {
       <section>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
 
-          {/* ─ Cor ou Forma ─ */}
           <Card
             style={{ cursor: 'pointer', transition: 'opacity 0.15s' }}
             onClick={() => navigate('/treinar/alternada/color-shape')}
@@ -31,7 +31,7 @@ export const AlternatingHub: React.FC = () => {
               Cor ou Forma
             </h2>
             <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)', lineHeight: 1.6 }}>
-              Alterne rapidamente entre responder pela cor ou pela forma da figura conforme a pista visual muda. Treina switching cognitivo e flexibilidade mental.
+              Você verá uma figura na tela e precisa responder pela cor ou pela forma — a cada rodada, a regra pode mudar.
             </p>
             <Button variant="primary" onClick={(e) => { e.stopPropagation(); navigate('/treinar/alternada/color-shape'); }}>
               Jogar
