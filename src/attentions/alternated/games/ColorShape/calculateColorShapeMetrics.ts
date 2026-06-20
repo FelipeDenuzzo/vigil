@@ -1,8 +1,8 @@
 import type { TrialResult, ColorShapeMetrics, ColorShapeSeverity } from './types';
 import {
-  SC_RT_LOW, SC_RT_MODERATE, SC_RT_HIGH,
-  MC_RT_LOW, MC_RT_MODERATE, MC_RT_HIGH,
-  PERSEV_RARE, PERSEV_FREQUENT,
+  SC_RT_MODERATE, SC_RT_HIGH,
+  MC_RT_MODERATE, MC_RT_HIGH,
+  PERSEV_FREQUENT,
 } from './constants';
 
 function avg(arr: number[]): number {
@@ -21,32 +21,23 @@ function errorRate(arr: TrialResult[]): number {
   return Math.round(((arr.filter(t => !t.correct).length) / arr.length) * 100);
 }
 
-/** Classificação de severidade segundo limiares neuropsicológicos (TAP/WCST) */
 export function classifySeverity(
-  switchCostRt:       number,
-  mixingCostRt:       number,
-  perseverations:     number,
-  switchTrials:       number,
-  mixedAccuracy:      number,
+  switchCostRt:   number,
+  mixingCostRt:   number,
+  perseverations: number,
+  mixedAccuracy:  number,
 ): ColorShapeSeverity {
-  // 🔴 Importante: perseveração crítica OU acurácia mista próxima ao acaso
   if (perseverations > PERSEV_FREQUENT || mixedAccuracy <= 55) return 'importante';
-
-  // 🟠 Moderado: perseveração frequente OU switching/mixing cost muito altos
   if (
     perseverations >= 3 ||
     switchCostRt  >  SC_RT_HIGH ||
     mixingCostRt  >  MC_RT_HIGH
   ) return 'moderado';
-
-  // 🟡 Leve: perseveração rara OU custos moderados
   if (
     perseverations >= 1 ||
     switchCostRt  >  SC_RT_MODERATE ||
     mixingCostRt  >  MC_RT_MODERATE
   ) return 'leve';
-
-  // 🟢 Mínimo
   return 'minimo';
 }
 
@@ -70,48 +61,41 @@ export function calculateColorShapeMetrics(trials: TrialResult[]): ColorShapeMet
     };
   }
 
-  const pure    = trials.filter(t => t.trialType === 'pure');
-  const repeats = trials.filter(t => t.trialType === 'repeat');
+  const pure     = trials.filter(t => t.trialType === 'pure');
+  const repeats  = trials.filter(t => t.trialType === 'repeat');
   const switches = trials.filter(t => t.trialType === 'switch');
-  const colors  = trials.filter(t => t.rule === 'color');
-  const shapes  = trials.filter(t => t.rule === 'shape');
+  const colors   = trials.filter(t => t.rule === 'color');
+  const shapes   = trials.filter(t => t.rule === 'shape');
 
-  // Bivalência
   const bivalent    = trials.filter(t => t.isBivalent);
   const nonBivalent = trials.filter(t => !t.isBivalent && t.trialType !== 'first');
   const bivalentRt    = avg(rtOf(bivalent));
   const nonBivalentRt = avg(rtOf(nonBivalent));
 
-  // Perseveração
   const perseverations = trials.filter(t => t.isPerseveration).length;
 
-  // Custos
-  const repeatRt     = avg(rtOf(repeats));
-  const switchRt     = avg(rtOf(switches));
-  const pureRt       = avg(rtOf(pure));
-  const switchErrPp  = errorRate(switches) - errorRate(repeats);
-  const mixingErrPp  = errorRate(repeats) - errorRate(pure);
+  const repeatRt    = avg(rtOf(repeats));
+  const switchRt    = avg(rtOf(switches));
+  const pureRt      = avg(rtOf(pure));
+  const switchErrPp = errorRate(switches) - errorRate(repeats);
+  const mixingErrPp = errorRate(repeats)  - errorRate(pure);
 
   const switchCostRt = switchRt - repeatRt;
   const mixingCostRt = repeatRt - pureRt;
 
-  // Acurácia fase mista (switch + repeat)
   const mixed = [...repeats, ...switches];
   const mixedAccuracy = pct(mixed.filter(t => t.correct).length, mixed.length);
 
   const timedOut = trials.filter(t => t.timedOut);
 
   const severity = classifySeverity(
-    switchCostRt, mixingCostRt,
-    perseverations, switches.length,
-    mixedAccuracy,
+    switchCostRt, mixingCostRt, perseverations, mixedAccuracy,
   );
 
   return {
     totalTrials:          trials.length,
     accuracy:             pct(trials.filter(t => t.correct).length, trials.length),
     avgRtMs:              avg(rtOf(trials)),
-
     switchTrials:         switches.length,
     repeatTrials:         repeats.length,
     switchAccuracy:       pct(switches.filter(t => t.correct).length, switches.length),
@@ -120,29 +104,23 @@ export function calculateColorShapeMetrics(trials: TrialResult[]): ColorShapeMet
     repeatAvgRtMs:        repeatRt,
     switchCostRtMs:       switchCostRt,
     switchCostErrorPp:    switchErrPp,
-
     pureTrials:           pure.length,
     pureAccuracy:         pct(pure.filter(t => t.correct).length, pure.length),
     pureAvgRtMs:          pureRt,
     mixingCostRtMs:       mixingCostRt,
     mixingCostErrorPp:    mixingErrPp,
-
     perseverationErrors:  perseverations,
     perseverationPct:     pct(perseverations, switches.length || 1),
-
     bivalentTrials:       bivalent.length,
     bivalentAvgRtMs:      bivalentRt,
     nonBivalentAvgRtMs:   nonBivalentRt,
     bivalencyEffectMs:    bivalentRt - nonBivalentRt,
-
     colorAccuracy:        pct(colors.filter(t => t.correct).length, colors.length),
     shapeAccuracy:        pct(shapes.filter(t => t.correct).length, shapes.length),
     colorAvgRtMs:         avg(rtOf(colors)),
     shapeAvgRtMs:         avg(rtOf(shapes)),
-
     timeoutCount:         timedOut.length,
     timeoutPct:           pct(timedOut.length, trials.length),
-
     severity,
   };
 }
