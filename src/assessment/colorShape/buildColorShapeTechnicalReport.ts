@@ -1,5 +1,4 @@
 // src/assessment/colorShape/buildColorShapeTechnicalReport.ts
-// Monta o ColorShapeTechnicalReport pronto para enviar ao vigil-evaluator.
 
 import { calculateColorShapeMetrics }  from './calculateColorShapeMetrics';
 import { buildColorShapeScaleResult }   from './buildColorShapeScaleResult';
@@ -40,6 +39,14 @@ export function buildColorShapeTechnicalReport(
       bivalencyEffect: {
         ms:   metrics.bivalencyEffectMs,
         note: scaleResult.bivalencyNote,
+      },
+      ies: {
+        score: metrics.ies,
+        note:  scaleResult.iesNote,
+      },
+      vigilance: {
+        declineMs: metrics.vigilanceDeclineMs,
+        note:      scaleResult.vigilanceNote,
       },
     },
     trialSummary: {
