@@ -16,9 +16,9 @@ interface Props {
   onClose?:    () => void;
 }
 
-const BLOCK_A_TRIALS = 20;
-const BLOCK_B_TRIALS = 20;
-const MIXED_TRIALS   = 60;
+const BLOCK_A_TRIALS = 10;
+const BLOCK_B_TRIALS = 10;
+const MIXED_TRIALS   = 40;
 
 // ── Constrói a fila única com marca de bloco ──────────────────────────────────────
 type BlockName = 'A' | 'B' | 'mixed';
