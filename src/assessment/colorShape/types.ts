@@ -1,9 +1,10 @@
 // src/assessment/colorShape/types.ts
 
-export type RuleType   = 'color' | 'shape';
-export type TrialType  = 'repeat' | 'switch' | 'first' | 'pure';
-export type ShapeType  = 'circle' | 'square' | 'triangle' | 'diamond';
-export type ColorName  = 'red' | 'blue' | 'green' | 'yellow';
+export type RuleType          = 'color' | 'shape';
+export type TrialType         = 'repeat' | 'switch' | 'first' | 'pure';
+export type ShapeType         = 'circle' | 'square' | 'triangle' | 'diamond';
+export type ColorName         = 'red' | 'blue' | 'green' | 'yellow';
+export type ColorShapeSeverity = 'minimo' | 'leve' | 'moderado' | 'importante';
 
 export interface TrialResult {
   trialIndex:      number;
@@ -61,21 +62,23 @@ export interface ColorShapeMetrics {
   timeoutPct:           number;
   /** IES = avgRtMs / (accuracy / 100) — Inverse Efficiency Score */
   ies:                  number;
-  /** RT primeiro terço dos repeat trials do misto */
   vigilanceEarlyRtMs:   number;
-  /** RT último terço dos repeat trials do misto */
   vigilanceLateRtMs:    number;
-  /** Diferença late - early (positivo = fadiga) */
+  /** late - early (positivo = fadiga) */
   vigilanceDeclineMs:   number;
 }
 
 export interface ColorShapeScaleResult {
-  switchingCostNote:  string;
-  mixingCostNote:     string;
-  perseverationNote:  string;
-  bivalencyNote:      string;
-  iesNote:            string;
-  vigilanceNote:      string;
+  severity:          ColorShapeSeverity;
+  score:             number;
+  /** Laudo UX exibido ao usuário no painel de resultado */
+  uxReport:          string;
+  switchingCostNote: string;
+  mixingCostNote:    string;
+  perseverationNote: string;
+  bivalencyNote:     string;
+  iesNote:           string;
+  vigilanceNote:     string;
 }
 
 export interface ColorShapeTechnicalReport {
