@@ -40,7 +40,7 @@ export const SelectAttention: React.FC = () => {
         <Card accent="var(--color-alternating)" interactive onClick={() => navigate('/treinar/alternada')}>
           <div style={{ fontSize: '2rem', marginBottom: 'var(--space-2)' }}>🔀</div>
           <h2 style={{ color: 'var(--color-text)', marginBottom: 'var(--space-1)' }}>Alternada</h2>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-alternating)', marginBottom: 'var(--space-4)' }}>Em breve</p>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-alternating)', marginBottom: 'var(--space-4)' }}>Disponível</p>
           <p style={{ color: 'var(--color-text-muted)' }}>Mudar de regra ou foco sem se perder no caminho.</p>
         </Card>
 
