@@ -29,11 +29,8 @@ interface Props {
 function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: ColorName; size?: number }) {
   const fill = COLOR_HEX[color];
   const s = size, c = s / 2;
-
   if (shape === 'circle') return (
-    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-      <circle cx={c} cy={c} r={c * 0.82} fill={fill} />
-    </svg>
+    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}><circle cx={c} cy={c} r={c * 0.82} fill={fill} /></svg>
   );
   if (shape === 'square') {
     const pad = s * 0.09;
@@ -54,9 +51,7 @@ function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: Color
   }
   const pts = `${c},${s * 0.08} ${s * 0.94},${s * 0.92} ${s * 0.06},${s * 0.92}`;
   return (
-    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-      <polygon points={pts} fill={fill} />
-    </svg>
+    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}><polygon points={pts} fill={fill} /></svg>
   );
 }
 
@@ -66,11 +61,10 @@ function RuleBadge({ rule }: { rule: RuleType }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
-      padding: '10px 20px',
-      borderRadius: 99,
-      background: isColor ? 'rgba(85,136,224,0.18)' : 'rgba(180,180,180,0.12)',
-      border: `2px solid ${isColor ? '#5588e0' : '#888'}`,
-      color: isColor ? '#7ab4f8' : '#d0d0d0',
+      padding: '10px 20px', borderRadius: 99,
+      background: 'rgba(180,180,180,0.10)',
+      border: '2px solid rgba(255,255,255,0.25)',
+      color: '#e8e9f0',
       fontSize: 17, fontWeight: 800, letterSpacing: '0.04em',
       transition: 'all 0.2s ease',
     }}>
@@ -87,16 +81,16 @@ function Instructions({ onStart }: { onStart: () => void }) {
       <p style={css.title}>🎨 Cor ou Forma</p>
       <p style={{ ...css.sub, maxWidth: 340, textAlign: 'center' }}>
         Você verá uma figura colorida na tela.
-        A <b style={{ color: '#5588e0' }}>cor de fundo</b> diz qual regra seguir:
+        O <b>badge no topo</b> diz qual regra seguir naquela rodada.
       </p>
       <div style={css.ruleBox}>
-        <div style={{ ...css.rulePill, background: CUE_COLOR_BG }}>
+        <div style={{ ...css.rulePill, background: 'rgba(255,255,255,0.05)' }}>
           <span style={{ fontSize: 22 }}>🎨</span>
-          <span>Fundo <b>azul</b> → toque na <b>cor</b> da figura</span>
+          <span>“Qual é a COR?” → toque na <b>cor</b> da figura</span>
         </div>
-        <div style={{ ...css.rulePill, background: CUE_SHAPE_BG }}>
+        <div style={{ ...css.rulePill, background: 'rgba(255,255,255,0.05)' }}>
           <span style={{ fontSize: 22 }}>🔷</span>
-          <span>Fundo <b>cinza</b> → toque na <b>forma</b> da figura</span>
+          <span>“Qual é a FORMA?” → toque na <b>forma</b> da figura</span>
         </div>
       </div>
       <p style={{ ...css.sub, color: '#6b6f88', fontSize: 12, textAlign: 'center', maxWidth: 300 }}>
@@ -118,25 +112,15 @@ const SHAPE_LABELS: Record<ShapeType, string> = {
 function ResponseButtons({ rule, onAnswer, disabled }: {
   rule: RuleType; onAnswer: (key: string) => void; disabled: boolean;
 }) {
-  if (rule === 'color') {
-    return (
-      <div style={css.btnGrid}>
-        {(['red', 'blue', 'green', 'yellow'] as ColorName[]).map(cl => (
-          <button key={cl} disabled={disabled}
-            style={{ ...css.answerBtn, borderColor: COLOR_HEX[cl], color: COLOR_HEX[cl] }}
-            onClick={() => onAnswer(COLOR_KEYS[cl])}>
-            {COLOR_LABELS[cl]}
-          </button>
-        ))}
-      </div>
-    );
-  }
+  const items = rule === 'color'
+    ? (['red', 'blue', 'green', 'yellow'] as ColorName[]).map(cl => ({ key: COLOR_KEYS[cl], label: COLOR_LABELS[cl] }))
+    : (['circle', 'square', 'triangle', 'diamond'] as ShapeType[]).map(sh => ({ key: SHAPE_KEYS[sh], label: SHAPE_LABELS[sh] }));
+
   return (
     <div style={css.btnGrid}>
-      {(['circle', 'square', 'triangle', 'diamond'] as ShapeType[]).map(sh => (
-        <button key={sh} disabled={disabled} style={css.answerBtn}
-          onClick={() => onAnswer(SHAPE_KEYS[sh])}>
-          {SHAPE_LABELS[sh]}
+      {items.map(({ key, label }) => (
+        <button key={key} disabled={disabled} style={css.answerBtn} onClick={() => onAnswer(key)}>
+          {label}
         </button>
       ))}
     </div>
@@ -172,8 +156,7 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       if (practice) {
         setPhase('practice_done');
       } else {
-        setPhase('done');
-        setEvaluating(true);
+        setPhase('done'); setEvaluating(true);
         const log: ColorShapeSessionLog = {
           sessionId, practiceTrials: practiceLogRef.current,
           mainTrials: results, startedAt: new Date().toISOString(),
@@ -243,7 +226,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     handleResponse(key, currentTrial, isPractice ? practiceLog : mainLog, trialQueue, trialIdx, isPractice);
   };
 
-  // ── Telas estáticas ──────────────────────────────────────────────────────────
   if (phase === 'instructions') return <Instructions onStart={startPractice} />;
 
   if (phase === 'practice_done') return (
@@ -269,7 +251,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     </div>
   );
 
-  // ── Tela de jogo ─────────────────────────────────────────────────────────────
   const totalQ      = trialQueue.length;
   const progress    = totalQ > 0 ? Math.round((trialIdx / totalQ) * 100) : 0;
   const showStim    = phase === 'stimulus' || phase === 'practice_trial' || phase === 'practice_feedback';
@@ -279,7 +260,7 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   return (
     <div style={{ ...css.gameScreen, background: bgColor }}>
 
-      {/* ─ Topo: progresso ─ */}
+      {/* Topo: progresso */}
       <div style={css.topBar}>
         <span style={{ color: '#8b8fa8', fontSize: 12 }}>
           {isPractice
@@ -293,10 +274,10 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
         )}
       </div>
 
-      {/* ─ Badge de regra — destaque principal ─ */}
+      {/* Badge de regra */}
       {currentTrial && <RuleBadge rule={currentTrial.rule} />}
 
-      {/* ─ Área da figura ─ */}
+      {/* Área da figura */}
       <div style={css.stimulusArea}>
         {phase === 'fixation' && <div style={css.fixation}>·</div>}
         {showStim && currentTrial && (
@@ -312,12 +293,11 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
         {phase === 'iti' && <div style={{ height: 130 }} />}
       </div>
 
-      {/* ─ Botões de resposta ─ */}
+      {/* Botões */}
       {currentTrial && (
         <ResponseButtons rule={currentTrial.rule} onAnswer={handleBtnAnswer} disabled={btnDisabled} />
       )}
 
-      {/* Botão sair */}
       {onClose && (
         <button
           style={{ ...css.ghostBtn, position: 'absolute', top: 12, right: 12, padding: '6px 14px', fontSize: 12 }}
@@ -329,14 +309,12 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
 };
 
 const css: Record<string, React.CSSProperties> = {
-  // tela estática (instruções / done)
   screen: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
     justifyContent: 'center', gap: 16, padding: 20,
     minHeight: '100%', minWidth: '100%',
     background: NEUTRAL_BG, color: '#e8e9f0', position: 'relative',
   },
-  // tela de jogo — coluna no fluxo normal
   gameScreen: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
     gap: 20, padding: '60px 20px 24px',
@@ -345,12 +323,10 @@ const css: Record<string, React.CSSProperties> = {
     transition: 'background 0.12s',
   },
   topBar: {
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-    width: '100%',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: '100%',
   },
   stimulusArea: {
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    minHeight: 160,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 160,
   },
   title:   { fontSize: 22, fontWeight: 800, margin: 0 },
   sub:     { fontSize: 14, color: '#8b8fa8', margin: 0, lineHeight: 1.6 },

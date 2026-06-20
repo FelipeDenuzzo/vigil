@@ -35,7 +35,8 @@ export const MAIN_TRIALS           = 80;
 export const MIN_BLOCK_SIZE        = 1;
 export const MAX_BLOCK_SIZE        = 3;
 
-export const CUE_COLOR_BG  = '#1a3a5c';
+// Fundo cinza uniforme para ambas as regras
+export const CUE_COLOR_BG  = '#2a2a2a';
 export const CUE_SHAPE_BG  = '#2a2a2a';
 export const NEUTRAL_BG    = '#12131e';
 
