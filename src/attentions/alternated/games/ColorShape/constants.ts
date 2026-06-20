@@ -1,8 +1,7 @@
 import type { ColorName, ShapeType } from './types';
 
-// ── Estímulos
 export const COLORS: ColorName[]  = ['red', 'blue', 'green', 'yellow'];
-export const SHAPES: ShapeType[]  = ['circle', 'square', 'triangle'];
+export const SHAPES: ShapeType[]  = ['circle', 'square', 'triangle', 'diamond'];
 
 export const COLOR_HEX: Record<ColorName, string> = {
   red:    '#e05555',
@@ -15,6 +14,7 @@ export const SHAPE_KEYS: Record<ShapeType, string> = {
   circle:   'a',
   square:   's',
   triangle: 'd',
+  diamond:  'f',
 };
 export const COLOR_KEYS: Record<ColorName, string> = {
   red:    'j',
@@ -23,26 +23,22 @@ export const COLOR_KEYS: Record<ColorName, string> = {
   yellow: 'h',
 };
 
-// ── Timing (ms)
 export const FIXATION_MS      = 400;
 export const MAX_RESPONSE_MS  = 2500;
 export const FEEDBACK_MS      = 500;
 export const ITI_MS           = 300;
 
-// ── Estrutura experimental
-export const PRACTICE_PURE_TRIALS  = 4;   // 2 cor + 2 forma
-export const PRACTICE_MIXED_TRIALS = 8;   // mistos com switching
-export const PRACTICE_TRIALS       = PRACTICE_PURE_TRIALS + PRACTICE_MIXED_TRIALS; // 12
+export const PRACTICE_PURE_TRIALS  = 4;
+export const PRACTICE_MIXED_TRIALS = 8;
+export const PRACTICE_TRIALS       = PRACTICE_PURE_TRIALS + PRACTICE_MIXED_TRIALS;
 export const MAIN_TRIALS           = 80;
 export const MIN_BLOCK_SIZE        = 1;
 export const MAX_BLOCK_SIZE        = 3;
 
-// ── Cues visuais
 export const CUE_COLOR_BG  = '#1a3a5c';
 export const CUE_SHAPE_BG  = '#2a2a2a';
 export const NEUTRAL_BG    = '#12131e';
 
-// ── Limiares de severidade (TAP/WCST)
 export const SC_RT_LOW       = 150;
 export const SC_RT_MODERATE  = 300;
 export const SC_RT_HIGH      = 500;

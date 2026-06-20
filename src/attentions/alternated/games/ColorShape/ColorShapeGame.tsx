@@ -29,9 +29,13 @@ interface Props {
 function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: ColorName; size?: number }) {
   const fill = COLOR_HEX[color];
   const s = size, c = s / 2;
+
   if (shape === 'circle') return (
-    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}><circle cx={c} cy={c} r={c * 0.82} fill={fill} /></svg>
+    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
+      <circle cx={c} cy={c} r={c * 0.82} fill={fill} />
+    </svg>
   );
+
   if (shape === 'square') {
     const pad = s * 0.09;
     return (
@@ -40,9 +44,29 @@ function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: Color
       </svg>
     );
   }
+
+  if (shape === 'diamond') {
+    // Quadrado rotacionado 45° em torno do centro — losango puro
+    const pad = s * 0.09;
+    return (
+      <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
+        <rect
+          x={pad} y={pad}
+          width={s - pad * 2} height={s - pad * 2}
+          fill={fill}
+          rx={6}
+          transform={`rotate(45 ${c} ${c})`}
+        />
+      </svg>
+    );
+  }
+
+  // triangle
   const pts = `${c},${s * 0.08} ${s * 0.94},${s * 0.92} ${s * 0.06},${s * 0.92}`;
   return (
-    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}><polygon points={pts} fill={fill} /></svg>
+    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
+      <polygon points={pts} fill={fill} />
+    </svg>
   );
 }
 
@@ -78,13 +102,11 @@ const COLOR_LABELS: Record<ColorName, string> = {
   red: 'Vermelho', blue: 'Azul', green: 'Verde', yellow: 'Amarelo',
 };
 const SHAPE_LABELS: Record<ShapeType, string> = {
-  circle: 'Círculo', square: 'Quadrado', triangle: 'Triângulo',
+  circle: 'Círculo', square: 'Quadrado', triangle: 'Triângulo', diamond: 'Losango',
 };
 
 function ResponseButtons({
-  rule,
-  onAnswer,
-  disabled,
+  rule, onAnswer, disabled,
 }: {
   rule: RuleType;
   onAnswer: (key: string) => void;
@@ -108,7 +130,7 @@ function ResponseButtons({
   }
   return (
     <div style={css.btnGrid}>
-      {(['circle', 'square', 'triangle'] as ShapeType[]).map(sh => (
+      {(['circle', 'square', 'triangle', 'diamond'] as ShapeType[]).map(sh => (
         <button
           key={sh}
           disabled={disabled}
@@ -255,7 +277,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     );
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────────
   if (phase === 'instructions') return <Instructions onStart={startPractice} />;
 
   if (phase === 'practice_done') return (
@@ -395,11 +416,15 @@ const css: Record<string, React.CSSProperties> = {
     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
   },
   btnGrid: {
-    display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center',
-    maxWidth: 360, width: '100%', marginTop: 8,
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: 10,
+    width: '100%',
+    maxWidth: 360,
+    marginTop: 8,
   },
   answerBtn: {
-    flex: '1 1 140px', minHeight: 48,
+    minHeight: 48,
     borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer',
     background: 'rgba(255,255,255,0.07)',
     border: '2px solid rgba(255,255,255,0.18)',
