@@ -36,18 +36,6 @@ export function buildColorShapeTechnicalReport(
         pct:   metrics.perseverationPct,
         note:  scaleResult.perseverationNote,
       },
-      bivalencyEffect: {
-        ms:   metrics.bivalencyEffectMs,
-        note: scaleResult.bivalencyNote,
-      },
-      ies: {
-        score: metrics.ies,
-        note:  scaleResult.iesNote,
-      },
-      vigilance: {
-        declineMs: metrics.vigilanceDeclineMs,
-        note:      scaleResult.vigilanceNote,
-      },
     },
     trialSummary: {
       total:        input.mainTrials.length,
