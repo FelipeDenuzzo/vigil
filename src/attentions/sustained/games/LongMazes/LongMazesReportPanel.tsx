@@ -23,13 +23,13 @@ export function LongMazesReportPanel({
 }) {
   const [tab, setTab] = useState<Tab>('ludic');
 
-  const score = report.ludic?.score ?? report.score;
-  const emoji = report.ludic?.emoji ?? '🧩';
-  const label = report.ludic?.label ?? '';
-  const strengths  = [...(report.general?.strengths  ?? []), ...(report.clinical?.strengths  ?? [])].filter((v, i, a) => a.indexOf(v) === i);
-  const weaknesses = [...(report.general?.weaknesses ?? []), ...(report.clinical?.weaknesses ?? [])].filter((v, i, a) => a.indexOf(v) === i);
-  const clinicalNote = report.clinical?.clinicalNote ?? '';
-  const recommendation = report.general?.recommendation ?? '';
+  const score       = report.ludic?.score ?? report.score;
+  const emoji       = report.ludic?.emoji ?? '🧩';
+  const label       = report.ludic?.label ?? '';
+  const strengths   = [...(report.general?.strengths  ?? []), ...(report.clinical?.strengths  ?? [])].filter((v, i, a) => a.indexOf(v) === i);
+  const weaknesses  = [...(report.general?.weaknesses ?? []), ...(report.clinical?.weaknesses ?? [])].filter((v, i, a) => a.indexOf(v) === i);
+  const clinicalNote    = report.clinical?.clinicalNote ?? '';
+  const recommendation  = report.general?.recommendation ?? '';
 
   const PHASE_LABELS = ['Fácil', 'Médio', 'Difícil'];
 
@@ -71,29 +71,22 @@ export function LongMazesReportPanel({
         {tab === 'analysis' && (
           <>
             {clinicalNote && <div style={s.analysisBlock}>{clinicalNote}</div>}
-
             {strengths.length > 0 && (
               <>
                 <p style={s.sectionTitle}>✅ O que foi bem</p>
                 {strengths.map((item, i) => (
-                  <div key={i} style={s.listItem}>
-                    <span style={s.dot('#6dbf87')} />{item}
-                  </div>
+                  <div key={i} style={s.listItem}><span style={s.dot('#6dbf87')} />{item}</div>
                 ))}
               </>
             )}
-
             {weaknesses.length > 0 && (
               <>
                 <p style={s.sectionTitle}>⚠️ Pontos de atenção</p>
                 {weaknesses.map((item, i) => (
-                  <div key={i} style={s.listItem}>
-                    <span style={s.dot('#f5c070')} />{item}
-                  </div>
+                  <div key={i} style={s.listItem}><span style={s.dot('#f5c070')} />{item}</div>
                 ))}
               </>
             )}
-
             <div style={s.divider} />
             <p style={s.disclaimerBox}>{DISCLAIMER}</p>
           </>
@@ -111,12 +104,16 @@ export function LongMazesReportPanel({
                   </span>
                 </div>
                 <div style={s.phaseStats}>
-                  <Stat label="Eficiência" value={`${p.efficiencyPct}%`} />
-                  <Stat label="Revisitas" value={String(p.revisits)} />
-                  <Stat label="Entradas em becos" value={String(p.deadEndEntries)} />
-                  <Stat label="Lapsos de atenção" value={String(p.longStops)} />
-                  <Stat label="Pausa pós-erro" value={`${p.postErrorPauseMs}ms`} />
-                  <Stat label="Tempo" value={`${Math.round(p.elapsedMs / 1000)}s`} />
+                  <Stat label="Eficiência"           value={`${p.efficiencyPct}%`} />
+                  <Stat label="Revisitas"             value={String(p.revisits)} />
+                  <Stat label="Entradas em becos"     value={String(p.deadEndEntries)} />
+                  <Stat label="Lapsos de atenção"    value={String(p.longStops)} hint="paradas > 3s sem movimento" />
+                  <Stat
+                    label="Pausa após batida em parede"
+                    value={p.postErrorPauseMs > 0 ? `${(p.postErrorPauseMs / 1000).toFixed(1)}s` : '—'}
+                    hint="tempo médio parado após bater em uma parede"
+                  />
+                  <Stat label="Tempo total"           value={`${Math.round(p.elapsedMs / 1000)}s`} />
                 </div>
               </div>
             ))}
@@ -127,11 +124,14 @@ export function LongMazesReportPanel({
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-      <span style={{ color: '#8b8fa8', fontSize: 12 }}>{label}</span>
-      <span style={{ color: '#e8e9f0', fontWeight: 700, fontSize: 12 }}>{value}</span>
+    <div style={{ padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span style={{ color: '#8b8fa8', fontSize: 12 }}>{label}</span>
+        <span style={{ color: '#e8e9f0', fontWeight: 700, fontSize: 12 }}>{value}</span>
+      </div>
+      {hint && <p style={{ fontSize: 11, color: '#5a5e75', margin: '2px 0 0', lineHeight: 1.4 }}>{hint}</p>}
     </div>
   );
 }
@@ -143,7 +143,7 @@ const s: Record<string, any> = {
     borderRadius: 16, overflow: 'hidden',
   },
   header: { padding: '16px 16px 0' },
-  title: { fontSize: 16, fontWeight: 700, color: '#e8e9f0', marginBottom: 12 },
+  title:  { fontSize: 16, fontWeight: 700, color: '#e8e9f0', marginBottom: 12 },
   tabRow: {
     display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
     borderBottom: '1px solid rgba(255,255,255,0.08)',
@@ -155,7 +155,7 @@ const s: Record<string, any> = {
     borderBottom: active ? '2px solid #6c8ef5' : '2px solid transparent',
     cursor: 'pointer', background: 'none', transition: 'color 0.18s',
   }),
-  body: { padding: 16, display: 'grid', gap: 12 },
+  body:      { padding: 16, display: 'grid', gap: 12 },
   gaugeWrap: { position: 'relative', marginTop: 8, marginBottom: 4 },
   gaugeTrack: {
     height: 12, borderRadius: 99,
@@ -203,7 +203,7 @@ const s: Record<string, any> = {
     width: 7, height: 7, borderRadius: '50%',
     background: color, flexShrink: 0, marginTop: 5,
   }),
-  divider: { height: 1, background: 'rgba(255,255,255,0.06)', margin: '2px 0' },
+  divider:      { height: 1, background: 'rgba(255,255,255,0.06)', margin: '2px 0' },
   levelBadge: (level: string): React.CSSProperties => ({
     display: 'inline-block', padding: '2px 10px', borderRadius: 99,
     fontSize: 12, fontWeight: 700,
