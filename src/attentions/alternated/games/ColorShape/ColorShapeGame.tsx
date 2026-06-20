@@ -35,7 +35,6 @@ function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: Color
       <circle cx={c} cy={c} r={c * 0.82} fill={fill} />
     </svg>
   );
-
   if (shape === 'square') {
     const pad = s * 0.09;
     return (
@@ -44,24 +43,15 @@ function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: Color
       </svg>
     );
   }
-
   if (shape === 'diamond') {
-    // Quadrado rotacionado 45° em torno do centro — losango puro
     const pad = s * 0.09;
     return (
       <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-        <rect
-          x={pad} y={pad}
-          width={s - pad * 2} height={s - pad * 2}
-          fill={fill}
-          rx={6}
-          transform={`rotate(45 ${c} ${c})`}
-        />
+        <rect x={pad} y={pad} width={s - pad * 2} height={s - pad * 2}
+          fill={fill} rx={6} transform={`rotate(45 ${c} ${c})`} />
       </svg>
     );
   }
-
-  // triangle
   const pts = `${c},${s * 0.08} ${s * 0.94},${s * 0.92} ${s * 0.06},${s * 0.92}`;
   return (
     <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
@@ -70,7 +60,27 @@ function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: Color
   );
 }
 
-// ── Tela de instruções ─────────────────────────────────────────────────────────
+// ── Badge de regra ──────────────────────────────────────────────────────────────
+function RuleBadge({ rule }: { rule: RuleType }) {
+  const isColor = rule === 'color';
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '10px 20px',
+      borderRadius: 99,
+      background: isColor ? 'rgba(85,136,224,0.18)' : 'rgba(180,180,180,0.12)',
+      border: `2px solid ${isColor ? '#5588e0' : '#888'}`,
+      color: isColor ? '#7ab4f8' : '#d0d0d0',
+      fontSize: 17, fontWeight: 800, letterSpacing: '0.04em',
+      transition: 'all 0.2s ease',
+    }}>
+      <span style={{ fontSize: 22 }}>{isColor ? '🎨' : '🔷'}</span>
+      {isColor ? 'Qual é a COR?' : 'Qual é a FORMA?'}
+    </div>
+  );
+}
+
+// ── Instruções ──────────────────────────────────────────────────────────────────
 function Instructions({ onStart }: { onStart: () => void }) {
   return (
     <div style={css.screen}>
@@ -97,7 +107,7 @@ function Instructions({ onStart }: { onStart: () => void }) {
   );
 }
 
-// ── Botões de resposta ───────────────────────────────────────────────────────────
+// ── Botões de resposta ──────────────────────────────────────────────────────────
 const COLOR_LABELS: Record<ColorName, string> = {
   red: 'Vermelho', blue: 'Azul', green: 'Verde', yellow: 'Amarelo',
 };
@@ -105,23 +115,16 @@ const SHAPE_LABELS: Record<ShapeType, string> = {
   circle: 'Círculo', square: 'Quadrado', triangle: 'Triângulo', diamond: 'Losango',
 };
 
-function ResponseButtons({
-  rule, onAnswer, disabled,
-}: {
-  rule: RuleType;
-  onAnswer: (key: string) => void;
-  disabled: boolean;
+function ResponseButtons({ rule, onAnswer, disabled }: {
+  rule: RuleType; onAnswer: (key: string) => void; disabled: boolean;
 }) {
   if (rule === 'color') {
     return (
       <div style={css.btnGrid}>
         {(['red', 'blue', 'green', 'yellow'] as ColorName[]).map(cl => (
-          <button
-            key={cl}
-            disabled={disabled}
+          <button key={cl} disabled={disabled}
             style={{ ...css.answerBtn, borderColor: COLOR_HEX[cl], color: COLOR_HEX[cl] }}
-            onClick={() => onAnswer(COLOR_KEYS[cl])}
-          >
+            onClick={() => onAnswer(COLOR_KEYS[cl])}>
             {COLOR_LABELS[cl]}
           </button>
         ))}
@@ -131,12 +134,8 @@ function ResponseButtons({
   return (
     <div style={css.btnGrid}>
       {(['circle', 'square', 'triangle', 'diamond'] as ShapeType[]).map(sh => (
-        <button
-          key={sh}
-          disabled={disabled}
-          style={css.answerBtn}
-          onClick={() => onAnswer(SHAPE_KEYS[sh])}
-        >
+        <button key={sh} disabled={disabled} style={css.answerBtn}
+          onClick={() => onAnswer(SHAPE_KEYS[sh])}>
           {SHAPE_LABELS[sh]}
         </button>
       ))}
@@ -144,7 +143,7 @@ function ResponseButtons({
   );
 }
 
-// ── Componente principal ─────────────────────────────────────────────────────────
+// ── Componente principal ────────────────────────────────────────────────────────
 export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose }) => {
   const [phase,        setPhase]        = useState<GamePhase>('instructions');
   const [trialQueue,   setTrialQueue]   = useState<TrialConfig[]>([]);
@@ -167,10 +166,7 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   };
 
   const advanceTrial = useCallback((
-    results: TrialResult[],
-    queue: TrialConfig[],
-    idx: number,
-    practice: boolean,
+    results: TrialResult[], queue: TrialConfig[], idx: number, practice: boolean,
   ) => {
     if (idx >= queue.length) {
       if (practice) {
@@ -179,10 +175,8 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
         setPhase('done');
         setEvaluating(true);
         const log: ColorShapeSessionLog = {
-          sessionId,
-          practiceTrials: practiceLogRef.current,
-          mainTrials: results,
-          startedAt: new Date().toISOString(),
+          sessionId, practiceTrials: practiceLogRef.current,
+          mainTrials: results, startedAt: new Date().toISOString(),
         };
         useColorShapeEvaluation(log)
           .then(() => { setEvaluating(false); onComplete?.(log); })
@@ -190,13 +184,8 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       }
       return;
     }
-
     const trial = queue[idx];
-    setCurrentTrial(trial);
-    setTrialIdx(idx);
-    setBgColor(NEUTRAL_BG);
-    setPhase('fixation');
-
+    setCurrentTrial(trial); setTrialIdx(idx); setBgColor(NEUTRAL_BG); setPhase('fixation');
     timeoutRef.current = setTimeout(() => {
       setBgColor(trial.rule === 'color' ? CUE_COLOR_BG : CUE_SHAPE_BG);
       setPhase(practice ? 'practice_trial' : 'stimulus');
@@ -208,18 +197,13 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   }, [sessionId, onComplete]); // eslint-disable-line
 
   const handleResponse = useCallback((
-    key: string | null,
-    trial: TrialConfig,
-    results: TrialResult[],
-    queue: TrialConfig[],
-    idx: number,
-    practice: boolean,
+    key: string | null, trial: TrialConfig, results: TrialResult[],
+    queue: TrialConfig[], idx: number, practice: boolean,
   ) => {
     clearTO();
-    const rt       = key === null ? -1 : Date.now() - stimulusTimeRef.current;
+    const rt = key === null ? -1 : Date.now() - stimulusTimeRef.current;
     const correct  = key !== null && isCorrect(trial, key);
     const timedOut = key === null;
-
     const prevRule = idx > 0 ? queue[idx - 1].rule : null;
     let isPersev = false;
     if (!correct && !timedOut && trial.trialType === 'switch' && prevRule !== null && key !== null) {
@@ -227,28 +211,17 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       if (prevRule === 'color') isPersev = COLOR_KEYS[trial.color] === k;
       else                      isPersev = SHAPE_KEYS[trial.shape] === k;
     }
-
-    const result: TrialResult = {
-      ...trial, keyPressed: key ?? '', correct, reactionMs: rt,
-      timedOut, isPerseveration: isPersev,
-    };
+    const result: TrialResult = { ...trial, keyPressed: key ?? '', correct, reactionMs: rt, timedOut, isPerseveration: isPersev };
     const updated = [...results, result];
-
     if (practice) {
-      practiceLogRef.current = updated;
-      setPracticeLog(updated);
-      setLastCorrect(timedOut ? false : correct);
-      setPhase('practice_feedback');
+      practiceLogRef.current = updated; setPracticeLog(updated);
+      setLastCorrect(timedOut ? false : correct); setPhase('practice_feedback');
       timeoutRef.current = setTimeout(() => {
-        setBgColor(NEUTRAL_BG);
-        setPhase('iti');
+        setBgColor(NEUTRAL_BG); setPhase('iti');
         timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1, true), ITI_MS);
       }, FEEDBACK_MS);
     } else {
-      mainLogRef.current = updated;
-      setMainLog(updated);
-      setBgColor(NEUTRAL_BG);
-      setPhase('iti');
+      mainLogRef.current = updated; setMainLog(updated); setBgColor(NEUTRAL_BG); setPhase('iti');
       timeoutRef.current = setTimeout(() => advanceTrial(updated, queue, idx + 1, false), ITI_MS);
     }
   }, [advanceTrial]);
@@ -257,26 +230,20 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
 
   const startPractice = () => {
     const q = buildPracticeTrials();
-    setTrialQueue(q); setIsPractice(true);
-    setPracticeLog([]); practiceLogRef.current = [];
+    setTrialQueue(q); setIsPractice(true); setPracticeLog([]); practiceLogRef.current = [];
     advanceTrial([], q, 0, true);
   };
   const startMain = () => {
     const q = buildTrials(MAIN_TRIALS);
-    setTrialQueue(q); setIsPractice(false);
-    setMainLog([]); mainLogRef.current = [];
+    setTrialQueue(q); setIsPractice(false); setMainLog([]); mainLogRef.current = [];
     advanceTrial([], q, 0, false);
   };
-
   const handleBtnAnswer = (key: string) => {
     if (!currentTrial) return;
-    handleResponse(
-      key, currentTrial,
-      isPractice ? practiceLog : mainLog,
-      trialQueue, trialIdx, isPractice,
-    );
+    handleResponse(key, currentTrial, isPractice ? practiceLog : mainLog, trialQueue, trialIdx, isPractice);
   };
 
+  // ── Telas estáticas ──────────────────────────────────────────────────────────
   if (phase === 'instructions') return <Instructions onStart={startPractice} />;
 
   if (phase === 'practice_done') return (
@@ -298,86 +265,92 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       <p style={{ ...css.sub, textAlign: 'center' }}>
         {evaluating ? 'Analisando seu desempenho...' : 'Resultado sendo processado.'}
       </p>
-      {onClose && !evaluating &&
-        <button style={{ ...css.ghostBtn, marginTop: 16 }} onClick={onClose}>Sair</button>}
+      {onClose && !evaluating && <button style={{ ...css.ghostBtn, marginTop: 16 }} onClick={onClose}>Sair</button>}
     </div>
   );
 
-  const ruleLabelText: Record<RuleType, string> = { color: 'Responda a COR', shape: 'Responda a FORMA' };
-  const totalQ   = trialQueue.length;
-  const progress = totalQ > 0 ? Math.round((trialIdx / totalQ) * 100) : 0;
-  const showStim = phase === 'stimulus' || phase === 'practice_trial' || phase === 'practice_feedback';
-  const isPure   = currentTrial?.trialType === 'pure';
+  // ── Tela de jogo ─────────────────────────────────────────────────────────────
+  const totalQ      = trialQueue.length;
+  const progress    = totalQ > 0 ? Math.round((trialIdx / totalQ) * 100) : 0;
+  const showStim    = phase === 'stimulus' || phase === 'practice_trial' || phase === 'practice_feedback';
+  const isPure      = currentTrial?.trialType === 'pure';
   const btnDisabled = phase === 'practice_feedback' || phase === 'fixation' || phase === 'iti';
 
   return (
-    <div style={{ ...css.screen, background: bgColor, transition: 'background 0.12s' }}>
-      {/* HUD */}
-      <div style={css.hud}>
+    <div style={{ ...css.gameScreen, background: bgColor }}>
+
+      {/* ─ Topo: progresso ─ */}
+      <div style={css.topBar}>
         <span style={{ color: '#8b8fa8', fontSize: 12 }}>
           {isPractice
-            ? `Treino ${trialIdx + 1}/12${isPure ? ' — Regra fixa' : ' — Alternando'}`
-            : `${trialIdx}/${totalQ}`}
+            ? `Treino ${trialIdx + 1}/12${isPure ? ' — Regra fixa' : ''}`
+            : `${trialIdx} / ${totalQ}`}
         </span>
         {!isPractice && (
           <div style={css.progressTrack}>
             <div style={{ ...css.progressBar, width: `${progress}%` }} />
           </div>
         )}
-        {currentTrial && (
-          <span style={{
-            fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-            color: currentTrial.rule === 'color' ? '#7ab4f8' : '#b0b0b0',
-          }}>
-            {ruleLabelText[currentTrial.rule]}
-          </span>
-        )}
       </div>
 
-      {/* Fixação */}
-      {phase === 'fixation' && <div style={css.fixation}>·</div>}
+      {/* ─ Badge de regra — destaque principal ─ */}
+      {currentTrial && <RuleBadge rule={currentTrial.rule} />}
 
-      {/* Estímulo */}
-      {showStim && currentTrial && (
-        <div style={css.stimulusWrap}>
-          <ShapeSVG shape={currentTrial.shape} color={currentTrial.color} size={130} />
-          {phase === 'practice_feedback' && (
-            <div style={{
-              marginTop: 16, fontSize: 22, fontWeight: 800,
-              color: lastCorrect ? '#6dbf87' : '#f08080',
-            }}>
-              {lastCorrect ? '✓ Certo' : '✗ Errado'}
-            </div>
-          )}
-        </div>
+      {/* ─ Área da figura ─ */}
+      <div style={css.stimulusArea}>
+        {phase === 'fixation' && <div style={css.fixation}>·</div>}
+        {showStim && currentTrial && (
+          <div style={css.stimulusWrap}>
+            <ShapeSVG shape={currentTrial.shape} color={currentTrial.color} size={130} />
+            {phase === 'practice_feedback' && (
+              <div style={{ marginTop: 16, fontSize: 22, fontWeight: 800, color: lastCorrect ? '#6dbf87' : '#f08080' }}>
+                {lastCorrect ? '✓ Certo' : '✗ Errado'}
+              </div>
+            )}
+          </div>
+        )}
+        {phase === 'iti' && <div style={{ height: 130 }} />}
+      </div>
+
+      {/* ─ Botões de resposta ─ */}
+      {currentTrial && (
+        <ResponseButtons rule={currentTrial.rule} onAnswer={handleBtnAnswer} disabled={btnDisabled} />
       )}
 
-      {phase === 'iti' && <div style={{ height: 130 }} />}
-
-      {/* Botões de resposta */}
-      {currentTrial && (showStim || phase === 'iti') && (
-        <ResponseButtons
-          rule={currentTrial.rule}
-          onAnswer={handleBtnAnswer}
-          disabled={btnDisabled}
-        />
-      )}
-
+      {/* Botão sair */}
       {onClose && (
         <button
           style={{ ...css.ghostBtn, position: 'absolute', top: 12, right: 12, padding: '6px 14px', fontSize: 12 }}
-          onClick={onClose}>Sair</button>
+          onClick={onClose}>Sair
+        </button>
       )}
     </div>
   );
 };
 
 const css: Record<string, React.CSSProperties> = {
+  // tela estática (instruções / done)
   screen: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
     justifyContent: 'center', gap: 16, padding: 20,
     minHeight: '100%', minWidth: '100%',
     background: NEUTRAL_BG, color: '#e8e9f0', position: 'relative',
+  },
+  // tela de jogo — coluna no fluxo normal
+  gameScreen: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    gap: 20, padding: '60px 20px 24px',
+    minHeight: '100%', minWidth: '100%',
+    color: '#e8e9f0', position: 'relative',
+    transition: 'background 0.12s',
+  },
+  topBar: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+    width: '100%',
+  },
+  stimulusArea: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    minHeight: 160,
   },
   title:   { fontSize: 22, fontWeight: 800, margin: 0 },
   sub:     { fontSize: 14, color: '#8b8fa8', margin: 0, lineHeight: 1.6 },
@@ -396,10 +369,6 @@ const css: Record<string, React.CSSProperties> = {
     background: 'rgba(255,255,255,0.06)', color: '#8b8fa8',
     border: '1px solid rgba(255,255,255,0.10)', cursor: 'pointer',
   },
-  hud: {
-    position: 'absolute', top: 12, left: 0, right: 0,
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '0 16px',
-  },
   progressTrack: {
     width: '80%', maxWidth: 300, height: 4,
     background: 'rgba(255,255,255,0.08)', borderRadius: 99, overflow: 'hidden',
@@ -416,19 +385,13 @@ const css: Record<string, React.CSSProperties> = {
     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
   },
   btnGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: 10,
-    width: '100%',
-    maxWidth: 360,
-    marginTop: 8,
+    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+    width: '100%', maxWidth: 360,
   },
   answerBtn: {
-    minHeight: 48,
-    borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer',
+    minHeight: 48, borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer',
     background: 'rgba(255,255,255,0.07)',
     border: '2px solid rgba(255,255,255,0.18)',
-    color: '#e8e9f0',
-    transition: 'opacity 0.15s',
+    color: '#e8e9f0', transition: 'opacity 0.15s',
   },
 };
