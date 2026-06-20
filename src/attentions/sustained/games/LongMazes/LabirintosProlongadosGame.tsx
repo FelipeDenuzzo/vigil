@@ -17,6 +17,12 @@ const END_REACHED_COLOR = '#ffe066';
 const START_COLOR       = '#f5c070';
 const LONG_STOP_MS      = 3000;
 
+// SVG arrows — identicos em qualquer fonte/SO
+const ArrowUp    = () => <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><polygon points="9,2 17,16 1,16"/></svg>;
+const ArrowDown  = () => <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><polygon points="9,16 17,2 1,2"/></svg>;
+const ArrowLeft  = () => <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><polygon points="2,9 16,1 16,17"/></svg>;
+const ArrowRight = () => <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><polygon points="16,9 2,1 2,17"/></svg>;
+
 function drawMaze(
   ctx: CanvasRenderingContext2D,
   maze: MazeData,
@@ -26,8 +32,7 @@ function drawMaze(
   endPulse = 0
 ) {
   const { grid, start, end } = maze;
-  const rows = grid.length;
-  const cols = grid[0].length;
+  const rows = grid.length, cols = grid[0].length;
   ctx.clearRect(0, 0, cols * cellSize, rows * cellSize);
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
@@ -51,25 +56,19 @@ function drawMaze(
   ctx.roundRect(end.x * cellSize + 3, end.y * cellSize + 3, cellSize - 6, cellSize - 6, 3);
   ctx.fill();
   ctx.font = `${cellSize * 0.6}px serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('🏁', end.x * cellSize + cellSize / 2, end.y * cellSize + cellSize / 2);
   const px = player.x * cellSize + cellSize / 2;
   const py = player.y * cellSize + cellSize / 2;
   const r  = cellSize * 0.36;
-  ctx.beginPath();
-  ctx.arc(px, py, r + 3, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(108,142,245,0.25)';
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(px, py, r, 0, Math.PI * 2);
-  ctx.fillStyle = PLAYER_COLOR;
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(px, py, r + 3, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(108,142,245,0.25)'; ctx.fill();
+  ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2);
+  ctx.fillStyle = PLAYER_COLOR; ctx.fill();
 }
 
 function lerpColor(a: string, b: string, t: number): string {
-  const ah = parseInt(a.slice(1), 16);
-  const bh = parseInt(b.slice(1), 16);
+  const ah = parseInt(a.slice(1), 16), bh = parseInt(b.slice(1), 16);
   const ar = (ah >> 16) & 0xff, ag = (ah >> 8) & 0xff, ab = ah & 0xff;
   const br = (bh >> 16) & 0xff, bg = (bh >> 8) & 0xff, bb = bh & 0xff;
   return `rgb(${Math.round(ar+(br-ar)*t)},${Math.round(ag+(bg-ag)*t)},${Math.round(ab+(bb-ab)*t)})`;
@@ -94,18 +93,18 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
   const [phaseResults, setPhaseResults] = useState<MazeSessionResult[]>([]);
   const [dpadPressed,  setDpadPressed]  = useState<MazeDirection | null>(null);
 
-  const visited             = useRef(new Set<string>());
-  const visitedDeadEnds     = useRef(new Set<string>());
-  const stepsRef            = useRef(0);
-  const revisitsRef         = useRef(0);
-  const deadEndRef          = useRef(0);
-  const longStopsRef        = useRef(0);
-  const wallHitTimeRef      = useRef<number | null>(null);
-  const postErrorPausesRef  = useRef<number[]>([]);
-  const playerRef           = useRef<MazePoint>({ x: 0, y: 0 });
-  const mazeRef             = useRef<MazeData | null>(null);
-  const elapsedRef          = useRef(0);
-  const phaseRef            = useRef<Phase>('menu');
+  const visited            = useRef(new Set<string>());
+  const visitedDeadEnds    = useRef(new Set<string>());
+  const stepsRef           = useRef(0);
+  const revisitsRef        = useRef(0);
+  const deadEndRef         = useRef(0);
+  const longStopsRef       = useRef(0);
+  const wallHitTimeRef     = useRef<number | null>(null);
+  const postErrorPausesRef = useRef<number[]>([]);
+  const playerRef          = useRef<MazePoint>({ x: 0, y: 0 });
+  const mazeRef            = useRef<MazeData | null>(null);
+  const elapsedRef         = useRef(0);
+  const phaseRef           = useRef<Phase>('menu');
 
   const level = LONG_MAZE_LEVELS[levelIdx];
 
@@ -122,14 +121,11 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
   const playEndAnimation = useCallback((onDone: () => void) => {
     setPhase('end_animation');
     const startTime = performance.now();
-    const duration  = 1000;
-    const m = mazeRef.current!;
-    const p = playerRef.current;
+    const m = mazeRef.current!, p = playerRef.current;
     function frame(now: number) {
-      const t     = Math.min((now - startTime) / duration, 1);
-      const pulse = Math.abs(Math.sin(t * Math.PI * 4));
-      const ctx   = canvasRef.current?.getContext('2d');
-      if (ctx) drawMaze(ctx, m, p, CELL, true, pulse);
+      const t = Math.min((now - startTime) / 1000, 1);
+      const ctx = canvasRef.current?.getContext('2d');
+      if (ctx) drawMaze(ctx, m, p, CELL, true, Math.abs(Math.sin(t * Math.PI * 4)));
       if (t < 1) { animFrameRef.current = requestAnimationFrame(frame); }
       else        { animFrameRef.current = null; onDone(); }
     }
@@ -139,11 +135,9 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
   const finishPhase = useCallback((success: boolean) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (longStopRef.current) clearTimeout(longStopRef.current);
-    const m = mazeRef.current;
-    if (!m) return;
+    const m = mazeRef.current; if (!m) return;
     const avgPostError = postErrorPausesRef.current.length > 0
-      ? postErrorPausesRef.current.reduce((a, b) => a + b, 0) / postErrorPausesRef.current.length
-      : 0;
+      ? postErrorPausesRef.current.reduce((a, b) => a + b, 0) / postErrorPausesRef.current.length : 0;
     const res = buildResult({
       success, level, elapsedMs: elapsedRef.current,
       steps: stepsRef.current, revisits: revisitsRef.current,
@@ -222,7 +216,6 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
     else move(dy > 0 ? 'down' : 'up');
   };
 
-  const handleAbandonRequest = () => setPhase('confirm_abandon');
   const handleAbandonConfirm = () => {
     if (intervalRef.current)  clearInterval(intervalRef.current);
     if (longStopRef.current)  clearTimeout(longStopRef.current);
@@ -230,31 +223,26 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
     onClose?.();
   };
 
-  const timeLeft = Math.max(0, level.timeLimitSec - Math.floor(elapsed / 1000));
-  const cols = maze?.grid[0].length ?? level.cols;
-  const rows = maze?.grid.length    ?? level.rows;
-
   const dpadStyle = (dir: MazeDirection): React.CSSProperties => ({
     ...css.dpadBtn,
     background: dpadPressed === dir ? 'rgba(108,142,245,0.45)' : 'rgba(108,142,245,0.15)',
     transform:  dpadPressed === dir ? 'scale(0.92)' : 'scale(1)',
     transition: 'background 0.08s, transform 0.08s',
   });
-  const pressDpad = (dir: MazeDirection) => {
-    setDpadPressed(dir); move(dir);
-    setTimeout(() => setDpadPressed(null), 120);
-  };
+  const pressDpad = (dir: MazeDirection) => { setDpadPressed(dir); move(dir); setTimeout(() => setDpadPressed(null), 120); };
+
+  const timeLeft = Math.max(0, level.timeLimitSec - Math.floor(elapsed / 1000));
+  const cols = maze?.grid[0].length ?? level.cols;
+  const rows = maze?.grid.length    ?? level.rows;
 
   if (phase === 'menu') return (
     <div style={css.screen}>
       <p style={css.title}>🧩 Labirintos</p>
       <p style={css.sub}>Treino de atenção sustentada — Fase {levelIdx + 1} de {LONG_MAZE_LEVELS.length}</p>
       <div style={css.infoBox}>
-        <span>⏱ {level.timeLimitSec}s</span>
-        <span>💹 {level.cols}×{level.rows}</span>
-        <span>📈 {level.name}</span>
+        <span>⏱ {level.timeLimitSec}s</span><span>💹 {level.cols}×{level.rows}</span><span>📈 {level.name}</span>
       </div>
-      <p style={css.hint}>Use as setas do teclado ou o D-pad abaixo para mover. No celular, deslize na tela.</p>
+      <p style={css.hint}>Use as setas do teclado ou o D-pad abaixo. No celular, deslize na tela.</p>
       <button style={css.primaryBtn} onClick={startGame}>Iniciar Fase {levelIdx + 1}</button>
       {onClose && <button style={css.ghostBtn} onClick={onClose}>Voltar</button>}
     </div>
@@ -264,7 +252,7 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
     <div style={css.screen}>
       <p style={{ fontSize: 36 }}>⚠️</p>
       <p style={css.title}>Abandonar treino?</p>
-      <p style={{ ...css.sub, textAlign: 'center', maxWidth: 280 }}>Se sair agora, o progresso desta sessão não será salvo e o resultado final não será gerado.</p>
+      <p style={{ ...css.sub, textAlign: 'center', maxWidth: 280 }}>Se sair agora, o progresso desta sessão não será salvo.</p>
       <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
         <button style={css.primaryBtn} onClick={() => setPhase('playing')}>Continuar</button>
         <button style={css.ghostBtn}   onClick={handleAbandonConfirm}>Sair mesmo assim</button>
@@ -296,20 +284,20 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
       </div>
       <div style={css.dpad}>
         <div style={css.dpadRow}>
-          <button style={dpadStyle('up')}    onClick={() => pressDpad('up')}   >▲</button>
+          <button style={dpadStyle('up')}    onClick={() => pressDpad('up')}   ><ArrowUp /></button>
         </div>
         <div style={css.dpadRow}>
-          <button style={dpadStyle('left')}  onClick={() => pressDpad('left')} >◀</button>
+          <button style={dpadStyle('left')}  onClick={() => pressDpad('left')} ><ArrowLeft /></button>
           <div style={{ width: 52 }} />
-          <button style={dpadStyle('right')} onClick={() => pressDpad('right')}>▶</button>
+          <button style={dpadStyle('right')} onClick={() => pressDpad('right')}><ArrowRight /></button>
         </div>
         <div style={css.dpadRow}>
-          <button style={dpadStyle('down')}  onClick={() => pressDpad('down')} >▼</button>
+          <button style={dpadStyle('down')}  onClick={() => pressDpad('down')} ><ArrowDown /></button>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
         <button style={css.ghostBtn} onClick={startGame}>↺ Reiniciar</button>
-        <button style={css.ghostBtn} onClick={handleAbandonRequest}>Sair</button>
+        <button style={css.ghostBtn} onClick={() => setPhase('confirm_abandon')}>Sair</button>
       </div>
     </div>
   );
@@ -344,13 +332,10 @@ const css: Record<string, React.CSSProperties> = {
   dpad:    { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, marginTop: 8 },
   dpadRow: { display: 'flex', gap: 3 },
   dpadBtn: {
-    width: 52, height: 52,
-    fontSize: 22,        // ligeiramente maior para compensar glifos menores em algumas fontes
-    lineHeight: 1,       // remove line-height da fonte que encolhia laterais
-    borderRadius: 10,
+    width: 52, height: 52, borderRadius: 10,
     background: 'rgba(108,142,245,0.15)', color: '#6c8ef5',
     border: '1px solid rgba(108,142,245,0.30)', cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    userSelect: 'none',
+    userSelect: 'none', flexShrink: 0,
   },
 };
