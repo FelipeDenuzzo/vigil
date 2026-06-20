@@ -1,4 +1,11 @@
 // src/assessment/colorShape/buildColorShapeScaleResult.ts
+//
+// Árvore de decisão (definida pelo responsável do produto):
+//   1. Perseveração crítica (≥8) ou acurácia mista < 60%  → IMPORTANTE
+//   2. Perseveração frequente (4–7) OU Switch/Mixing muito altos → MODERADO
+//   3. Perseveração rara (2–3) OU Switch/Mixing altos          → LEVE
+//   4. Perseveração ausente (0–1) e custos baixos               → MÍNIMO
+
 import type { ColorShapeMetrics, ColorShapeScaleResult, ColorShapeSeverity } from './types';
 import {
   SWITCHING_COST_RT, MIXING_COST_RT, PERSEVERATION,
@@ -7,67 +14,88 @@ import {
   SWITCHING_COST_NOTES, MIXING_COST_NOTES,
   PERSEVERATION_NOTES, BIVALENCY_NOTES,
   IES_NOTES, VIGILANCE_NOTES,
+  SEVERITY_UX_REPORT,
 } from './colorShapeScaleDefinitions';
 
-function resolveSwitchingNote(rtMs: number): keyof typeof SWITCHING_COST_NOTES {
+type SwitchKey   = keyof typeof SWITCHING_COST_NOTES;
+type MixingKey   = keyof typeof MIXING_COST_NOTES;
+type PersevKey   = keyof typeof PERSEVERATION_NOTES;
+type BivalKey    = keyof typeof BIVALENCY_NOTES;
+type IesKey      = keyof typeof IES_NOTES;
+type VigKey      = keyof typeof VIGILANCE_NOTES;
+
+function resolveSwitchKey(rtMs: number): SwitchKey {
   if (rtMs <= SWITCHING_COST_RT.baixo.max)    return 'baixo';
   if (rtMs <= SWITCHING_COST_RT.moderado.max) return 'moderado';
   if (rtMs <= SWITCHING_COST_RT.alto.max)     return 'alto';
   return 'muitoAlto';
 }
-function resolveMixingNote(rtMs: number): keyof typeof MIXING_COST_NOTES {
+function resolveMixingKey(rtMs: number): MixingKey {
   if (rtMs <= MIXING_COST_RT.baixo.max)    return 'baixo';
   if (rtMs <= MIXING_COST_RT.moderado.max) return 'moderado';
   if (rtMs <= MIXING_COST_RT.alto.max)     return 'alto';
   return 'muitoAlto';
 }
-function resolvePersonNote(count: number): keyof typeof PERSEVERATION_NOTES {
+function resolvePersevKey(count: number): PersevKey {
   if (count <= PERSEVERATION.ausente.max)   return 'ausente';
   if (count <= PERSEVERATION.rara.max)      return 'rara';
   if (count <= PERSEVERATION.frequente.max) return 'frequente';
   return 'critica';
 }
-function resolveBivalencyNote(ms: number): keyof typeof BIVALENCY_NOTES {
+function resolveBivalKey(ms: number): BivalKey {
   if (ms <= BIVALENCY_EFFECT.semEfeito.max) return 'semEfeito';
   if (ms <= BIVALENCY_EFFECT.leve.max)      return 'leve';
   return 'marcado';
 }
-function resolveIesNote(ies: number): keyof typeof IES_NOTES {
-  if (ies === 0)                              return 'eficiente';
-  if (ies <= IES_THRESHOLDS.eficiente.max)   return 'eficiente';
-  if (ies <= IES_THRESHOLDS.moderado.max)    return 'moderado';
-  if (ies <= IES_THRESHOLDS.lento.max)       return 'lento';
+function resolveIesKey(ies: number): IesKey {
+  if (ies === 0)                             return 'eficiente';
+  if (ies <= IES_THRESHOLDS.eficiente.max)  return 'eficiente';
+  if (ies <= IES_THRESHOLDS.moderado.max)   return 'moderado';
+  if (ies <= IES_THRESHOLDS.lento.max)      return 'lento';
   return 'muitoLento';
 }
-function resolveVigilanceNote(declineMs: number): keyof typeof VIGILANCE_NOTES {
+function resolveVigKey(declineMs: number): VigKey {
   if (declineMs <= VIGILANCE_THRESHOLDS.semFadiga.max) return 'semFadiga';
   if (declineMs <= VIGILANCE_THRESHOLDS.leve.max)      return 'leve';
   if (declineMs <= VIGILANCE_THRESHOLDS.moderada.max)  return 'moderada';
   return 'acentuada';
 }
 
+/**
+ * Árvore de decisão das diretrizes:
+ * 1. Perseveração crítica (≥8) ou acurácia < 60% → IMPORTANTE
+ * 2. Perseveração frequente (4–7) ou Switch/Mixing muito altos → MODERADO
+ * 3. Perseveração rara (2–3), ou Switch/Mixing altos, fadiga acentuada → LEVE
+ * 4. Default → MÍNIMO
+ */
 function classifySeverity(
-  persevKey:     keyof typeof PERSEVERATION_NOTES,
-  switchKey:     keyof typeof SWITCHING_COST_NOTES,
-  mixingKey:     keyof typeof MIXING_COST_NOTES,
+  persevKey:     PersevKey,
+  switchKey:     SwitchKey,
+  mixingKey:     MixingKey,
   mixedAccuracy: number,
-  iesKey:        keyof typeof IES_NOTES,
-  vigilanceKey:  keyof typeof VIGILANCE_NOTES,
+  iesKey:        IesKey,
+  vigKey:        VigKey,
 ): ColorShapeSeverity {
-  if (persevKey === 'critica' || mixedAccuracy <= MIXED_ACCURACY_FLOOR) return 'importante';
+  // Passo 1 — Perseveração é sempre checada primeiro (sintoma clínico mais grave)
+  if (persevKey === 'critica' || mixedAccuracy < MIXED_ACCURACY_FLOOR) return 'importante';
+
+  // Passo 2
   if (
-    persevKey   === 'frequente' ||
-    switchKey   === 'muitoAlto' ||
-    mixingKey   === 'muitoAlto' ||
-    iesKey      === 'muitoLento'
+    persevKey === 'frequente' ||
+    switchKey === 'muitoAlto' ||
+    mixingKey === 'muitoAlto' ||
+    iesKey    === 'muitoLento'
   ) return 'moderado';
+
+  // Passo 3
   if (
-    persevKey    === 'rara'      ||
-    switchKey    === 'alto'      ||
-    mixingKey    === 'alto'      ||
-    iesKey       === 'lento'     ||
-    vigilanceKey === 'acentuada'
+    persevKey === 'rara'       ||
+    switchKey === 'alto'       ||
+    mixingKey === 'alto'       ||
+    iesKey    === 'lento'      ||
+    vigKey    === 'acentuada'
   ) return 'leve';
+
   return 'minimo';
 }
 
@@ -89,26 +117,27 @@ export function buildColorShapeScaleResult(
     ? Math.round((mixedCorrect / mixedTotal) * 100)
     : 0;
 
-  const switchKey  = resolveSwitchingNote(metrics.switchCostRtMs);
-  const mixingKey  = resolveMixingNote(metrics.mixingCostRtMs);
-  const persevKey  = resolvePersonNote(metrics.perseverationErrors);
-  const bivalKey   = resolveBivalencyNote(metrics.bivalencyEffectMs);
-  const iesKey     = resolveIesNote(metrics.ies);
-  const vigilKey   = resolveVigilanceNote(metrics.vigilanceDeclineMs);
+  const switchKey = resolveSwitchKey(metrics.switchCostRtMs);
+  const mixingKey = resolveMixingKey(metrics.mixingCostRtMs);
+  const persevKey = resolvePersevKey(metrics.perseverationErrors);
+  const bivalKey  = resolveBivalKey(metrics.bivalencyEffectMs);
+  const iesKey    = resolveIesKey(metrics.ies);
+  const vigKey    = resolveVigKey(metrics.vigilanceDeclineMs);
 
   const severity = classifySeverity(
-    persevKey, switchKey, mixingKey, mixedAccuracy, iesKey, vigilKey,
+    persevKey, switchKey, mixingKey, mixedAccuracy, iesKey, vigKey,
   );
   const score = computeScore(severity, metrics);
 
   return {
     severity,
     score,
+    uxReport:          SEVERITY_UX_REPORT[severity],
     switchingCostNote: SWITCHING_COST_NOTES[switchKey],
     mixingCostNote:    MIXING_COST_NOTES[mixingKey],
     perseverationNote: PERSEVERATION_NOTES[persevKey],
     bivalencyNote:     BIVALENCY_NOTES[bivalKey],
     iesNote:           IES_NOTES[iesKey],
-    vigilanceNote:     VIGILANCE_NOTES[vigilKey],
+    vigilanceNote:     VIGILANCE_NOTES[vigKey],
   };
 }
