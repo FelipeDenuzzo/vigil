@@ -25,7 +25,7 @@ interface Props {
   onClose?:    () => void;
 }
 
-// ── SVG shapes ────────────────────────────────────────────────
+// ── SVG shapes ─────────────────────────────────────────────────────────────────────────
 function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: ColorName; size?: number }) {
   const fill = COLOR_HEX[color];
   const s = size, c = s / 2;
@@ -46,7 +46,7 @@ function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: Color
   );
 }
 
-// ── Tela de instruções ────────────────────────────────────────
+// ── Tela de instruções ───────────────────────────────────────────────────────────────────
 function Instructions({ onStart }: { onStart: () => void }) {
   return (
     <div style={css.screen}>
@@ -98,7 +98,7 @@ function Instructions({ onStart }: { onStart: () => void }) {
   );
 }
 
-// ── Componente principal ──────────────────────────────────────
+// ── Componente principal ────────────────────────────────────────────────────────────────────
 export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose }) => {
   const [phase,        setPhase]        = useState<GamePhase>('instructions');
   const [trialQueue,   setTrialQueue]   = useState<TrialConfig[]>([]);
@@ -180,15 +180,16 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     const rt       = key === null ? -1 : Date.now() - stimulusTimeRef.current;
     const correct  = key !== null && isCorrect(trial, key);
     const timedOut = key === null;
+
     // Perseveração: switch + errou + tecla = resposta certa pela regra anterior
     const prevRule = idx > 0 ? queue[idx - 1].rule : null;
     let isPersev = false;
-    if (!correct && !timedOut && trial.trialType === 'switch' && prevRule !== null) {
-      const k = key!.toLowerCase();
-      const { COLOR_KEYS: ck, SHAPE_KEYS: sk } = require('./constants');
-      if (prevRule === 'color') isPersev = ck[trial.color] === k;
-      else                      isPersev = sk[trial.shape] === k;
+    if (!correct && !timedOut && trial.trialType === 'switch' && prevRule !== null && key !== null) {
+      const k = key.toLowerCase();
+      if (prevRule === 'color') isPersev = COLOR_KEYS[trial.color] === k;
+      else                      isPersev = SHAPE_KEYS[trial.shape] === k;
     }
+
     const result: TrialResult = {
       ...trial, keyPressed: key ?? '', correct, reactionMs: rt,
       timedOut, isPerseveration: isPersev,
@@ -214,7 +215,7 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     }
   }, [advanceTrial]);
 
-  // Listener de teclado (rebuild quando trial muda)
+  // Listener de teclado
   useEffect(() => {
     if (phase !== 'stimulus' && phase !== 'practice_trial') return;
     const validKeys = allValidKeys();
@@ -235,7 +236,7 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
 
   useEffect(() => () => clearTO(), []);
 
-  // ── Handlers de fase ─────────────────────────────────────────
+  // ── Handlers de fase ───────────────────────────────────────────────────────────────────
   const startPractice = () => {
     const q = buildPracticeTrials();
     setTrialQueue(q); setIsPractice(true);
@@ -249,7 +250,7 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     advanceTrial([], q, 0, false);
   };
 
-  // ── Render ────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────────────────────
   if (phase === 'instructions') return <Instructions onStart={startPractice} />;
 
   if (phase === 'practice_done') return (
@@ -277,7 +278,7 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     </div>
   );
 
-  // ── Tela de jogo ──────────────────────────────────────────────
+  // ── Tela de jogo ─────────────────────────────────────────────────────────────────────────────
   const ruleLabelText: Record<RuleType, string> = { color: 'Responda a COR', shape: 'Responda a FORMA' };
   const totalQ   = trialQueue.length;
   const progress = totalQ > 0 ? Math.round((trialIdx / totalQ) * 100) : 0;
