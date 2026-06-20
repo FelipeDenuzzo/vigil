@@ -1,79 +1,86 @@
 // src/assessment/colorShape/types.ts
-// Tipos internos do Avaliador de Atenção Alternada — Cor ou Forma
-// O jogo emite ColorShapeSessionLog; este avaliador o consome.
 
-import type { TrialResult } from '../../attentions/alternated/games/ColorShape/types';
+export type RuleType   = 'color' | 'shape';
+export type TrialType  = 'repeat' | 'switch' | 'first' | 'pure';
+export type ShapeType  = 'circle' | 'square' | 'triangle' | 'diamond';
+export type ColorName  = 'red' | 'blue' | 'green' | 'yellow';
 
-export type { TrialResult };
-
-// ─ Input do avaliador (recebe diretamente o log do jogo)
-export interface ColorShapeAnalysisInput {
-  mainTrials: TrialResult[];
-  sessionId:  string;
-  startedAt:  string;
+export interface TrialResult {
+  trialIndex:      number;
+  rule:            RuleType;
+  trialType:       TrialType;
+  shape:           ShapeType;
+  color:           ColorName;
+  isBivalent:      boolean;
+  keyPressed:      string;
+  correct:         boolean;
+  reactionMs:      number;
+  timedOut:        boolean;
+  isPerseveration: boolean;
 }
 
-// ─ Métricas calculadas
-export interface ColorShapeMetrics {
-  // Globais
-  totalTrials:          number;
-  accuracy:             number;     // 0–100
-  avgRtMs:              number;
+export interface ColorShapeAnalysisInput {
+  /** Trials dos blocos A+B (baseline puro) */
+  pureTrials:  TrialResult[];
+  /** Trials do bloco Misto */
+  mixedTrials: TrialResult[];
+  /** Todos os trials concatenados — usado apenas para trialSummary */
+  mainTrials:  TrialResult[];
+  sessionId:   string;
+  startedAt:   string;
+}
 
-  // Switching Cost
+export interface ColorShapeMetrics {
+  totalTrials:          number;
+  accuracy:             number;
+  avgRtMs:              number;
   switchTrials:         number;
   repeatTrials:         number;
   switchAccuracy:       number;
   repeatAccuracy:       number;
   switchAvgRtMs:        number;
   repeatAvgRtMs:        number;
-  switchCostRtMs:       number;     // switchRt − repeatRt
-  switchCostErrorPp:    number;     // switchErrorRate − repeatErrorRate (p.p.)
-
-  // Mixing Cost
+  switchCostRtMs:       number;
+  switchCostErrorPp:    number;
   pureTrials:           number;
   pureAccuracy:         number;
   pureAvgRtMs:          number;
-  mixingCostRtMs:       number;     // repeatRt − pureRt
+  mixingCostRtMs:       number;
   mixingCostErrorPp:    number;
-
-  // Perseveração
   perseverationErrors:  number;
-  perseverationPct:     number;     // % sobre switch trials
-
-  // Bivaliência
+  perseverationPct:     number;
   bivalentTrials:       number;
   bivalentAvgRtMs:      number;
   nonBivalentAvgRtMs:   number;
-  bivalencyEffectMs:    number;     // bivalentRt − nonBivalentRt
-
-  // Por regra
+  bivalencyEffectMs:    number;
   colorAccuracy:        number;
   shapeAccuracy:        number;
   colorAvgRtMs:         number;
   shapeAvgRtMs:         number;
-
-  // Timeouts
   timeoutCount:         number;
   timeoutPct:           number;
+  /** IES = avgRtMs / (accuracy / 100) — Inverse Efficiency Score */
+  ies:                  number;
+  /** RT primeiro terço dos repeat trials do misto */
+  vigilanceEarlyRtMs:   number;
+  /** RT último terço dos repeat trials do misto */
+  vigilanceLateRtMs:    number;
+  /** Diferença late - early (positivo = fadiga) */
+  vigilanceDeclineMs:   number;
 }
-
-// ─ Resultado da escala (aplicado pelas faixas científicas)
-export type ColorShapeSeverity = 'minimo' | 'leve' | 'moderado' | 'importante';
 
 export interface ColorShapeScaleResult {
-  severity:          ColorShapeSeverity;
-  score:             number;        // 0–100 (maior = melhor)
-  switchingCostNote: string;        // 'baixo' | 'moderado' | 'alto' | 'muito alto'
-  mixingCostNote:    string;
-  perseverationNote: string;        // 'ausente' | 'rara' | 'frequente' | 'crítica'
-  bivalencyNote:     string;        // 'sem efeito' | 'leve' | 'marcado'
+  switchingCostNote:  string;
+  mixingCostNote:     string;
+  perseverationNote:  string;
+  bivalencyNote:      string;
+  iesNote:            string;
+  vigilanceNote:      string;
 }
 
-// ─ Relatório técnico (input para o Gemini via vigil-evaluator)
 export interface ColorShapeTechnicalReport {
-  sessionId:    string;
-  startedAt:    string;
+  sessionId:     string;
+  startedAt:     string;
   attentionType: 'alternada';
   game:          'color-shape';
   metrics:       ColorShapeMetrics;
@@ -83,6 +90,8 @@ export interface ColorShapeTechnicalReport {
     mixingCost:      { rtMs: number; errorPp: number; note: string };
     perseveration:   { count: number; pct: number; note: string };
     bivalencyEffect: { ms: number; note: string };
+    ies:             { score: number; note: string };
+    vigilance:       { declineMs: number; note: string };
   };
   trialSummary: {
     total:        number;
