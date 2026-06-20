@@ -25,6 +25,13 @@ export interface TrialResult extends TrialConfig {
 
 export interface ColorShapeSessionLog {
   sessionId:      string;
+  /** Bloco A — puro cor (20 trials) */
+  blockATrials:   TrialResult[];
+  /** Bloco B — puro forma (20 trials) */
+  blockBTrials:   TrialResult[];
+  /** Bloco Misto (60 trials) */
+  mixedTrials:    TrialResult[];
+  /** Mantidos por compatibilidade com avaliação */
   practiceTrials: TrialResult[];
   mainTrials:     TrialResult[];
   startedAt:      string;

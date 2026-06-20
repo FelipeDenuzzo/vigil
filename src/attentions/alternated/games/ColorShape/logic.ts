@@ -44,40 +44,16 @@ function makeTrial(
   return { trialIndex, rule, trialType, shape, color, isBivalent };
 }
 
-export function buildPracticeTrials(): TrialConfig[] {
-  const pureRules = shuffle<RuleType>(['color', 'color', 'shape', 'shape']);
-  const pureSlots = new Set<number>();
-
-  const positions = shuffle([0,1,2,3,4,5,6,7,8,9,10,11]).slice(0, 4).sort((a,b)=>a-b);
-  positions.forEach(p => pureSlots.add(p));
-
-  const mixedRules = generateRuleSequence(8);
-
-  const all: TrialConfig[] = [];
-  let pureIdx  = 0;
-  let mixedIdx = 0;
-
-  for (let i = 0; i < 12; i++) {
-    const prev = all[i - 1] ?? null;
-    if (pureSlots.has(i)) {
-      const rule = pureRules[pureIdx++];
-      all.push(makeTrial(rule, 'pure', i, prev));
-    } else {
-      const rule = mixedRules[mixedIdx];
-      const lastMixedRule = all.filter(t => t.trialType !== 'pure').slice(-1)[0]?.rule ?? null;
-      const trialType: TrialType =
-        lastMixedRule === null ? 'first' :
-        rule === lastMixedRule ? 'repeat' : 'switch';
-      all.push(makeTrial(rule, trialType, i, prev));
-      mixedIdx++;
-    }
-  }
-
-  return all;
+/** Bloco puro: todos os trials com a mesma regra fixa */
+export function buildPureTrials(rule: RuleType, total: number): TrialConfig[] {
+  return Array.from({ length: total }, (_, i) =>
+    makeTrial(rule, 'pure', i, null)
+  );
 }
 
-export function buildTrials(totalTrials: number): TrialConfig[] {
-  const rules   = generateRuleSequence(totalTrials);
+/** Bloco misto: regra alterna em mini-blocos de 1–3 */
+export function buildMixedTrials(total: number): TrialConfig[] {
+  const rules = generateRuleSequence(total);
   const configs: TrialConfig[] = [];
   for (let i = 0; i < rules.length; i++) {
     const rule     = rules[i];
@@ -88,6 +64,14 @@ export function buildTrials(totalTrials: number): TrialConfig[] {
     configs.push(makeTrial(rule, trialType, i, configs[i - 1] ?? null));
   }
   return configs;
+}
+
+/** Mantido para compatibilidade */
+export function buildPracticeTrials(): TrialConfig[] {
+  return buildPureTrials('color', 4).concat(buildPureTrials('shape', 4));
+}
+export function buildTrials(totalTrials: number): TrialConfig[] {
+  return buildMixedTrials(totalTrials);
 }
 
 export function isCorrect(trial: TrialConfig, key: string): boolean {
