@@ -1,35 +1,37 @@
 // src/assessment/colorShape/colorShapeScaleDefinitions.ts
-// Faixas científicas de normalidade e valores de corte.
-// Fonte: TAP (Zimmermann & Fimm), WCST (Heaton et al.), literatura de task-switching.
-// Recalibrado para 10 (puro cor) + 10 (puro forma) + 40 (misto) = 60 trials.
-// Editado exclusivamente pelo responsável do produto com base em artigos.
+// Faixas de severidade definidas pelo responsável do produto.
+// Estrutura: 10 (puro cor) + 10 (puro forma) + 40 misto (20 repeat + 20 switch).
+// NÃO alterar sem validação clínica.
 
 import type { ColorShapeSeverity } from './types';
 
-// ─ Switching Cost (RT em ms) — diferença switch − repeat
-// Ligeiramente mais tolerante por menor n de trials (maior variância)
-export const SWITCHING_COST_RT = {
-  baixo:     { max: 150  }, // ≤ 150 ms → excelente flexibilidade
-  moderado:  { max: 320  }, // 151–320 ms → freio leve  (era 300)
-  alto:      { max: 550  }, // 321–550 ms → inércia moderada  (era 500)
-  muitoAlto: { min: 551  }, // > 550 ms → rigidez cognitiva  (era 501)
+// ─ Perseveração — contagem absoluta nos 20 switch trials
+// Faixas exatas das diretrizes:
+//   0–1  → mínimo
+//   2–3  → leve
+//   4–7  → moderado
+//   ≥ 8   → importante
+export const PERSEVERATION = {
+  ausente:   { max: 1 },  // 0–1 erros
+  rara:      { max: 3 },  // 2–3 erros
+  frequente: { max: 7 },  // 4–7 erros
+  critica:   { min: 8 },  // ≥ 8 erros
 } as const;
 
-// ─ Mixing Cost (RT em ms) — diferença repeat_misto − pure
+// ─ Switching Cost (RT em ms) — switch RT − repeat RT
+export const SWITCHING_COST_RT = {
+  baixo:     { max: 150  },
+  moderado:  { max: 320  },
+  alto:      { max: 550  },
+  muitoAlto: { min: 551  },
+} as const;
+
+// ─ Mixing Cost (RT em ms) — repeat_misto RT − baseline (puro A+B)
 export const MIXING_COST_RT = {
   baixo:     { max: 100  },
-  moderado:  { max: 270  }, // era 250
-  alto:      { max: 480  }, // era 450
-  muitoAlto: { min: 481  }, // era 451
-} as const;
-
-// ─ Perseveração (contagem absoluta nos switch trials)
-// Com ~20 switches disponíveis, limiar crítico cai de 6 para 4
-export const PERSEVERATION = {
-  ausente:   { max: 0 },
-  rara:      { max: 1 },  // 1  (era 1–2)
-  frequente: { max: 3 },  // 2–3  (era 3–5)
-  critica:   { min: 4 },  // ≥ 4  (era ≥ 6)
+  moderado:  { max: 270  },
+  alto:      { max: 480  },
+  muitoAlto: { min: 481  },
 } as const;
 
 // ─ Efeito de Bivalência (RT em ms)
@@ -39,28 +41,27 @@ export const BIVALENCY_EFFECT = {
   marcado:   { min: 201 },
 } as const;
 
-// ─ Acurácia mínima na fase mista (switch + repeat) para não sinalizar colapso
-export const MIXED_ACCURACY_FLOOR = 55;
+// ─ Acurácia mínima no bloco misto para não sinalizar colapso
+// Diretriz: abaixo de 60% → importante
+export const MIXED_ACCURACY_FLOOR = 60;
 
-// ─ IES (Inverse Efficiency Score) — menor é melhor
-// Limiares calibrados para 60 trials com MAX_RESPONSE_MS = 2500 ms
+// ─ IES — Inverse Efficiency Score (menor é melhor)
 export const IES_THRESHOLDS = {
-  eficiente:   { max: 900  }, // ≤ 900
-  moderado:    { max: 1300 }, // 901–1300
-  lento:       { max: 1800 }, // 1301–1800
-  muitoLento:  { min: 1801 }, // > 1800
+  eficiente:  { max: 900  },
+  moderado:   { max: 1300 },
+  lento:      { max: 1800 },
+  muitoLento: { min: 1801 },
 } as const;
 
 // ─ Fadiga Atencional (vigilanceDeclineMs = lateRt − earlyRt)
-// Positivo = piora de RT no último terço dos repeat trials
 export const VIGILANCE_THRESHOLDS = {
-  semFadiga:  { max: 0   },
-  leve:       { max: 80  },
-  moderada:   { max: 180 },
-  acentuada:  { min: 181 },
+  semFadiga: { max: 0   },
+  leve:      { max: 80  },
+  moderada:  { max: 180 },
+  acentuada: { min: 181 },
 } as const;
 
-// ─ Labels e scores base
+// ─ Labels visuais e scores base
 export const SEVERITY_LABELS: Record<ColorShapeSeverity, string> = {
   minimo:     '🟢 Mínimo',
   leve:       '🟡 Leve',
@@ -75,7 +76,26 @@ export const SEVERITY_BASE_SCORE: Record<ColorShapeSeverity, number> = {
   importante: 25,
 };
 
-// ─ Textos de notas
+// ─ Laudos UX (exibidos ao usuário no painel de resultado)
+export const SEVERITY_UX_REPORT: Record<ColorShapeSeverity, string> = {
+  minimo:
+    'Mente flexível e ágil! Você virou a chave entre cores e formas rapidamente, ' +
+    'sem se confundir e mantendo um excelente ritmo de resposta.',
+  leve:
+    'Você se adaptou bem às novas regras! Percebemos apenas que o seu cérebro precisou ' +
+    'acionar um freio e diminuir a velocidade para garantir que não confundiria a cor com a forma. ' +
+    'Com o treino, essa troca ficará mais automática.',
+  moderado:
+    'A mudança constante de regras exigiu bastante da sua agilidade mental hoje. ' +
+    'Notamos que, nas encruzilhadas do jogo, a sua atenção ficou um pouco presa à regra anterior. ' +
+    'Esse é um ótimo ponto para fortalecermos nas próximas sessões!',
+  importante:
+    'Sabemos que alternar a atenção entre duas tarefas diferentes é um dos maiores desafios ' +
+    'para o cérebro, e o nível de hoje causou uma sobrecarga. Mas não desanime! ' +
+    'O sistema vai ajustar a dificuldade para treinarmos essas regras passo a passo.',
+};
+
+// ─ Notas técnicas (usadas no TechnicalReport / payload do evaluator)
 export const SWITCHING_COST_NOTES = {
   baixo:     'Custo de mudança baixo — troca de regra quase instantânea.',
   moderado:  'Custo de mudança moderado — leve freio ao alternar regras.',
@@ -89,10 +109,10 @@ export const MIXING_COST_NOTES = {
   muitoAlto: 'Paralisia por incerteza — a possibilidade de troca compromete toda a fase.',
 };
 export const PERSEVERATION_NOTES = {
-  ausente:   'Sem erros de perseveração — desligamento da regra anterior imediato.',
-  rara:      'Perseveração rara (1) — corrigida rapidamente.',
-  frequente: 'Perseveração frequente (2–3) — inércia do set de tarefas moderada.',
-  critica:   'Perseveração crítica (≥4) — rigidez severa; regra anterior domina as respostas.',
+  ausente:   'Sem erros de perseveração (0–1) — desligamento da regra anterior imediato.',
+  rara:      'Perseveração rara (2–3) — corrigida rapidamente.',
+  frequente: 'Perseveração frequente (4–7) — inércia do set de tarefas moderada.',
+  critica:   'Perseveração crítica (≥8) — rigidez severa; regra anterior domina as respostas.',
 };
 export const BIVALENCY_NOTES = {
   semEfeito: 'Sem efeito de bivalência — estímulos ambíguos não geram lentidão extra.',
