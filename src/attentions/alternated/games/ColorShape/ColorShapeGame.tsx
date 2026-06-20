@@ -12,10 +12,10 @@ type BlockName = 'A' | 'B' | 'mixed';
 
 type GamePhase =
   | 'instructions'
-  | 'block_intro'    // tela de transição entre blocos
+  | 'block_intro'
   | 'fixation'
   | 'stimulus'
-  | 'feedback'       // só no treino / bloco puro
+  | 'feedback'
   | 'iti'
   | 'done';
 
@@ -76,59 +76,34 @@ function RuleBadge({ rule }: { rule: RuleType }) {
   );
 }
 
-// ── Tela de instruções iniciais ─────────────────────────────────────────────────
+// ── Tela de instruções — apenas o essencial para o paciente ───────────────────
 function Instructions({ onStart }: { onStart: () => void }) {
   return (
     <div style={css.screen}>
       <p style={css.title}>Cor ou Forma</p>
-      <p style={{ ...css.sub, maxWidth: 340, textAlign: 'center' }}>
-        Este jogo tem <b>3 blocos</b>:
+      <p style={{ ...css.sub, maxWidth: 320, textAlign: 'center', lineHeight: 1.7 }}>
+        Você verá figuras coloridas na tela.
+        Em cada figura, uma pergunta aparecerá indicando o que deve responder.
+        Use os botões para dar sua resposta.
       </p>
-      <div style={css.ruleBox}>
-        <div style={css.rulePill}>
-          <b>Bloco A</b> — responda sempre a <b>COR</b> da figura (20 telas)
-        </div>
-        <div style={css.rulePill}>
-          <b>Bloco B</b> — responda sempre a <b>FORMA</b> da figura (20 telas)
-        </div>
-        <div style={css.rulePill}>
-          <b>Bloco Misto</b> — o jogo avisa em cada tela se você deve responder
-          a <b>cor</b> ou a <b>forma</b> (60 telas)
-        </div>
-      </div>
-      <p style={{ ...css.sub, color: '#6b6f88', fontSize: 12, textAlign: 'center', maxWidth: 300 }}>
-        Use os botões que aparecem na tela para responder.
-      </p>
-      <button style={css.primaryBtn} onClick={onStart}>Começar Bloco A</button>
+      <button style={css.primaryBtn} onClick={onStart}>Iniciar</button>
     </div>
   );
 }
 
-// ── Tela de transição entre blocos ──────────────────────────────────────────────
+// ── Tela de transição entre blocos — instrução mínima ───────────────────────
 function BlockIntro({ block, onStart }: { block: BlockName; onStart: () => void }) {
-  const content: Record<BlockName, { title: string; desc: string; btn: string }> = {
-    A: {
-      title: 'Bloco A — Cor',
-      desc:  'Responda sempre a COR da figura. A forma é apenas um detalhe visual. (20 telas)',
-      btn:   'Iniciar Bloco A',
-    },
-    B: {
-      title: 'Bloco B — Forma',
-      desc:  'Responda sempre a FORMA da figura. A cor é apenas um detalhe visual. (20 telas)',
-      btn:   'Iniciar Bloco B',
-    },
-    mixed: {
-      title: 'Bloco Misto',
-      desc:  'Agora a regra muda a cada tela. Preste atenção ao badge que indica se deve responder a COR ou a FORMA. (60 telas)',
-      btn:   'Iniciar Bloco Misto',
-    },
+  const desc: Record<BlockName, string> = {
+    A:     'Responda sempre a COR da figura.',
+    B:     'Responda sempre a FORMA da figura.',
+    mixed: 'A pergunta em cada tela indica o que deve responder.',
   };
-  const { title, desc, btn } = content[block];
   return (
     <div style={css.screen}>
-      <p style={css.title}>{title}</p>
-      <p style={{ ...css.sub, textAlign: 'center', maxWidth: 320 }}>{desc}</p>
-      <button style={css.primaryBtn} onClick={onStart}>{btn}</button>
+      <p style={{ ...css.sub, textAlign: 'center', maxWidth: 300, fontSize: 16, color: '#c0c4d8' }}>
+        {desc[block]}
+      </p>
+      <button style={css.primaryBtn} onClick={onStart}>Continuar</button>
     </div>
   );
 }
@@ -169,7 +144,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   const [lastCorrect,  setLastCorrect]  = useState<boolean | null>(null);
   const [evaluating,   setEvaluating]   = useState(false);
 
-  // logs por bloco
   const blockARef   = useRef<TrialResult[]>([]);
   const blockBRef   = useRef<TrialResult[]>([]);
   const mixedRef    = useRef<TrialResult[]>([]);
@@ -184,11 +158,10 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
   };
 
-  // devolve log/setter do bloco atual
   const blockAccessors = (block: BlockName) => {
-    if (block === 'A')     return { ref: blockARef,  setLog: setBlockALog,  log: blockALog };
-    if (block === 'B')     return { ref: blockBRef,  setLog: setBlockBLog,  log: blockBLog };
-    return                        { ref: mixedRef,   setLog: setMixedLog,   log: mixedLog  };
+    if (block === 'A') return { ref: blockARef, setLog: setBlockALog, log: blockALog };
+    if (block === 'B') return { ref: blockBRef, setLog: setBlockBLog, log: blockBLog };
+    return               { ref: mixedRef,  setLog: setMixedLog,  log: mixedLog  };
   };
 
   const isPureBlock = (b: BlockName) => b === 'A' || b === 'B';
@@ -214,24 +187,17 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     results: TrialResult[], queue: TrialConfig[], idx: number, block: BlockName,
   ) => {
     if (idx >= queue.length) {
-      // bloco terminou
       if (block === 'A') {
-        setNextBlock('B');
-        setPhase('block_intro');
+        setNextBlock('B'); setPhase('block_intro');
       } else if (block === 'B') {
-        setNextBlock('mixed');
-        setPhase('block_intro');
+        setNextBlock('mixed'); setPhase('block_intro');
       } else {
         finishSession(blockARef.current, blockBRef.current, results);
       }
       return;
     }
-
     const trial = queue[idx];
-    setCurrentTrial(trial);
-    setTrialIdx(idx);
-    setPhase('fixation');
-
+    setCurrentTrial(trial); setTrialIdx(idx); setPhase('fixation');
     timeoutRef.current = setTimeout(() => {
       setPhase('stimulus');
       stimulusTimeRef.current = Date.now();
@@ -242,18 +208,13 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   }, [finishSession]); // eslint-disable-line
 
   const handleResponse = useCallback((
-    key: string | null,
-    trial: TrialConfig,
-    results: TrialResult[],
-    queue: TrialConfig[],
-    idx: number,
-    block: BlockName,
+    key: string | null, trial: TrialConfig, results: TrialResult[],
+    queue: TrialConfig[], idx: number, block: BlockName,
   ) => {
     clearTO();
-    const rt       = key === null ? -1 : Date.now() - stimulusTimeRef.current;
+    const rt      = key === null ? -1 : Date.now() - stimulusTimeRef.current;
     const correct  = key !== null && isCorrect(trial, key);
     const timedOut = key === null;
-
     const prevRule = idx > 0 ? queue[idx - 1].rule : null;
     let isPersev = false;
     if (!correct && !timedOut && trial.trialType === 'switch' && prevRule !== null && key !== null) {
@@ -261,18 +222,14 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       if (prevRule === 'color') isPersev = COLOR_KEYS[trial.color] === k;
       else                      isPersev = SHAPE_KEYS[trial.shape] === k;
     }
-
     const result: TrialResult = {
       ...trial, keyPressed: key ?? '', correct, reactionMs: rt, timedOut, isPerseveration: isPersev,
     };
     const updated = [...results, result];
-
     const { ref, setLog } = blockAccessors(block);
     ref.current = updated;
     setLog(updated);
-
     if (isPureBlock(block)) {
-      // blocos puros mostram feedback brevemente
       setLastCorrect(timedOut ? false : correct);
       setPhase('feedback');
       timeoutRef.current = setTimeout(() => {
@@ -290,14 +247,11 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   const startBlock = (block: BlockName) => {
     setCurrentBlock(block);
     let queue: TrialConfig[];
-    if (block === 'A')     queue = buildPureTrials('color', BLOCK_A_TRIALS);
+    if (block === 'A')      queue = buildPureTrials('color', BLOCK_A_TRIALS);
     else if (block === 'B') queue = buildPureTrials('shape', BLOCK_B_TRIALS);
     else                    queue = buildMixedTrials(MIXED_TRIALS);
     setTrialQueue(queue);
-    advanceTrial(
-      block === 'A' ? [] : block === 'B' ? [] : [],
-      queue, 0, block,
-    );
+    advanceTrial([], queue, 0, block);
   };
 
   const handleBtnAnswer = (key: string) => {
@@ -306,7 +260,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     handleResponse(key, currentTrial, log, trialQueue, trialIdx, currentBlock);
   };
 
-  // ── Telas estáticas ────────────────────────────────────────────────────────
   if (phase === 'instructions') return <Instructions onStart={() => startBlock('A')} />;
 
   if (phase === 'block_intro' && nextBlock) return (
@@ -315,42 +268,29 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
 
   if (phase === 'done') return (
     <div style={css.screen}>
-      <p style={{ fontSize: 40 }}>🏆</p>
-      <p style={css.title}>Sessão concluída!</p>
+      <p style={css.title}>Obrigado!</p>
       <p style={{ ...css.sub, textAlign: 'center' }}>
-        {evaluating ? 'Analisando seu desempenho...' : 'Resultado sendo processado.'}
+        {evaluating ? 'Processando...' : 'Atividade concluída.'}
       </p>
       {onClose && !evaluating && <button style={{ ...css.ghostBtn, marginTop: 16 }} onClick={onClose}>Sair</button>}
     </div>
   );
 
-  // ── Tela de jogo ───────────────────────────────────────────────────────────
   const totalQ      = trialQueue.length;
   const progress    = totalQ > 0 ? Math.round((trialIdx / totalQ) * 100) : 0;
   const showStim    = phase === 'stimulus' || phase === 'feedback';
   const btnDisabled = phase === 'feedback' || phase === 'fixation' || phase === 'iti';
 
-  const blockLabel: Record<BlockName, string> = {
-    A: 'Bloco A — Cor', B: 'Bloco B — Forma', mixed: 'Bloco Misto',
-  };
-
   return (
     <div style={{ ...css.gameScreen, background: NEUTRAL_BG }}>
-
-      {/* Topo */}
       <div style={css.topBar}>
-        <span style={{ color: '#8b8fa8', fontSize: 12 }}>
-          {blockLabel[currentBlock]} — {trialIdx + 1} / {totalQ}
-        </span>
         <div style={css.progressTrack}>
           <div style={{ ...css.progressBar, width: `${progress}%` }} />
         </div>
       </div>
 
-      {/* Badge de regra — sempre visível no misto; fixo nos blocos puros */}
       {currentTrial && <RuleBadge rule={currentTrial.rule} />}
 
-      {/* Área da figura */}
       <div style={css.stimulusArea}>
         {phase === 'fixation' && <div style={css.fixation}>·</div>}
         {showStim && currentTrial && (
@@ -366,7 +306,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
         {phase === 'iti' && <div style={{ height: 130 }} />}
       </div>
 
-      {/* Botões */}
       {currentTrial && (
         <ResponseButtons rule={currentTrial.rule} onAnswer={handleBtnAnswer} disabled={btnDisabled} />
       )}
@@ -384,13 +323,13 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
 const css: Record<string, React.CSSProperties> = {
   screen: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
-    justifyContent: 'center', gap: 16, padding: 20,
+    justifyContent: 'center', gap: 20, padding: 24,
     minHeight: '100%', minWidth: '100%',
     background: NEUTRAL_BG, color: '#e8e9f0', position: 'relative',
   },
   gameScreen: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
-    gap: 20, padding: '60px 20px 24px',
+    gap: 20, padding: '48px 20px 24px',
     minHeight: '100%', minWidth: '100%',
     color: '#e8e9f0', position: 'relative',
   },
@@ -402,12 +341,6 @@ const css: Record<string, React.CSSProperties> = {
   },
   title:   { fontSize: 22, fontWeight: 800, margin: 0 },
   sub:     { fontSize: 14, color: '#8b8fa8', margin: 0, lineHeight: 1.6 },
-  ruleBox: { display: 'flex', flexDirection: 'column', gap: 8, width: '100%', maxWidth: 360 },
-  rulePill: {
-    padding: '10px 16px', borderRadius: 12, fontSize: 13, color: '#c0c4d8',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.08)', lineHeight: 1.5,
-  },
   primaryBtn: {
     padding: '12px 36px', borderRadius: 99, fontSize: 15, fontWeight: 700,
     background: '#6c8ef5', color: '#fff', border: 'none', cursor: 'pointer',
