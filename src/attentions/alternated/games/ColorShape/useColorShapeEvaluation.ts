@@ -1,6 +1,13 @@
+// src/attentions/alternated/games/ColorShape/useColorShapeEvaluation.ts
+// Hook de avaliação pós-sessão.
+// Usa buildColorShapeTechnicalReport (assessment layer) para montar o payload
+// em vez de recalcular notas e custos inline.
+
 import type { ColorShapeSessionLog, ColorShapeMetrics } from './types';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 import { calculateColorShapeMetrics } from './calculateColorShapeMetrics';
+import { adaptSessionToColorShape }    from '../../../../assessment/colorShape/adaptSessionToColorShape';
+import { buildColorShapeTechnicalReport } from '../../../../assessment/colorShape/buildColorShapeTechnicalReport';
 
 const EVALUATOR_URL    = import.meta.env.VITE_EVALUATOR_URL    as string | undefined;
 const EVALUATOR_SECRET = import.meta.env.VITE_EVALUATOR_SECRET as string | undefined;
@@ -29,7 +36,7 @@ async function callEvaluator(payload: object): Promise<EvaluationReport | null> 
     const raw = await res.json();
     return {
       score:    raw.score,
-      level:    raw.severity,
+      level:    raw.severity ?? raw.level,
       ludic:    raw.report?.ludic    ?? null,
       general:  raw.report?.general  ?? null,
       clinical: raw.report?.clinical ?? null,
@@ -43,52 +50,69 @@ async function callEvaluator(payload: object): Promise<EvaluationReport | null> 
 export async function useColorShapeEvaluation(
   log: ColorShapeSessionLog
 ): Promise<ColorShapeEvaluationResult> {
+  // Métricas do jogo (inclui severity via constants.ts do jogo)
   const metrics = calculateColorShapeMetrics(log.mainTrials);
 
+  // Assessment layer: adapta → constrói relatório técnico completo
+  const analysisInput  = adaptSessionToColorShape(log);
+  const technicalReport = buildColorShapeTechnicalReport(analysisInput);
+
+  // Payload para o vigil-evaluator — usa o technicalReport como fonte única
   const payload = {
     game:          'color-shape',
-    attentionType: 'alternada',
-    sessionId:     log.sessionId,
-    startedAt:     log.startedAt,
-    metrics,
-    // Resumo interpretativo enviado ao Gemini
-    interpretation: {
-      switchingCost: {
-        rtMs:    metrics.switchCostRtMs,
-        errorPp: metrics.switchCostErrorPp,
-        note:    metrics.switchCostRtMs <= 150 ? 'baixo' :
-                 metrics.switchCostRtMs <= 300 ? 'moderado' :
-                 metrics.switchCostRtMs <= 500 ? 'alto' : 'muito alto',
-      },
-      mixingCost: {
-        rtMs:    metrics.mixingCostRtMs,
-        errorPp: metrics.mixingCostErrorPp,
-        note:    metrics.mixingCostRtMs <= 100 ? 'baixo' :
-                 metrics.mixingCostRtMs <= 250 ? 'moderado' :
-                 metrics.mixingCostRtMs <= 450 ? 'alto' : 'muito alto',
-      },
-      perseveration: {
-        count: metrics.perseverationErrors,
-        pct:   metrics.perseverationPct,
-        note:  metrics.perseverationErrors === 0 ? 'ausente' :
-               metrics.perseverationErrors <= 2  ? 'rara' :
-               metrics.perseverationErrors <= 5  ? 'frequente' : 'crítica',
-      },
-      bivalencyEffect: {
-        ms:   metrics.bivalencyEffectMs,
-        note: metrics.bivalencyEffectMs <= 80 ? 'sem efeito' :
-              metrics.bivalencyEffectMs <= 200 ? 'leve' : 'marcado',
-      },
-      severity: metrics.severity,
-    },
-    trialSummary: {
-      total:         log.mainTrials.length,
-      switchTrials:  metrics.switchTrials,
-      repeatTrials:  metrics.repeatTrials,
-      pureTrials:    metrics.pureTrials,
-      errors:        log.mainTrials.filter(t => !t.correct).length,
-      timeouts:      metrics.timeoutCount,
-    },
+    attentionType: 'alternada' as const,
+    sessionId:     technicalReport.sessionId,
+    startedAt:     technicalReport.startedAt,
+    severity:      metrics.severity,               // fonte: jogo (constants.ts)
+
+    // Métricas globais
+    totalTrials:   technicalReport.metrics.totalTrials,
+    accuracy:      technicalReport.metrics.accuracy,
+    avgRtMs:       technicalReport.metrics.avgRtMs,
+    timeoutCount:  technicalReport.metrics.timeoutCount,
+    timeoutPct:    technicalReport.metrics.timeoutPct,
+
+    // Switching Cost
+    switchTrials:      technicalReport.metrics.switchTrials,
+    repeatTrials:      technicalReport.metrics.repeatTrials,
+    switchAccuracy:    technicalReport.metrics.switchAccuracy,
+    repeatAccuracy:    technicalReport.metrics.repeatAccuracy,
+    switchAvgRtMs:     technicalReport.metrics.switchAvgRtMs,
+    repeatAvgRtMs:     technicalReport.metrics.repeatAvgRtMs,
+    switchCostRtMs:    technicalReport.metrics.switchCostRtMs,
+    switchCostErrorPp: technicalReport.metrics.switchCostErrorPp,
+
+    // Mixing Cost
+    pureTrials:        technicalReport.metrics.pureTrials,
+    pureAccuracy:      technicalReport.metrics.pureAccuracy,
+    pureAvgRtMs:       technicalReport.metrics.pureAvgRtMs,
+    mixingCostRtMs:    technicalReport.metrics.mixingCostRtMs,
+    mixingCostErrorPp: technicalReport.metrics.mixingCostErrorPp,
+
+    // Perseveração
+    perseverationErrors: technicalReport.metrics.perseverationErrors,
+    perseverationPct:    technicalReport.metrics.perseverationPct,
+
+    // Bivalência
+    bivalentTrials:      technicalReport.metrics.bivalentTrials,
+    bivalentAvgRtMs:     technicalReport.metrics.bivalentAvgRtMs,
+    nonBivalentAvgRtMs:  technicalReport.metrics.nonBivalentAvgRtMs,
+    bivalencyEffectMs:   technicalReport.metrics.bivalencyEffectMs,
+
+    // Por regra
+    colorAccuracy:  technicalReport.metrics.colorAccuracy,
+    shapeAccuracy:  technicalReport.metrics.shapeAccuracy,
+    colorAvgRtMs:   technicalReport.metrics.colorAvgRtMs,
+    shapeAvgRtMs:   technicalReport.metrics.shapeAvgRtMs,
+
+    // Notas interpretativas (via assessment/colorShapeScaleDefinitions)
+    switchingCostNote:  technicalReport.scaleResult.switchingCostNote,
+    mixingCostNote:     technicalReport.scaleResult.mixingCostNote,
+    perseverationNote:  technicalReport.scaleResult.perseverationNote,
+    bivalencyNote:      technicalReport.scaleResult.bivalencyNote,
+
+    // Resumo de tentativas
+    trialSummary: technicalReport.trialSummary,
   };
 
   const geminiReport = await callEvaluator(payload);
