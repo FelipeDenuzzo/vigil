@@ -1,143 +1,114 @@
 // src/assessment/colorShape/buildColorShapeScaleResult.ts
 //
-// Árvore de decisão (definida pelo responsável do produto):
-//   1. Perseveração crítica (≥8) ou acurácia mista < 60%  → IMPORTANTE
-//   2. Perseveração frequente (4–7) OU Switch/Mixing muito altos → MODERADO
-//   3. Perseveração rara (2–3) OU Switch/Mixing altos          → LEVE
-//   4. Perseveração ausente (0–1) e custos baixos               → MÍNIMO
+// Árvore de decisão exata das diretrizes do produto:
+//
+//   PASSO 1 — Perseveração é verificada PRIMEIRO (sintoma clínico mais grave).
+//     Se Perseveration_Errors >= 8 → IMPORTANTE (independe de velocidade).
+//     Se Accuracy < 60% no bloco misto → IMPORTANTE.
+//
+//   PASSO 2 — Perseveração frequente ou acurácia baixa.
+//     Se Perseveration_Errors 4–7 → MODERADO.
+//     Se Accuracy 60–79% no bloco misto → MODERADO.
+//
+//   PASSO 3 — Perseveração rara ou custo de velocidade alto.
+//     Se Perseveration_Errors 2–3 → LEVE.
+//     Se Switch_Cost > 0 OU Mixing_Cost > 0 (mesmo com perseveração ausente) → LEVE.
+//
+//   PASSO 4 — Default.
+//     Perseveração ausente (0–1) E Switch_Cost ≤ 0 E Mixing_Cost ≤ 0 → MÍNIMO.
 
 import type { ColorShapeMetrics, ColorShapeScaleResult, ColorShapeSeverity } from './types';
 import {
-  SWITCHING_COST_RT, MIXING_COST_RT, PERSEVERATION,
-  BIVALENCY_EFFECT, IES_THRESHOLDS, VIGILANCE_THRESHOLDS,
-  MIXED_ACCURACY_FLOOR, SEVERITY_BASE_SCORE,
-  SWITCHING_COST_NOTES, MIXING_COST_NOTES,
-  PERSEVERATION_NOTES, BIVALENCY_NOTES,
-  IES_NOTES, VIGILANCE_NOTES,
+  PERSEVERATION,
+  MIXED_ACCURACY,
+  SWITCH_COST_RT,
+  MIXING_COST_RT,
+  SEVERITY_BASE_SCORE,
   SEVERITY_UX_REPORT,
+  PERSEVERATION_NOTES,
+  SWITCH_COST_NOTES,
+  MIXING_COST_NOTES,
+  ACCURACY_NOTES,
 } from './colorShapeScaleDefinitions';
 
-type SwitchKey   = keyof typeof SWITCHING_COST_NOTES;
-type MixingKey   = keyof typeof MIXING_COST_NOTES;
 type PersevKey   = keyof typeof PERSEVERATION_NOTES;
-type BivalKey    = keyof typeof BIVALENCY_NOTES;
-type IesKey      = keyof typeof IES_NOTES;
-type VigKey      = keyof typeof VIGILANCE_NOTES;
+type SwitchKey   = keyof typeof SWITCH_COST_NOTES;
+type MixingKey   = keyof typeof MIXING_COST_NOTES;
+type AccuracyKey = keyof typeof ACCURACY_NOTES;
 
-function resolveSwitchKey(rtMs: number): SwitchKey {
-  if (rtMs <= SWITCHING_COST_RT.baixo.max)    return 'baixo';
-  if (rtMs <= SWITCHING_COST_RT.moderado.max) return 'moderado';
-  if (rtMs <= SWITCHING_COST_RT.alto.max)     return 'alto';
-  return 'muitoAlto';
-}
-function resolveMixingKey(rtMs: number): MixingKey {
-  if (rtMs <= MIXING_COST_RT.baixo.max)    return 'baixo';
-  if (rtMs <= MIXING_COST_RT.moderado.max) return 'moderado';
-  if (rtMs <= MIXING_COST_RT.alto.max)     return 'alto';
-  return 'muitoAlto';
-}
 function resolvePersevKey(count: number): PersevKey {
   if (count <= PERSEVERATION.ausente.max)   return 'ausente';
   if (count <= PERSEVERATION.rara.max)      return 'rara';
   if (count <= PERSEVERATION.frequente.max) return 'frequente';
   return 'critica';
 }
-function resolveBivalKey(ms: number): BivalKey {
-  if (ms <= BIVALENCY_EFFECT.semEfeito.max) return 'semEfeito';
-  if (ms <= BIVALENCY_EFFECT.leve.max)      return 'leve';
-  return 'marcado';
-}
-function resolveIesKey(ies: number): IesKey {
-  if (ies === 0)                             return 'eficiente';
-  if (ies <= IES_THRESHOLDS.eficiente.max)  return 'eficiente';
-  if (ies <= IES_THRESHOLDS.moderado.max)   return 'moderado';
-  if (ies <= IES_THRESHOLDS.lento.max)      return 'lento';
-  return 'muitoLento';
-}
-function resolveVigKey(declineMs: number): VigKey {
-  if (declineMs <= VIGILANCE_THRESHOLDS.semFadiga.max) return 'semFadiga';
-  if (declineMs <= VIGILANCE_THRESHOLDS.leve.max)      return 'leve';
-  if (declineMs <= VIGILANCE_THRESHOLDS.moderada.max)  return 'moderada';
-  return 'acentuada';
+
+function resolveSwitchKey(rtMs: number): SwitchKey {
+  return rtMs <= SWITCH_COST_RT.baixo.max ? 'baixo' : 'alto';
 }
 
-/**
- * Árvore de decisão das diretrizes:
- * 1. Perseveração crítica (≥8) ou acurácia < 60% → IMPORTANTE
- * 2. Perseveração frequente (4–7) ou Switch/Mixing muito altos → MODERADO
- * 3. Perseveração rara (2–3), ou Switch/Mixing altos, fadiga acentuada → LEVE
- * 4. Default → MÍNIMO
- */
+function resolveMixingKey(rtMs: number): MixingKey {
+  return rtMs <= MIXING_COST_RT.baixo.max ? 'baixo' : 'alto';
+}
+
+function resolveAccuracyKey(pct: number): AccuracyKey {
+  if (pct <= MIXED_ACCURACY.colapso.max)                              return 'colapso';
+  if (pct >= MIXED_ACCURACY.baixa.min && pct <= MIXED_ACCURACY.baixa.max) return 'baixa';
+  return 'boa';
+}
+
 function classifySeverity(
   persevKey:     PersevKey,
   switchKey:     SwitchKey,
   mixingKey:     MixingKey,
-  mixedAccuracy: number,
-  iesKey:        IesKey,
-  vigKey:        VigKey,
+  accuracyKey:   AccuracyKey,
 ): ColorShapeSeverity {
-  // Passo 1 — Perseveração é sempre checada primeiro (sintoma clínico mais grave)
-  if (persevKey === 'critica' || mixedAccuracy < MIXED_ACCURACY_FLOOR) return 'importante';
+  // Passo 1 — Perseveração crítica ou colapso de acurácia (mais grave, checar primeiro)
+  if (persevKey === 'critica' || accuracyKey === 'colapso') return 'importante';
 
-  // Passo 2
-  if (
-    persevKey === 'frequente' ||
-    switchKey === 'muitoAlto' ||
-    mixingKey === 'muitoAlto' ||
-    iesKey    === 'muitoLento'
-  ) return 'moderado';
+  // Passo 2 — Perseveração frequente ou acurácia comprometida
+  if (persevKey === 'frequente' || accuracyKey === 'baixa') return 'moderado';
 
-  // Passo 3
-  if (
-    persevKey === 'rara'       ||
-    switchKey === 'alto'       ||
-    mixingKey === 'alto'       ||
-    iesKey    === 'lento'      ||
-    vigKey    === 'acentuada'
-  ) return 'leve';
+  // Passo 3 — Perseveração rara OU há custo de velocidade (switch ou mixing)
+  if (persevKey === 'rara' || switchKey === 'alto' || mixingKey === 'alto') return 'leve';
 
+  // Passo 4 — Tudo dentro do esperado
   return 'minimo';
 }
 
-function computeScore(severity: ColorShapeSeverity, metrics: ColorShapeMetrics): number {
+function computeScore(severity: ColorShapeSeverity, mixedAccuracyPct: number): number {
   let score = SEVERITY_BASE_SCORE[severity];
-  if (metrics.accuracy >= 90)   score = Math.min(100, score + 5);
-  if (metrics.timeoutPct >= 15) score = Math.max(0,   score - 8);
+  if (mixedAccuracyPct >= 90) score = Math.min(100, score + 5);
   return score;
 }
 
 export function buildColorShapeScaleResult(
-  metrics: ColorShapeMetrics
+  metrics: ColorShapeMetrics,
 ): ColorShapeScaleResult {
+  // Calcula acurácia combinada do bloco misto (repeat + switch)
   const mixedTotal   = metrics.switchTrials + metrics.repeatTrials;
   const mixedCorrect =
     Math.round(metrics.switchAccuracy / 100 * metrics.switchTrials) +
     Math.round(metrics.repeatAccuracy / 100 * metrics.repeatTrials);
-  const mixedAccuracy = mixedTotal > 0
+  const mixedAccuracyPct = mixedTotal > 0
     ? Math.round((mixedCorrect / mixedTotal) * 100)
     : 0;
 
-  const switchKey = resolveSwitchKey(metrics.switchCostRtMs);
-  const mixingKey = resolveMixingKey(metrics.mixingCostRtMs);
-  const persevKey = resolvePersevKey(metrics.perseverationErrors);
-  const bivalKey  = resolveBivalKey(metrics.bivalencyEffectMs);
-  const iesKey    = resolveIesKey(metrics.ies);
-  const vigKey    = resolveVigKey(metrics.vigilanceDeclineMs);
+  const persevKey   = resolvePersevKey(metrics.perseverationErrors);
+  const switchKey   = resolveSwitchKey(metrics.switchCostRtMs);
+  const mixingKey   = resolveMixingKey(metrics.mixingCostRtMs);
+  const accuracyKey = resolveAccuracyKey(mixedAccuracyPct);
 
-  const severity = classifySeverity(
-    persevKey, switchKey, mixingKey, mixedAccuracy, iesKey, vigKey,
-  );
-  const score = computeScore(severity, metrics);
+  const severity = classifySeverity(persevKey, switchKey, mixingKey, accuracyKey);
+  const score    = computeScore(severity, mixedAccuracyPct);
 
   return {
     severity,
     score,
     uxReport:          SEVERITY_UX_REPORT[severity],
-    switchingCostNote: SWITCHING_COST_NOTES[switchKey],
-    mixingCostNote:    MIXING_COST_NOTES[mixingKey],
     perseverationNote: PERSEVERATION_NOTES[persevKey],
-    bivalencyNote:     BIVALENCY_NOTES[bivalKey],
-    iesNote:           IES_NOTES[iesKey],
-    vigilanceNote:     VIGILANCE_NOTES[vigKey],
+    switchingCostNote: SWITCH_COST_NOTES[switchKey],
+    mixingCostNote:    MIXING_COST_NOTES[mixingKey],
+    accuracyNote:      ACCURACY_NOTES[accuracyKey],
   };
 }
