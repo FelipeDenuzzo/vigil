@@ -1,9 +1,9 @@
 // src/assessment/colorShape/types.ts
 
-export type RuleType          = 'color' | 'shape';
-export type TrialType         = 'repeat' | 'switch' | 'first' | 'pure';
-export type ShapeType         = 'circle' | 'square' | 'triangle' | 'diamond';
-export type ColorName         = 'red' | 'blue' | 'green' | 'yellow';
+export type RuleType           = 'color' | 'shape';
+export type TrialType          = 'repeat' | 'switch' | 'first' | 'pure';
+export type ShapeType          = 'circle' | 'square' | 'triangle' | 'diamond';
+export type ColorName          = 'red' | 'blue' | 'green' | 'yellow';
 export type ColorShapeSeverity = 'minimo' | 'leve' | 'moderado' | 'importante';
 
 export interface TrialResult {
@@ -32,40 +32,36 @@ export interface ColorShapeAnalysisInput {
 }
 
 export interface ColorShapeMetrics {
-  totalTrials:          number;
-  accuracy:             number;
-  avgRtMs:              number;
-  switchTrials:         number;
-  repeatTrials:         number;
-  switchAccuracy:       number;
-  repeatAccuracy:       number;
-  switchAvgRtMs:        number;
-  repeatAvgRtMs:        number;
-  switchCostRtMs:       number;
-  switchCostErrorPp:    number;
-  pureTrials:           number;
-  pureAccuracy:         number;
-  pureAvgRtMs:          number;
-  mixingCostRtMs:       number;
-  mixingCostErrorPp:    number;
-  perseverationErrors:  number;
-  perseverationPct:     number;
-  bivalentTrials:       number;
-  bivalentAvgRtMs:      number;
-  nonBivalentAvgRtMs:   number;
-  bivalencyEffectMs:    number;
-  colorAccuracy:        number;
-  shapeAccuracy:        number;
-  colorAvgRtMs:         number;
-  shapeAvgRtMs:         number;
-  timeoutCount:         number;
-  timeoutPct:           number;
-  /** IES = avgRtMs / (accuracy / 100) — Inverse Efficiency Score */
-  ies:                  number;
-  vigilanceEarlyRtMs:   number;
-  vigilanceLateRtMs:    number;
-  /** late - early (positivo = fadiga) */
-  vigilanceDeclineMs:   number;
+  totalTrials:         number;
+  accuracy:            number;
+  avgRtMs:             number;
+  // Bloco misto — switch trials
+  switchTrials:        number;
+  switchAccuracy:      number;
+  switchAvgRtMs:       number;
+  switchCostRtMs:      number;   // switch RT − repeat RT
+  switchCostErrorPp:   number;   // switch error% − repeat error%
+  // Bloco misto — repeat trials
+  repeatTrials:        number;
+  repeatAccuracy:      number;
+  repeatAvgRtMs:       number;
+  // Blocos puros (baseline)
+  pureTrials:          number;
+  pureAccuracy:        number;
+  pureAvgRtMs:         number;
+  mixingCostRtMs:      number;   // repeat_misto RT − baseline RT
+  mixingCostErrorPp:   number;   // repeat_misto error% − baseline error%
+  // Perseveração
+  perseverationErrors: number;
+  perseverationPct:    number;
+  // Acurácia por regra (blocos puros)
+  colorAccuracy:       number;
+  shapeAccuracy:       number;
+  colorAvgRtMs:        number;
+  shapeAvgRtMs:        number;
+  // Abandono / tempo esgotado
+  timeoutCount:        number;
+  timeoutPct:          number;
 }
 
 export interface ColorShapeScaleResult {
@@ -73,12 +69,10 @@ export interface ColorShapeScaleResult {
   score:             number;
   /** Laudo UX exibido ao usuário no painel de resultado */
   uxReport:          string;
+  perseverationNote: string;
   switchingCostNote: string;
   mixingCostNote:    string;
-  perseverationNote: string;
-  bivalencyNote:     string;
-  iesNote:           string;
-  vigilanceNote:     string;
+  accuracyNote:      string;
 }
 
 export interface ColorShapeTechnicalReport {
@@ -89,12 +83,9 @@ export interface ColorShapeTechnicalReport {
   metrics:       ColorShapeMetrics;
   scaleResult:   ColorShapeScaleResult;
   interpretation: {
-    switchingCost:   { rtMs: number; errorPp: number; note: string };
-    mixingCost:      { rtMs: number; errorPp: number; note: string };
-    perseveration:   { count: number; pct: number; note: string };
-    bivalencyEffect: { ms: number; note: string };
-    ies:             { score: number; note: string };
-    vigilance:       { declineMs: number; note: string };
+    switchingCost: { rtMs: number; errorPp: number; note: string };
+    mixingCost:    { rtMs: number; errorPp: number; note: string };
+    perseveration: { count: number; pct: number; note: string };
   };
   trialSummary: {
     total:        number;
