@@ -1,6 +1,5 @@
 // src/assessment/colorShape/buildColorShapeTechnicalReport.ts
-// Monta o ColorShapeTechnicalReport (EvaluatorInput) pronto para enviar ao Gemini
-// via vigil-evaluator. Não conhece UI nem faz fetch.
+// Monta o ColorShapeTechnicalReport pronto para enviar ao vigil-evaluator.
 
 import { calculateColorShapeMetrics }  from './calculateColorShapeMetrics';
 import { buildColorShapeScaleResult }   from './buildColorShapeScaleResult';
@@ -9,7 +8,10 @@ import type { ColorShapeAnalysisInput, ColorShapeTechnicalReport } from './types
 export function buildColorShapeTechnicalReport(
   input: ColorShapeAnalysisInput
 ): ColorShapeTechnicalReport {
-  const metrics     = calculateColorShapeMetrics(input.mainTrials);
+  const metrics     = calculateColorShapeMetrics({
+    pureTrials:  input.pureTrials,
+    mixedTrials: input.mixedTrials,
+  });
   const scaleResult = buildColorShapeScaleResult(metrics);
 
   return {
