@@ -2,14 +2,14 @@
 // Tela de resultado pós-sessão — espelha VisualSearchEvaluationScreen.
 
 import { ColorShapeReportPanel } from './ColorShapeReportPanel';
-import { EvaluationLoadingAnimation } from '../../shared/EvaluationLoadingAnimation';
+import { EvaluationLoadingAnimation } from '../../../../shared/EvaluationLoadingAnimation';
 import type { EvaluationReport as GeminiReport } from '../../../../lib/evaluatorClient';
 
 type Props = {
   geminiReport?: GeminiReport;
   /** false = IA ainda chamando | 'organizing' = IA ok, app montando | true = tudo pronto */
   loaded?: boolean | 'organizing';
-  onRepeat:    () => void;
+  onRepeat:      () => void;
   onBackToStart: () => void;
 };
 
@@ -38,8 +38,8 @@ const s = {
 };
 
 function EvaluationBlock({ geminiReport, loaded }: { geminiReport?: GeminiReport; loaded?: boolean | 'organizing' }) {
-  if (geminiReport) return <ColorShapeReportPanel report={geminiReport} />;
-  if (loaded === false)       return <EvaluationLoadingAnimation organizing={false} />;
+  if (geminiReport)            return <ColorShapeReportPanel report={geminiReport} />;
+  if (loaded === false)        return <EvaluationLoadingAnimation organizing={false} />;
   if (loaded === 'organizing') return <EvaluationLoadingAnimation organizing={true} />;
   return (
     <section style={s.section}>
