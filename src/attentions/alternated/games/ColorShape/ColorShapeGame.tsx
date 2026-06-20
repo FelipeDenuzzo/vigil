@@ -57,10 +57,9 @@ function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: Color
 
 // ── Badge de regra ──────────────────────────────────────────────────────────────
 function RuleBadge({ rule }: { rule: RuleType }) {
-  const isColor = rule === 'color';
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 10,
+      display: 'flex', alignItems: 'center',
       padding: '10px 20px', borderRadius: 99,
       background: 'rgba(180,180,180,0.10)',
       border: '2px solid rgba(255,255,255,0.25)',
@@ -68,8 +67,7 @@ function RuleBadge({ rule }: { rule: RuleType }) {
       fontSize: 17, fontWeight: 800, letterSpacing: '0.04em',
       transition: 'all 0.2s ease',
     }}>
-      <span style={{ fontSize: 22 }}>{isColor ? '🎨' : '🔷'}</span>
-      {isColor ? 'Qual é a COR?' : 'Qual é a FORMA?'}
+      {rule === 'color' ? 'Qual é a COR?' : 'Qual é a FORMA?'}
     </div>
   );
 }
@@ -85,11 +83,9 @@ function Instructions({ onStart }: { onStart: () => void }) {
       </p>
       <div style={css.ruleBox}>
         <div style={{ ...css.rulePill, background: 'rgba(255,255,255,0.05)' }}>
-          <span style={{ fontSize: 22 }}>🎨</span>
           <span>“Qual é a COR?” → toque na <b>cor</b> da figura</span>
         </div>
         <div style={{ ...css.rulePill, background: 'rgba(255,255,255,0.05)' }}>
-          <span style={{ fontSize: 22 }}>🔷</span>
           <span>“Qual é a FORMA?” → toque na <b>forma</b> da figura</span>
         </div>
       </div>
@@ -115,7 +111,6 @@ function ResponseButtons({ rule, onAnswer, disabled }: {
   const items = rule === 'color'
     ? (['red', 'blue', 'green', 'yellow'] as ColorName[]).map(cl => ({ key: COLOR_KEYS[cl], label: COLOR_LABELS[cl] }))
     : (['circle', 'square', 'triangle', 'diamond'] as ShapeType[]).map(sh => ({ key: SHAPE_KEYS[sh], label: SHAPE_LABELS[sh] }));
-
   return (
     <div style={css.btnGrid}>
       {items.map(({ key, label }) => (
@@ -259,8 +254,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
 
   return (
     <div style={{ ...css.gameScreen, background: bgColor }}>
-
-      {/* Topo: progresso */}
       <div style={css.topBar}>
         <span style={{ color: '#8b8fa8', fontSize: 12 }}>
           {isPractice
@@ -274,10 +267,8 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
         )}
       </div>
 
-      {/* Badge de regra */}
       {currentTrial && <RuleBadge rule={currentTrial.rule} />}
 
-      {/* Área da figura */}
       <div style={css.stimulusArea}>
         {phase === 'fixation' && <div style={css.fixation}>·</div>}
         {showStim && currentTrial && (
@@ -293,7 +284,6 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
         {phase === 'iti' && <div style={{ height: 130 }} />}
       </div>
 
-      {/* Botões */}
       {currentTrial && (
         <ResponseButtons rule={currentTrial.rule} onAnswer={handleBtnAnswer} disabled={btnDisabled} />
       )}
