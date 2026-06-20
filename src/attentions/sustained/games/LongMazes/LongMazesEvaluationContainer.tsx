@@ -1,6 +1,4 @@
 // Artefato 4 — Container de apresentação do laudo LongMazes
-// Recebe o MazeFullSessionLog do jogo, chama useLongMazesEvaluation
-// e exibe loading + painel de resultado.
 
 import { useEffect, useRef, useState } from 'react';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -57,7 +55,7 @@ interface Props {
 }
 
 export function LongMazesEvaluationContainer({ log, sessionId, onRepeat, onBack }: Props) {
-  const [result,      setResult]      = useState<LongMazesEvaluationResult | null>(null);
+  const [result,       setResult]       = useState<LongMazesEvaluationResult | null>(null);
   const [geminiReport, setGeminiReport] = useState<EvaluationReport | null>(null);
   const [loaded,       setLoaded]       = useState<LoadedState>(false);
   const ran = useRef(false);
@@ -72,6 +70,10 @@ export function LongMazesEvaluationContainer({ log, sessionId, onRepeat, onBack 
       // 1️⃣ Verifica cache no Firestore
       const cached = await loadReportFromFirestore(sessionId);
       if (cached) {
+        // cache só tem o laudo Gemini — ainda precisamos calcular as métricas localmente
+        const { calculateLongMazesMetrics } = await import('../../../../assessment/longMazes/calculateLongMazesMetrics');
+        const metrics = calculateLongMazesMetrics(log);
+        setResult({ metrics, geminiReport: cached });
         setGeminiReport(cached);
         setLoaded(true);
         return;
@@ -109,7 +111,7 @@ export function LongMazesEvaluationContainer({ log, sessionId, onRepeat, onBack 
   }
 
   // Sem laudo Gemini — exibe apenas dados internos
-  if (!geminiReport) {
+  if (!geminiReport || !result) {
     const metrics = result?.metrics;
     return (
       <div style={s.screen}>
@@ -136,7 +138,7 @@ export function LongMazesEvaluationContainer({ log, sessionId, onRepeat, onBack 
       <div style={{ width: '100%', maxWidth: 480 }}>
         <LongMazesReportPanel
           report={geminiReport}
-          metrics={result!.metrics}
+          metrics={result.metrics}
         />
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
