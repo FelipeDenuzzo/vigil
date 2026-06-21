@@ -27,13 +27,36 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     const result = evaluateVisualSearch(input);
 
     try {
-      const aiReport = await evaluateWithGemini(input as unknown as EvaluatorInput);
-      result.report.aiClinical = aiReport;
+      const aiReport = await evaluateWithGemini(input as unknown as EvaluatorInput) as any;
+      const level = (aiReport.level as string) === 'minimo' ? 'mínimo' : aiReport.level;
+
+      res.json({
+        score:    aiReport.score,
+        severity: level,
+        report: {
+          ludic: {
+            score: aiReport.score,
+            label: levelToLabel(level),
+            emoji: levelToEmoji(level),
+          },
+          general: {
+            summary:        aiReport.generalSummary        ?? '',
+            strengths:      aiReport.generalStrengths      ?? [],
+            weaknesses:     aiReport.generalWeaknesses     ?? [],
+            recommendation: aiReport.generalRecommendation ?? '',
+          },
+          clinical: {
+            strengths:      aiReport.clinicalStrengths      ?? [],
+            weaknesses:     aiReport.clinicalWeaknesses     ?? [],
+            recommendation: aiReport.clinicalRecommendation ?? '',
+            clinicalNote:   aiReport.clinicalNote           ?? '',
+          },
+        },
+      });
     } catch (error) {
       console.error('Erro ao gerar laudo Gemini (seletiva):', error);
+      res.status(500).json({ error: 'Gemini evaluation failed' });
     }
-
-    res.json(result);
     return;
   }
 
