@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  COLOR_HEX, COLOR_TO_BTN, SHAPE_TO_BTN,
+  COLOR_TO_BTN, SHAPE_TO_BTN,
   NEUTRAL_BG,
   FIXATION_MS, MAX_RESPONSE_MS, ITI_MS,
 } from './constants';
@@ -31,35 +31,33 @@ function buildFullQueue(): TaggedTrial[] {
   return [...a, ...b, ...mixed];
 }
 
-// ── SVG shapes ──────────────────────────────────────────────────────────────────
-function ShapeSVG({ shape, color, size = 120 }: { shape: ShapeType; color: ColorName; size?: number }) {
-  const fill = COLOR_HEX[color];
-  const s = size, c = s / 2;
-  if (shape === 'circle') return (
-    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}><circle cx={c} cy={c} r={c * 0.82} fill={fill} /></svg>
-  );
-  if (shape === 'square') {
-    const pad = s * 0.09;
-    return (
-      <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-        <rect x={pad} y={pad} width={s - pad * 2} height={s - pad * 2} fill={fill} rx={6} />
-      </svg>
-    );
-  }
-  if (shape === 'diamond') {
-    const pad = s * 0.09;
-    return (
-      <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
-        <rect x={pad} y={pad} width={s - pad * 2} height={s - pad * 2}
-          fill={fill} rx={6} transform={`rotate(45 ${c} ${c})`} />
-      </svg>
-    );
-  }
-  const pts = `${c},${s * 0.08} ${s * 0.94},${s * 0.92} ${s * 0.06},${s * 0.92}`;
-  return (
-    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}><polygon points={pts} fill={fill} /></svg>
-  );
-}
+// ── Mapeamento de imagens para estímulos ──────────────────────────────────────────
+const SHAPE_IMAGE: Record<ShapeType, Record<ColorName, string>> = {
+  circle: {
+    red: '/formas/circulo_vermelho.png',
+    blue: '/formas/circulo_azul.png',
+    green: '/formas/circulo_verde.png',
+    yellow: '/formas/circulo_amarelo.png',
+  },
+  square: {
+    red: '/formas/quadrado_vermelho.png',
+    blue: '/formas/quadrado_azul.png',
+    green: '/formas/quadrado_verde.png',
+    yellow: '/formas/quadrado_amarelo.png',
+  },
+  triangle: {
+    red: '/formas/triangulo_vermelho.png',
+    blue: '/formas/triangulo_azul.png',
+    green: '/formas/triangulo_verde.png',
+    yellow: '/formas/triangulo_amarelo.png',
+  },
+  diamond: {
+    red: '/formas/losango_vermelho.png',
+    blue: '/formas/losango_azul.png',
+    green: '/formas/losango_verde.png',
+    yellow: '/formas/losango_amarelo.png',
+  },
+};
 
 // ── Badge de regra ──────────────────────────────────────────────────────────────
 function RuleBadge({ rule }: { rule: RuleType }) {
@@ -275,7 +273,15 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       <div style={css.stimulusArea}>
         {phase === 'fixation' && <div style={css.fixation}>·</div>}
         {showStim && currentTrial && (
-          <ShapeSVG shape={currentTrial.shape} color={currentTrial.color} size={130} />
+          <img
+            src={SHAPE_IMAGE[currentTrial.shape][currentTrial.color]}
+            alt={`${currentTrial.color} ${currentTrial.shape}`}
+            style={{
+              width: 130,
+              height: 130,
+              objectFit: 'contain',
+            }}
+          />
         )}
         {phase === 'iti' && <div style={{ height: 130 }} />}
       </div>
