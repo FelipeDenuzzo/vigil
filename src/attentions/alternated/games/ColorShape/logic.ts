@@ -1,4 +1,4 @@
-import { COLORS, SHAPES, COLOR_KEYS, SHAPE_KEYS, MIN_BLOCK_SIZE, MAX_BLOCK_SIZE } from './constants';
+import { COLORS, SHAPES, COLOR_TO_BTN, SHAPE_TO_BTN, MIN_BLOCK_SIZE, MAX_BLOCK_SIZE } from './constants';
 import type { RuleType, TrialType, TrialConfig, ColorName, ShapeType } from './types';
 
 function randInt(min: number, max: number): number {
@@ -67,9 +67,8 @@ export function buildTrials(totalTrials: number): TrialConfig[] {
 }
 
 export function isCorrect(trial: TrialConfig, key: string): boolean {
-  const k = key.toLowerCase();
-  if (trial.rule === 'color') return COLOR_KEYS[trial.color] === k;
-  if (trial.rule === 'shape') return SHAPE_KEYS[trial.shape] === k;
+  if (trial.rule === 'color') return COLOR_TO_BTN[trial.color] === key;
+  if (trial.rule === 'shape') return SHAPE_TO_BTN[trial.shape] === key;
   return false;
 }
 
@@ -80,13 +79,12 @@ export function isPerseveration(
 ): boolean {
   if (trial.trialType !== 'switch') return false;
   if (prevRule === null) return false;
-  const k = key.toLowerCase();
-  if (prevRule === 'color') return COLOR_KEYS[trial.color] === k;
-  if (prevRule === 'shape') return SHAPE_KEYS[trial.shape] === k;
+  if (prevRule === 'color') return COLOR_TO_BTN[trial.color] === key;
+  if (prevRule === 'shape') return SHAPE_TO_BTN[trial.shape] === key;
   return false;
 }
 
 export function allValidKeys(): string[] {
-  return [...Object.values(COLOR_KEYS), ...Object.values(SHAPE_KEYS)]
-    .filter((v, i, a) => a.indexOf(v) === i);
+  return ['1', '2', '3', '4'];
 }
+
