@@ -1,6 +1,6 @@
 # Diretriz de Arquitetura — Pipeline de Avaliação do Vigil
 
-**Repositórios:** [vigil](https://github.com/FelipeDenuzzo/vigil) · [vigil-evaluator](https://github.com/FelipeDenuzzo/vigil-evaluator)  
+**Repositório (Monorepo):** [vigil](https://github.com/FelipeDenuzzo/vigil) (Front-end e Back-end integrados)  
 **Data:** 19 de junho de 2026  
 **Status:** Diretriz aprovada — referência para toda construção futura de avaliação
 
@@ -8,7 +8,9 @@
 
 ## Visão Geral
 
-O pipeline de avaliação do Vigil é composto por **4 artefatos com responsabilidades independentes**. Nenhum artefato conhece os detalhes internos do outro. Modificações em um não devem afetar os demais.
+O pipeline de avaliação do Vigil passou por uma migração para **Monorepo**. O backend (`vigil-evaluator`) foi consolidado como uma pasta dentro do repositório principal (`vigil`) para unificar o fluxo de CI/CD (Cloud Build) e evitar dessincronização de contratos entre front e back.
+
+O pipeline é composto por **4 artefatos com responsabilidades independentes**. Nenhum artefato conhece os detalhes internos do outro. Modificações em um não devem afetar os demais.
 
 O treino de referência ativo é o **VisualSearchHunt** (Caça ao Alvo), único treino em produção no momento. Toda nova avaliação deve seguir o mesmo padrão estabelecido por ele.
 
@@ -112,18 +114,18 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 
 | Arquivo | Responsabilidade | Link |
 |---|---|---|
-| `src/evaluate.ts` | Orquestrador: seleciona o prompt por `attentionType`, chama o Gemini, valida o retorno | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/evaluate.ts) |
-| `src/evaluators/visualSearch.ts` | Avaliador determinístico preservado — não usar em produção por ora | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/evaluators/visualSearch.ts) |
-| `src/types.ts` | Interfaces `EvaluatorInput` e `EvaluationReport` | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/types.ts) |
+| `src/evaluate.ts` | Orquestrador: seleciona o prompt por `attentionType`, chama o Gemini, valida o retorno | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/evaluate.ts) |
+| `src/evaluators/visualSearch.ts` | Avaliador determinístico preservado — não usar em produção por ora | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/evaluators/visualSearch.ts) |
+| `src/types.ts` | Interfaces `EvaluatorInput` e `EvaluationReport` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/types.ts) |
 
 **Prompts por tipo de atenção — `vigil-evaluator/src/prompts/`:**
 
 | Arquivo | Status | Link |
 |---|---|---|
-| `selective.ts` | ✅ Implementado | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/prompts/selective.ts) |
-| `sustained.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/prompts/sustained.ts) |
-| `alternating.ts` | ✅ Implementado | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/prompts/alternating.ts) |
-| `divided.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/src/prompts/divided.ts) |
+| `selective.ts` | ✅ Implementado | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/selective.ts) |
+| `sustained.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/sustained.ts) |
+| `alternating.ts` | ✅ Implementado | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/alternating.ts) |
+| `divided.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/divided.ts) |
 
 **Regra de expansão:** ao criar o prompt de um novo tipo de atenção, adicionar o `case` correspondente na função `resolvePromptAndSchema()` dentro de `src/evaluate.ts`.
 
@@ -175,8 +177,8 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 
 | Serviço | Função | Documentação |
 |---|---|---|
-| Cloud Run | Hospeda o vigil-evaluator | [PROVISION.md](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/PROVISION.md) |
-| Vertex AI / Gemini 2.5 Flash | Gera o texto do laudo | [GEMINI.md](https://github.com/FelipeDenuzzo/vigil-evaluator/blob/main/GEMINI.md) |
+| Cloud Run | Hospeda o vigil-evaluator | [PROVISION.md](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/PROVISION.md) |
+| Vertex AI / Gemini 2.5 Flash | Gera o texto do laudo | [GEMINI.md](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/GEMINI.md) |
 | Vercel | Hospeda o frontend vigil | [vercel.json](https://github.com/FelipeDenuzzo/vigil/blob/main/vercel.json) |
 | GitHub Actions | CI/CD automático | `.github/` em ambos os repositórios |
 
