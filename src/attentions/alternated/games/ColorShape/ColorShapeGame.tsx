@@ -8,7 +8,25 @@ import { buildPureTrials, buildMixedTrials, isCorrect } from './logic';
 import { useColorShapeEvaluation } from './useColorShapeEvaluation';
 import type { TrialConfig, TrialResult, ColorShapeSessionLog, RuleType, ShapeType, ColorName } from './types';
 
-type GamePhase = 'instructions' | 'fixation' | 'stimulus' | 'iti' | 'done';
+type GamePhase = 'instructions' | 'tutorial' | 'fixation' | 'stimulus' | 'iti' | 'done';
+
+const TUTORIAL_STYLE_ID = 'colorshape-tutorial-style';
+if (typeof document !== 'undefined' && !document.getElementById(TUTORIAL_STYLE_ID)) {
+  const style = document.createElement('style');
+  style.id = TUTORIAL_STYLE_ID;
+  style.textContent = `
+    @keyframes csPulseHighlight {
+      0% { box-shadow: 0 0 0 0 rgba(108, 142, 245, 0.8); border-color: rgba(108, 142, 245, 1); }
+      70% { box-shadow: 0 0 0 12px rgba(108, 142, 245, 0); border-color: rgba(108, 142, 245, 1); }
+      100% { box-shadow: 0 0 0 0 rgba(108, 142, 245, 0); border-color: rgba(255, 255, 255, 0.18); }
+    }
+    .cs-pulse {
+      animation: csPulseHighlight 1.6s infinite ease-in-out !important;
+      border-color: rgba(108, 142, 245, 1) !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 interface Props {
   sessionId: string;
@@ -99,8 +117,11 @@ const BUTTON_CONFIGS = [
   { key: '4', img: '/formas/circulo_azul.png', alt: 'Círculo Azul' },
 ];
 
-function ResponseButtons({ onAnswer, disabled }: {
-  onAnswer: (key: string) => void; disabled: boolean;
+function ResponseButtons({ onAnswer, disabled, highlightedKey, tooltipText }: {
+  onAnswer: (key: string) => void;
+  disabled: boolean;
+  highlightedKey?: string;
+  tooltipText?: string;
 }) {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
@@ -108,9 +129,10 @@ function ResponseButtons({ onAnswer, disabled }: {
     <div style={css.btnGrid}>
       {BUTTON_CONFIGS.map(({ key, img, alt }) => {
         const isHovered = hoveredKey === key && !disabled;
+        const isHighlighted = key === highlightedKey;
         const buttonStyle: React.CSSProperties = {
           ...css.answerBtn,
-          opacity: disabled ? 0.3 : isHovered ? 1.0 : 0.7,
+          opacity: disabled ? 0.3 : isHovered || isHighlighted ? 1.0 : 0.7,
           cursor: disabled ? 'default' : 'pointer',
           transform: isHovered ? 'scale(1.05)' : 'scale(1)',
           transition: 'all 0.2s ease-in-out',
@@ -119,13 +141,15 @@ function ResponseButtons({ onAnswer, disabled }: {
           justifyContent: 'center',
           padding: 8,
           background: 'rgba(255, 255, 255, 0.05)',
-          border: isHovered ? '2px solid rgba(255, 255, 255, 0.4)' : '2px solid rgba(255, 255, 255, 0.1)',
+          border: isHovered ? '2px solid rgba(255, 255, 255, 0.4)' : isHighlighted ? '2px solid rgba(108, 142, 245, 0.6)' : '2px solid rgba(255, 255, 255, 0.1)',
+          position: 'relative',
         };
 
         return (
           <button
             key={key}
             disabled={disabled}
+            className={isHighlighted ? 'cs-pulse' : ''}
             style={buttonStyle}
             onClick={() => onAnswer(key)}
             onMouseEnter={() => setHoveredKey(key)}
@@ -140,6 +164,12 @@ function ResponseButtons({ onAnswer, disabled }: {
                 objectFit: 'contain',
               }} 
             />
+            {isHighlighted && tooltipText && (
+              <div style={css.tooltip}>
+                {tooltipText}
+                <div style={css.tooltipArrow} />
+              </div>
+            )}
           </button>
         );
       })}
@@ -150,6 +180,7 @@ function ResponseButtons({ onAnswer, disabled }: {
 // ── Componente principal ────────────────────────────────────────────────────────
 export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose }) => {
   const [phase,        setPhase]        = useState<GamePhase>('instructions');
+  const [tutorialStep, setTutorialStep] = useState<number>(0);
   const [trialQueue,   setTrialQueue]   = useState<TaggedTrial[]>([]);
   const [trialIdx,     setTrialIdx]     = useState(0);
   const [currentTrial, setCurrentTrial] = useState<TaggedTrial | null>(null);
@@ -232,6 +263,11 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   useEffect(() => () => clearTO(), []);
 
   const startSession = () => {
+    setPhase('tutorial');
+    setTutorialStep(1);
+  };
+
+  const startRealGame = () => {
     const queue = buildFullQueue();
     setTrialQueue(queue);
     resultsRef.current = [];
@@ -244,6 +280,74 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   };
 
   if (phase === 'instructions') return <Instructions onStart={startSession} />;
+
+  if (phase === 'tutorial') {
+    if (tutorialStep === 3) {
+      return (
+        <div style={css.screen}>
+          <p style={css.title}>Pronto para o Treino Real?</p>
+          <p style={{ ...css.sub, maxWidth: 360, textAlign: 'center', lineHeight: 1.7 }}>
+            Você já sabe jogar! Agora o jogo real vai começar, mas sem as ajudas e balões explicativos.
+          </p>
+          <button style={css.primaryBtn} onClick={startRealGame}>Começar Treino</button>
+        </div>
+      );
+    }
+
+    const isStep1 = tutorialStep === 1;
+    const stimPath = isStep1
+      ? '/formas/circulo_vermelho.png'
+      : '/formas/triangulo_amarelo.png';
+    const stimAlt = isStep1 ? 'Círculo Vermelho' : 'Triângulo Amarelo';
+    const ruleLabel = isStep1 ? 'color' : 'shape';
+    const titleText = isStep1 ? 'Aprenda a Jogar — Regra da COR' : 'Aprenda a Jogar — Regra da FORMA';
+    const descText = isStep1
+      ? 'Quando a regra for COR, você deve procurar o botão que tem a mesma cor, não importa o formato do desenho!'
+      : 'Quando a regra for FORMA, você deve procurar o botão que tem o mesmo formato, não importa a cor do desenho!';
+    const tooltipText = isStep1
+      ? 'Clique aqui! Este botão é o Vermelho. Ignore que ele é um triângulo.'
+      : 'Clique aqui! Este botão é o Triângulo. Ignore que ele é vermelho.';
+
+    const handleTutorialClick = (key: string) => {
+      if (key === '1') {
+        setTutorialStep(prev => prev + 1);
+      }
+    };
+
+    return (
+      <div style={{ ...css.gameScreen, background: NEUTRAL_BG }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: '100%', textAlign: 'center', padding: '0 20px' }}>
+          <p style={{ ...css.title, fontSize: 20 }}>{titleText}</p>
+          <p style={{ ...css.sub, maxWidth: 400, lineHeight: 1.5 }}>{descText}</p>
+        </div>
+
+        <div style={{ margin: '20px 0' }}>
+          <RuleBadge rule={ruleLabel} />
+        </div>
+
+        <div style={css.stimulusArea}>
+          <img
+            src={stimPath}
+            alt={stimAlt}
+            style={{
+              width: 130,
+              height: 130,
+              objectFit: 'contain',
+            }}
+          />
+        </div>
+
+        <div style={{ position: 'relative', marginTop: 20, width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <ResponseButtons
+            onAnswer={handleTutorialClick}
+            disabled={false}
+            highlightedKey="1"
+            tooltipText={tooltipText}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (phase === 'done') return (
     <div style={css.screen}>
@@ -344,5 +448,34 @@ const css: Record<string, React.CSSProperties> = {
     background: 'rgba(255,255,255,0.07)',
     border: '2px solid rgba(255,255,255,0.18)',
     color: '#e8e9f0', transition: 'all 0.15s ease-in-out',
+  },
+  tooltip: {
+    position: 'absolute',
+    top: '115%',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: 'rgba(20, 20, 35, 0.95)',
+    border: '1px solid rgba(108, 142, 245, 0.6)',
+    borderRadius: 8,
+    padding: '10px 14px',
+    fontSize: 13,
+    color: '#e8e9f0',
+    width: 170,
+    textAlign: 'center',
+    boxShadow: '0 6px 24px rgba(0,0,0,0.6)',
+    zIndex: 10,
+    lineHeight: 1.4,
+    pointerEvents: 'none',
+  },
+  tooltipArrow: {
+    position: 'absolute',
+    bottom: '100%',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: 0,
+    height: 0,
+    borderLeft: '6px solid transparent',
+    borderRight: '6px solid transparent',
+    borderBottom: '6px solid rgba(20, 20, 35, 0.95)',
   },
 };
