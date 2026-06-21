@@ -4,37 +4,61 @@ import type { SelectiveEvaluatorInput } from '../types';
 // ─── Schema de resposta forçado via Structured Output ───────────────────────
 export const SELECTIVE_EVALUATION_SCHEMA = {
   type: Type.OBJECT,
-  description: 'Laudo clínico enriquecido de atenção visual',
+  description: 'Laudo enriquecido de atenção seletiva (busca visual) com camadas lúdica, geral e clínica',
   properties: {
     score: {
       type: Type.NUMBER,
-      description: 'Pontuação global de desempenho, de 0 (muito prejudicado) a 100 (sem alterações).',
+      description: 'Pontuação global de 0 a 100 refletindo a performance geral.',
     },
     level: {
       type: Type.STRING,
       enum: ['mínimo', 'leve', 'moderado', 'importante'],
-      description: 'Classificação clínica de comprometimento, coerente com a severidade informada.',
+      description: 'Classificação clínica coerente com a severidade informada.',
     },
-    strengths: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: 'Aspectos preservados observados (pode ser vazio se não houver engajamento).',
-    },
-    weaknesses: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: 'Fragilidades identificadas no padrão de desempenho (2–4 itens).',
-    },
-    recommendation: {
+    // ─ Camada geral (leigos) ──────────────────────────────────────────
+    generalSummary: {
       type: Type.STRING,
-      description: 'Orientação objetiva e cautelosa para o avaliador ou equipe clínica.',
+      description: 'Resumo em 2–3 frases em linguagem acessível para alguém sem formação em saúde. O que foi observado em velocidade, acertos e erros.',
+    },
+    generalStrengths: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: '1–3 pontos positivos concretos desta sessão, escritos de forma encorajadora.',
+    },
+    generalWeaknesses: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: '1–3 pontos de melhoria desta sessão, descritos sem alarmismo.',
+    },
+    generalRecommendation: {
+      type: Type.STRING,
+      description: 'Uma orientação prática e encorajadora para o próximo treino.',
+    },
+    // ─ Camada clínica (técnica) ──────────────────────────────────────
+    clinicalStrengths: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: '1–4 pontos positivos. Ex: "Precisão: o ideal é X, nesta sessão foi Y, mostrando boa capacidade..."',
+    },
+    clinicalWeaknesses: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: '1–4 pontos de atenção. Ex: "Velocidade: o ideal é responder em menos de 1,5s. Nesta sessão a média foi X..."',
+    },
+    clinicalRecommendation: {
+      type: Type.STRING,
+      description: 'Orientação objetiva baseada nos achados, sem jargões.',
     },
     clinicalNote: {
       type: Type.STRING,
-      description: 'Interpretação narrativa técnica. Não fechar diagnóstico. Sem inferências além dos dados.',
+      description: 'Texto de 4–6 linhas: (1) visão geral, (2) velocidade e precisão com números, (3) forma de percorrer a tela/erros por região, (4) o que o padrão indica sem jargões e sem diagnóstico.',
     },
   },
-  required: ['score', 'level', 'strengths', 'weaknesses', 'recommendation', 'clinicalNote'],
+  required: [
+    'score', 'level',
+    'generalSummary', 'generalStrengths', 'generalWeaknesses', 'generalRecommendation',
+    'clinicalStrengths', 'clinicalWeaknesses', 'clinicalRecommendation', 'clinicalNote',
+  ],
 };
 
 // ─── Prompt clínico — Atenção Seletiva ──────────────────────────────────────
@@ -42,11 +66,12 @@ export function buildSelectivePrompt(input: SelectiveEvaluatorInput): string {
   const spatialProfile  = input.spatialProfile;
   const errorProfile    = input.errorProfile;
   const commissionRate  = input.commissionRate ?? 0;
-  const totalClicks     = input.totalClicks    ?? 0;
+  const omissionRate    = input.omissionRate ?? 0;
+  const totalClicks     = input.totalClicks ?? 0;
 
   const neglectInfo = input.spatialNeglect
-    ? `Negligência espacial detectada no lado: ${spatialProfile?.spatialNeglectSide ?? 'indeterminado'}.`
-    : 'Sem indicadores de negligência espacial.';
+    ? `Houve assimetria indicando negligência no lado: ${spatialProfile?.spatialNeglectSide ?? 'indeterminado'}.`
+    : 'Sem indicadores de assimetria espacial significativa.';
 
   const quadrantLines = Object.entries(spatialProfile?.byQuadrant ?? {})
     .map(
@@ -55,70 +80,68 @@ export function buildSelectivePrompt(input: SelectiveEvaluatorInput): string {
     )
     .join('\n');
 
-  const noEngagementWarning = totalClicks === 0
-    ? `
-ATENÇÃO — SESSÃO SEM ENGAJAMENTO MOTOR:
-totalClicks é 0. O usuário não emitiu nenhuma resposta motora durante a sessão.
-Por isso:
-- A taxa de comissão de 0% NÃO indica controle inibitório preservado. Ausência de cliques
-  impede qualquer inferência sobre inibição de resposta.
-- A ausência de negligência espacial NÃO pode ser confirmada, pois não há coordenadas
-  de clique para analisar.
-- O campo strengths NÃO deve conter itens baseados em ausência de erros de comissão
-  ou ausência de negligência quando totalClicks = 0.
-- É PERMITIDO (e esperado) que a lista de 'strengths' fique vazia nesta situação.
-- A sessão deve ser descrita como sem engajamento motor suficiente para avaliação.
-- clinicalNote deve mencionar explicitamente que os dados são insuficientes para
-  inferir pontos preservados ou alterados nos domínios dependentes de resposta motora.
-`
-    : '';
-
   const displaySeverity = input.severity === 'minimo' ? 'mínimo' : (input.severity ?? 'indeterminado');
 
-  const lengthRules = totalClicks === 0
-    ? '- strengths pode ter 0 itens. weaknesses: 2 a 4 itens.'
-    : '- strengths e weaknesses: 2 a 4 itens cada. Tente sempre justificar cada item com os valores fornecidos.';
+  const noEngagementWarning = totalClicks === 0
+    ? `ATENÇÃO — SESSÃO SEM ENGAJAMENTO MOTOR: totalClicks é 0. O usuário não emitiu respostas. Resuma que os dados são insuficientes em todos os campos.`
+    : '';
 
   return `
-Você é um avaliador técnico-clínico especializado em neuropsicologia da atenção.
-Receba as métricas já calculadas de uma tarefa de busca visual e gere uma
-interpretação clínica enriquecida. Siga rigorosamente estas diretrizes:
+Você é um avaliador técnico-clínico de uma tarefa de Busca Visual.
+Deve gerar um laudo em DUAS camadas distintas baseando-se RIGOROSAMENTE nas regras abaixo.
 
-REGRAS:
-- Não recalcule métricas — elas já foram processadas pelo sistema local.
-- Não feche diagnóstico clínico (ex: TDAH, AVC, TCE).
-- Use linguagem técnica, prudente e embasada.
-- FUNDAMENTAÇÃO NOS DADOS: Na 'clinicalNote', 'recommendation', 'strengths' e 'weaknesses', você DEVE citar explicitamente os números e métricas da sessão (ex: % de erros de comissão, quantidades de erros por formato/cor, taxa de omissões espaciais) para justificar suas inferências. Nunca faça afirmações genéricas; mostre os dados que sustentam a análise.
-- CONSTRUÇÃO NARRATIVA: A 'clinicalNote' deve ser um texto clínico rico e bem articulado, contando a "história" do desempenho do paciente ao cruzar a severidade com o perfil de erros (formas, cores, distribuição espacial).
-- O laudo é complementar; o sistema determinístico local já determinou a severidade e o tipo de erro dominante. Assuma isso como verdade absoluta para redigir o laudo.
-- AVISO OBRIGATÓRIO: Na 'recommendation', informe explicitamente que os dados são provenientes de um treino (não é diagnóstico) e oriente a busca por um profissional de saúde mental certificado pelos conselhos regionais e federais para aprofundamento ou tirar dúvidas.
-${lengthRules}
-- score deve ser coerente com severity (mínimo→80–100, leve→60–79,
-  moderado→40–59, importante→0–39).
-- score=0 é válido e deve ser retornado quando o desempenho é severamente prejudicado.
+REGRAS ABSOLUTAS DE LINGUAGEM — LEIA ANTES DE TUDO:
+- PROIBIÇÃO TOTAL de usar as palavras: "comprometimento", "déficit", "patologia", "diagnóstico", "negligência", "hemi-negligência", "negligência lateral", "negligência espacial", "negligência hemiespacial", "controle inibitório", "lentificação", "lentificação cognitiva", "rastreio visual", "sensibilidade atencional", "flutuação da vigilância", "impulsividade", "varredura caótica", "imaturidade executiva", "atenção lateralizada", "hemicampo", "perfil atencional difuso".
+- TOM OBRIGATÓRIO: explique como se fosse para alguém sem formação em saúde. Encorajador e descritivo, nunca alarmista ou clínico. Baseado apenas nesta sessão específica. Use frases como: "o ideal seria...", "nesta sessão foi observado...", "isso pode indicar...".
+- NÃO feche diagnóstico.
+
+GUIA DE INTERPRETAÇÃO DAS MÉTRICAS:
+- Velocidade de resposta (meanReactionTimeMs): Média de tempo para clicar nos alvos. <800ms: muito rápido. 800ms-1500ms: adequado. 1500ms-2500ms: um pouco lento. >2500ms: notavelmente lento.
+- Erros por omissão (omissionRate): >20% = muitos alvos passaram despercebidos.
+- Cliques em excesso (commissionRate): >15% = clicou em elementos errados.
+- Organização da busca (meanOrganizationIndex / predominantScanPattern): próximo de 1.0 ou row-wise/column-wise = organizado. Abaixo de 0.4 ou mixed = pouco organizado.
+- Capacidade de distinguir alvos (dPrime): >2.0 = boa distinção. 1.0-2.0 = moderada. <1.0 = dificuldade em identificar elementos corretos.
+- Tipos de erro: shapeErrors = confundiu formato; colorErrors = confundiu cor; doubleErrors em alta proporção = cliques incorretos quase aleatórios.
+- Distribuição espacial: cite os misses esquerdos/direitos de forma simples (ex: "a maioria dos alvos não clicados estava no lado direito"). NÃO insinue causas neurológicas.
+
+FORMATO E EXIGÊNCIAS POR CAMPO (siga a estrutura de schema):
+- generalSummary: 2-3 frases acessíveis sobre o que ocorreu (velocidade, acertos, erros).
+- generalStrengths / Weaknesses: Pontos encorajadores / Pontos de melhoria sem alarmismo.
+- clinicalStrengths / Weaknesses: Cite o que foi avaliado, o ideal, e o que foi observado (números simples).
+- clinicalNote: Texto corrido com (1) visão geral, (2) velocidade e precisão (números), (3) forma de percorrer tela e regiões, (4) o que isso indica sem jargões.
+
 ${noEngagementWarning}
+
 ─── DADOS DA SESSÃO ──────────────────────────────────────────────────────────
 sessionId: ${input.sessionId}
-attentionType: ${input.attentionType}
-rounds: ${input.roundCount ?? 0}
-totalClicks: ${totalClicks}
-commissionRate: ${(commissionRate * 100).toFixed(1)}%
 severity (calculada localmente): ${displaySeverity}
-dominantErrorAttribute: ${input.dominantErrorAttribute ?? 'indeterminado'}
-problemRegion: ${input.problemRegion ?? 'indeterminado'}
-${neglectInfo}
 
-Perfil de erros:
-  formas: ${errorProfile?.shapeErrors ?? 0} (${((errorProfile?.shapeErrorRate ?? 0) * 100).toFixed(1)}%)
-  cores:  ${errorProfile?.colorErrors ?? 0} (${((errorProfile?.colorErrorRate ?? 0) * 100).toFixed(1)}%)
-  duplos: ${errorProfile?.doubleErrors ?? 0} (${((errorProfile?.doubleErrorRate ?? 0) * 100).toFixed(1)}%)
+Métricas globais:
+  totalClicks: ${totalClicks}
+  meanReactionTimeMs: ${input.meanReactionTimeMs ?? 'indisponível'} ms
+  reactionTimeStdDev: ${input.reactionTimeStdDev ?? 'indisponível'} ms
+  commissionRate: ${(commissionRate * 100).toFixed(1)}%
+  omissionRate: ${(omissionRate * 100).toFixed(1)}%
+  dPrime: ${input.dPrime ?? 'indisponível'}
+  meanOrganizationIndex: ${input.meanOrganizationIndex ?? 'indisponível'}
+  predominantScanPattern: ${input.predominantScanPattern ?? 'indisponível'}
 
-Perfil espacial por quadrante:
+Perfil de erros (Atributos):
+  forma (shapeErrors): ${errorProfile?.shapeErrors ?? 0}
+  cor (colorErrors):  ${errorProfile?.colorErrors ?? 0}
+  duplos (doubleErrors): ${errorProfile?.doubleErrors ?? 0}
+  Dominante: ${input.dominantErrorAttribute ?? 'indeterminado'}
+
+Perfil espacial:
+  Problema concentrado na região: ${input.problemRegion ?? 'indeterminado'}
+  ${neglectInfo}
+  Alvos perdidos à esquerda (leftMisses): ${spatialProfile?.leftMisses ?? 0}
+  Alvos perdidos à direita (rightMisses):  ${spatialProfile?.rightMisses ?? 0}
+
+Detalhamento por quadrante:
 ${quadrantLines}
-  misses esquerda: ${spatialProfile?.leftMisses ?? 0}
-  misses direita:  ${spatialProfile?.rightMisses ?? 0}
 ─────────────────────────────────────────────────────────────────────────────
 
-Gere o laudo enriquecido conforme o schema solicitado.
+Gere o laudo nos 3 níveis do schema (pontuação, geral e clínica) rigorosamente seguindo as instruções e proibições de palavras.
 `.trim();
 }

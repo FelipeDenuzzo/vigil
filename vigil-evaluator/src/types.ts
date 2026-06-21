@@ -14,6 +14,12 @@ export interface SelectiveEvaluatorInput {
   problemRegion?: 'esquerda' | 'direita' | 'centro' | 'distribuido' | 'indeterminado';
   spatialNeglect?: boolean;
   severity?: 'minimo' | 'leve' | 'moderado' | 'importante';
+  omissionRate?: number;
+  dPrime?: number | null;
+  meanReactionTimeMs?: number | null;
+  reactionTimeStdDev?: number | null;
+  meanOrganizationIndex?: number | null;
+  predominantScanPattern?: string | null;
   errorProfile?: {
     shapeErrors:    number;
     colorErrors:    number;
