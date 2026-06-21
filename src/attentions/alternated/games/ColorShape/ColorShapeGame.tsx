@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  COLOR_HEX, COLOR_KEYS, SHAPE_KEYS,
+  COLOR_HEX, COLOR_TO_BTN, SHAPE_TO_BTN,
   NEUTRAL_BG,
   FIXATION_MS, MAX_RESPONSE_MS, ITI_MS,
 } from './constants';
@@ -94,26 +94,57 @@ function Instructions({ onStart }: { onStart: () => void }) {
 }
 
 // ── Botões de resposta ──────────────────────────────────────────────────────────
-const COLOR_LABELS: Record<ColorName, string> = {
-  red: 'Vermelho', blue: 'Azul', green: 'Verde', yellow: 'Amarelo',
-};
-const SHAPE_LABELS: Record<ShapeType, string> = {
-  circle: 'Círculo', square: 'Quadrado', triangle: 'Triângulo', diamond: 'Losango',
-};
+const BUTTON_CONFIGS = [
+  { key: '1', img: '/formas/triangulo_vermelho.png', alt: 'Triângulo Vermelho' },
+  { key: '2', img: '/formas/losango_verde.png', alt: 'Losango Verde' },
+  { key: '3', img: '/formas/quadrado_amarelo.png', alt: 'Quadrado Amarelo' },
+  { key: '4', img: '/formas/circulo_azul.png', alt: 'Círculo Azul' },
+];
 
-function ResponseButtons({ rule, onAnswer, disabled }: {
-  rule: RuleType; onAnswer: (key: string) => void; disabled: boolean;
+function ResponseButtons({ onAnswer, disabled }: {
+  onAnswer: (key: string) => void; disabled: boolean;
 }) {
-  const items = rule === 'color'
-    ? (['red', 'blue', 'green', 'yellow'] as ColorName[]).map(cl => ({ key: COLOR_KEYS[cl], label: COLOR_LABELS[cl] }))
-    : (['circle', 'square', 'triangle', 'diamond'] as ShapeType[]).map(sh => ({ key: SHAPE_KEYS[sh], label: SHAPE_LABELS[sh] }));
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+
   return (
     <div style={css.btnGrid}>
-      {items.map(({ key, label }) => (
-        <button key={key} disabled={disabled} style={css.answerBtn} onClick={() => onAnswer(key)}>
-          {label}
-        </button>
-      ))}
+      {BUTTON_CONFIGS.map(({ key, img, alt }) => {
+        const isHovered = hoveredKey === key && !disabled;
+        const buttonStyle: React.CSSProperties = {
+          ...css.answerBtn,
+          opacity: disabled ? 0.3 : isHovered ? 1.0 : 0.7,
+          cursor: disabled ? 'default' : 'pointer',
+          transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+          transition: 'all 0.2s ease-in-out',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 8,
+          background: 'rgba(255, 255, 255, 0.05)',
+          border: isHovered ? '2px solid rgba(255, 255, 255, 0.4)' : '2px solid rgba(255, 255, 255, 0.1)',
+        };
+
+        return (
+          <button
+            key={key}
+            disabled={disabled}
+            style={buttonStyle}
+            onClick={() => onAnswer(key)}
+            onMouseEnter={() => setHoveredKey(key)}
+            onMouseLeave={() => setHoveredKey(null)}
+          >
+            <img 
+              src={img} 
+              alt={alt} 
+              style={{
+                width: 60,
+                height: 60,
+                objectFit: 'contain',
+              }} 
+            />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -188,9 +219,8 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     const prevRule = idx > 0 ? queue[idx - 1].rule : null;
     let isPersev = false;
     if (!correct && !timedOut && trial.trialType === 'switch' && prevRule !== null && key !== null) {
-      const k = key.toLowerCase();
-      if (prevRule === 'color') isPersev = COLOR_KEYS[trial.color] === k;
-      else                      isPersev = SHAPE_KEYS[trial.shape] === k;
+      if (prevRule === 'color') isPersev = COLOR_TO_BTN[trial.color] === key;
+      else                      isPersev = SHAPE_TO_BTN[trial.shape] === key;
     }
     const result = {
       ...trial, keyPressed: key ?? '', correct, reactionMs: rt, timedOut, isPerseveration: isPersev,
@@ -251,7 +281,7 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       </div>
 
       {currentTrial && (
-        <ResponseButtons rule={currentTrial.rule} onAnswer={handleBtnAnswer} disabled={btnDisabled} />
+        <ResponseButtons onAnswer={handleBtnAnswer} disabled={btnDisabled} />
       )}
     </div>
   );
@@ -300,13 +330,13 @@ const css: Record<string, React.CSSProperties> = {
     width: 130, height: 130,
   },
   btnGrid: {
-    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
-    width: '100%', maxWidth: 360,
+    display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12,
+    width: '100%', maxWidth: 440,
   },
   answerBtn: {
-    minHeight: 48, borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer',
+    minHeight: 80, borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer',
     background: 'rgba(255,255,255,0.07)',
     border: '2px solid rgba(255,255,255,0.18)',
-    color: '#e8e9f0', transition: 'opacity 0.15s',
+    color: '#e8e9f0', transition: 'all 0.15s ease-in-out',
   },
 };

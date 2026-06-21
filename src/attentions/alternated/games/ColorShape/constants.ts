@@ -23,6 +23,21 @@ export const COLOR_KEYS: Record<ColorName, string> = {
   yellow: 'h',
 };
 
+export const COLOR_TO_BTN: Record<ColorName, string> = {
+  red:    '1',
+  green:  '2',
+  yellow: '3',
+  blue:   '4',
+};
+
+export const SHAPE_TO_BTN: Record<ShapeType, string> = {
+  triangle: '1',
+  diamond:  '2',
+  square:   '3',
+  circle:   '4',
+};
+
+
 export const FIXATION_MS      = 400;
 export const MAX_RESPONSE_MS  = 2500;
 export const FEEDBACK_MS      = 500;
