@@ -277,10 +277,10 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
         <span style={{ color: '#f08080' }}>↩ {revisits}</span>
         <span style={{ color: '#8b8fa8' }}>Fase {levelIdx + 1}/{LONG_MAZE_LEVELS.length}</span>
       </div>
-      <div style={{ overflow: 'auto', maxWidth: '100%', maxHeight: '55vh', borderRadius: 8 }}
+      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}
         onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <canvas ref={canvasRef} width={cols * CELL} height={rows * CELL}
-          style={{ display: 'block', touchAction: 'none' }} />
+          style={{ display: 'block', touchAction: 'none', maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }} />
       </div>
       <div style={css.dpad}>
         <div style={css.dpadRow}>
