@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth } from '../lib/firebase';
+import db from '../lib/firebase';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   saveConsent,
@@ -239,11 +241,20 @@ export default function Cadastro() {
       const credential = await createUserWithEmailAndPassword(auth, email, senha);
       const uid = credential.user.uid;
 
+      // Cria perfil do usuário com accessStatus 'pending' (aguardando aprovação manual)
+      await setDoc(doc(db, 'users', uid), {
+        uid,
+        email,
+        accessStatus: 'pending',
+        role: 'user',
+        createdAt: serverTimestamp(),
+      });
+
       // Salva localmente (cache) e no Firestore (prova auditável LGPD Art. 8º §5)
       saveConsent(record);
       await saveConsentToFirestore(uid, record);
 
-      navigate('/treinar');
+      navigate('/aguardando-acesso');
     } catch (error: any) {
       const code = error?.code ?? '';
       if (code === 'auth/email-already-in-use') {

@@ -18,6 +18,8 @@ import { DividedHub } from './attentions/divided/DividedHub';
 import MentalVaultPlay from './attentions/divided/MentalVaultPlay';
 import SelectiveListeningPlay from './attentions/divided/SelectiveListeningPlay';
 import SelectiveListeningResult from './attentions/divided/games/SelectiveListening/SelectiveListeningResult';
+import { AguardandoAcesso } from './pages/AguardandoAcesso';
+import { Admin } from './pages/Admin';
 import { NotFound } from './pages/NotFound';
 import './shared/base.css';
 
@@ -26,10 +28,16 @@ export default function App() {
     <AuthProvider>
       <HashRouter>
         <Routes>
+          {/* Públicas */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/privacidade" element={<PoliticaPrivacidade />} />
+
+          {/* Autenticado mas aguardando aprovação */}
+          <Route path="/aguardando-acesso" element={<AguardandoAcesso />} />
+
+          {/* Requer login + aprovação */}
           <Route path="/treinar" element={<ProtectedRoute><SelectAttention /></ProtectedRoute>} />
 
           {/* Seletiva */}
@@ -53,6 +61,10 @@ export default function App() {
           <Route path="/treinar/dividida/escuta-seletiva/resultado" element={<ProtectedRoute><SelectiveListeningResult /></ProtectedRoute>} />
 
           <Route path="/historico" element={<ProtectedRoute><Historico /></ProtectedRoute>} />
+
+          {/* Admin — requer login + approved + role admin */}
+          <Route path="/admin" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>

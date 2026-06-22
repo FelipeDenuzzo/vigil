@@ -3,26 +3,51 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ── Helper: verifica se o usuário autenticado é admin ──────────────────────
+    function isAdmin() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ── users ──────────────────────────────────────────────────────────────────
+    // Usuário lê/cria o próprio documento. Admin lê e atualiza qualquer um.
+    match /users/{uid} {
+      // Leitura: próprio usuário ou admin
+      allow read: if request.auth != null
+                  && (request.auth.uid == uid || isAdmin());
+
+      // Criação: apenas o próprio usuário, com campos controlados
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.accessStatus == 'pending'
+                    && request.resource.data.role == 'user';
+
+      // Atualização: apenas admin (aprovar, bloquear, promover)
+      allow update: if isAdmin();
+    }
+
     // ── sessions ───────────────────────────────────────────────────────────────
-    // Cada sessão só pode ser lida/escrita pelo próprio usuário dono (uid).
     match /sessions/{sessionId} {
       allow read, write: if request.auth != null
                          && request.auth.uid == resource.data.uid;
 
-      // Permite criar (write sem resource existente) se o uid no payload
-      // corresponde ao usuário autenticado.
       allow create: if request.auth != null
                     && request.resource.data.uid == request.auth.uid;
     }
 
     // ── sessionReports ────────────────────────────────────────────────────────
-    // Laudos gerados por IA: mesmo isolamento por uid.
     match /sessionReports/{sessionId} {
       allow read, write: if request.auth != null
                          && request.auth.uid == resource.data.uid;
 
       allow create: if request.auth != null
                     && request.resource.data.uid == request.auth.uid;
+    }
+
+    // ── consent ───────────────────────────────────────────────────────────────
+    match /consent/{uid} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == uid;
     }
 
     // Bloqueia qualquer outro caminho não mapeado.

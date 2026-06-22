@@ -1,40 +1,80 @@
 // src/lib/AuthContext.tsx
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { auth } from './firebase';
+import db from './firebase';
 import { hydrateForUser, clearUserData } from '../shared/storage';
+
+export type AccessStatus = 'approved' | 'pending' | 'blocked';
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
+  accessStatus: AccessStatus | null;  // null enquanto carrega
+  isAdmin: boolean;
   logout: () => Promise<void>;
+  refreshAccess: () => Promise<void>; // força re-leitura do Firestore
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  accessStatus: null,
+  isAdmin: false,
   logout: async () => {},
+  refreshAccess: async () => {},
 });
 
+async function fetchUserProfile(
+  uid: string
+): Promise<{ accessStatus: AccessStatus; isAdmin: boolean }> {
+  try {
+    const snap = await getDoc(doc(db, 'users', uid));
+    if (!snap.exists()) {
+      // Documento ainda não criado (race condition no cadastro) — trata como pending
+      return { accessStatus: 'pending', isAdmin: false };
+    }
+    const data = snap.data();
+    const accessStatus: AccessStatus =
+      data?.accessStatus === 'approved' ? 'approved'
+      : data?.accessStatus === 'blocked' ? 'blocked'
+      : 'pending';
+    return { accessStatus, isAdmin: data?.role === 'admin' };
+  } catch {
+    return { accessStatus: 'pending', isAdmin: false };
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user,    setUser]    = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user,         setUser]         = useState<User | null>(null);
+  const [loading,      setLoading]      = useState(true);
+  const [accessStatus, setAccessStatus] = useState<AccessStatus | null>(null);
+  const [isAdmin,      setIsAdmin]      = useState(false);
   const prevUidRef = useRef<string | null>(null);
 
+  async function loadProfile(uid: string) {
+    const profile = await fetchUserProfile(uid);
+    setAccessStatus(profile.accessStatus);
+    setIsAdmin(profile.isAdmin);
+  }
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
       const prevUid = prevUidRef.current;
 
       if (!u && prevUid) {
-        // Usuário fez logout — limpa os dados locais do uid anterior
         clearUserData(prevUid);
+        setAccessStatus(null);
+        setIsAdmin(false);
       }
 
-      if (u && u.uid !== prevUid) {
-        // Novo usuário autenticado (login ou troca de conta)
-        // Limpa dados do anterior (se existia) e hidrata os do novo
-        if (prevUid && prevUid !== u.uid) clearUserData(prevUid);
-        hydrateForUser(u.uid);
+      if (u) {
+        if (u.uid !== prevUid) {
+          if (prevUid && prevUid !== u.uid) clearUserData(prevUid);
+          hydrateForUser(u.uid);
+        }
+        await loadProfile(u.uid);
       }
 
       prevUidRef.current = u?.uid ?? null;
@@ -49,8 +89,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
   }
 
+  async function refreshAccess() {
+    if (user?.uid) await loadProfile(user.uid);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, loading, accessStatus, isAdmin, logout, refreshAccess }}>
       {!loading && children}
     </AuthContext.Provider>
   );
