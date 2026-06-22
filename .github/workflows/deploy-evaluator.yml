@@ -10,10 +10,10 @@ on:
 
 env:
   PROJECT_ID:   ${{ secrets.GCP_PROJECT_ID }}
-  REGION:       ${{ secrets.GCP_REGION }}
+  REGION:       southamerica-east1
   SERVICE:      vigil-evaluator
-  REGISTRY:     ${{ secrets.GCP_REGION }}-docker.pkg.dev
-  IMAGE:        ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/vigil-evaluator/vigil-evaluator
+  REGISTRY:     southamerica-east1-docker.pkg.dev
+  IMAGE:        southamerica-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/vigil-evaluator/vigil-evaluator
 
 jobs:
   deploy:
