@@ -68,7 +68,7 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --service-account=${{ secrets.GCP_SA_EMAIL }} \
-            --set-env-vars="GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},EVALUATOR_SECRET=${{ secrets.EVALUATOR_SECRET }}" \
+            --set-env-vars="GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},EVALUATOR_SECRET=${{ secrets.EVALUATOR_SECRET }},GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}" \
             --memory=512Mi \
             --cpu=1 \
             --timeout=30 \
