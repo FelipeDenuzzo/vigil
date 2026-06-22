@@ -26,10 +26,11 @@ function generateConsonants(length: number): string[] {
 }
 
 const CONFIG_BY_LEVEL: Record<number, GameConfig> = {
-  1: { consonantsCount: 3, displayDurationMs: 1500, classificationTrials: 5 },
-  2: { consonantsCount: 4, displayDurationMs: 1300, classificationTrials: 6 },
-  3: { consonantsCount: 5, displayDurationMs: 1100, classificationTrials: 8 },
-  4: { consonantsCount: 6, displayDurationMs: 900,  classificationTrials: 10 },
+  1: { consonantsCount: 3, displayDurationMs: 1500, classificationTrials: 8, condition: 'pure' },
+  2: { consonantsCount: 4, displayDurationMs: 1300, classificationTrials: 8, condition: 'pure' },
+  3: { consonantsCount: 4, displayDurationMs: 1200, classificationTrials: 8, condition: 'mixed' },
+  4: { consonantsCount: 5, displayDurationMs: 1100, classificationTrials: 8, condition: 'mixed' },
+  5: { consonantsCount: 6, displayDurationMs: 900,  classificationTrials: 8, condition: 'mixed' },
 };
 
 export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose }) => {
@@ -99,7 +100,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose }) => {
     const success = lastResult.isRecallCorrect && lastResult.processingAccuracy >= 80;
 
     if (success) {
-      if (level < 4) {
+      if (level < 5) {
         setLevel((prev) => prev + 1);
       }
     }
@@ -120,14 +121,19 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose }) => {
             <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)' }}>
               🔐 Instruções do Jogo
             </h2>
-            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', textAlign: 'left' }}>
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', textAlign: 'left', fontSize: '15px', lineHeight: '1.6' }}>
               O **Cofre Mental** é um desafio de atenção dividida e memória de trabalho.
               <br /><br />
-              1. **Memorize**: Uma sequência de letras aparecerá no cofre. Guarde-as na ordem certa.
+              1. **Memorize**: Uma sequência de consoantes aparecerá no centro. Guarde-as na ordem exata.
+              <br /><br />
+              2. **Decodifique (Classificação de dígitos)**: Responda a uma sequência de 8 dígitos de 1 a 9 (excluindo o 5) muito rápido!
               <br />
-              2. **Decodifique**: Classifique rapidamente se os números que aparecem são **Pares** ou **Ímpares**.
+              * **Condição Pura (Níveis 1-2)**: Regra única: ÍMPAR = Esquerda | PAR = Direita.
+              * **Condição Mista (Níveis 3-5)**: A cor do dígito muda a regra!
+                * 🔵 **Azul**: ÍMPAR = Esquerda | PAR = Direita.
+                * 🔴 **Vermelho**: &lt; 5 = Esquerda | &gt; 5 = Direita.
               <br />
-              3. **Abra o Cofre**: Digite as letras originais na mesma ordem em que apareceram.
+              3. **Abra o cofre**: Responda as letras da sequência na mesma ordem.
             </p>
             <Button
               variant="primary"
@@ -152,6 +158,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose }) => {
         return (
           <ProcessingPhase
             trialsCount={activeConfig.classificationTrials}
+            condition={activeConfig.condition}
             onComplete={handleProcessingComplete}
           />
         );
@@ -186,6 +193,12 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose }) => {
               <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
                 Precisão de Dígitos: {Math.round(lastResult.processingAccuracy)}% (Ideal: &gt;= 80%)
               </p>
+              <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+                Tempo Médio de Reação: {Math.round(lastResult.processingAvgRtMs)}ms
+              </p>
+              <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+                Condição: {lastResult.config.condition === 'pure' ? 'Pura' : 'Mista'}
+              </p>
             </div>
 
             <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
@@ -197,7 +210,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose }) => {
                 onClick={handleFeedbackNext}
                 style={{ flex: 1.5, backgroundColor: 'var(--color-divided)' }}
               >
-                {isSuccessful && level < 4 ? 'Avançar Nível' : 'Jogar Novamente'}
+                {isSuccessful && level < 5 ? 'Avançar Nível' : 'Jogar Novamente'}
               </Button>
             </div>
           </Card>
@@ -229,7 +242,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose }) => {
     <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: 'var(--space-4)' }}>
       {phase !== 'instructions' && phase !== 'summary' && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
-          <span>Nível {level}</span>
+          <span>Nível {level} ({activeConfig.condition === 'pure' ? 'Puro' : 'Misto'})</span>
           <span>Fase: {phase === 'encoding' ? 'Codificação' : phase === 'processing' ? 'Processamento' : 'Recall'}</span>
         </div>
       )}
