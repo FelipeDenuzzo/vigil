@@ -20,17 +20,19 @@ export const DividedHub: React.FC = () => {
 
       <section>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
-          {/* Empty state list - Exercícios aqui futuramente */}
+          <Card
+            interactive
+            accent="var(--color-divided)"
+            onClick={() => navigate('/treinar/dividida/cofre-mental')}
+          >
+            <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
+              🔐 Cofre Mental
+            </p>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+              Guarde uma sequência de letras e classifique dígitos sob divisão de atenção para abrir o cofre.
+            </p>
+          </Card>
         </div>
-
-        <Card style={{ textAlign: 'center', padding: 'var(--space-12) var(--space-6)' }}>
-          <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)' }}>
-            Exercícios chegando em breve. Volte para a tela principal e explore outro tipo de atenção.
-          </p>
-          <Button variant="secondary" onClick={() => navigate('/treinar')}>
-            Voltar à seleção
-          </Button>
-        </Card>
       </section>
     </div>
   );
