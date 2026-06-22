@@ -1,17 +1,190 @@
 // src/attentions/alternated/games/ColorShape/ColorShapeReportPanel.tsx
+import { useState } from 'react';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 
+type Tab = 'ludic' | 'analysis';
+
+const LEVEL_COLOR: Record<string, string> = {
+  'mínimo':    '#6dbf87', 'minimo': '#6dbf87',
+  'leve':      '#f5c070',
+  'moderado':  '#f5a060',
+  'importante':'#f08080',
+};
+
+const DISCLAIMER =
+  '⚠️ Este resultado é baseado em uma tarefa de treino e não substitui avaliação profissional. Em caso de dúvidas, consulte um profissional de saúde mental.';
+
 const s = {
-  panel:     { display: 'grid', gap: 12 } as const,
-  section:   { background: '#161820', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 16, color: '#e8e9f0' } as const,
-  title:     { fontSize: 16, fontWeight: 700, marginBottom: 10, color: '#e8e9f0' } as const,
-  scoreRow:  { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } as const,
-  emoji:     { fontSize: 36 } as const,
-  scoreLabel:{ fontSize: 18, fontWeight: 800, color: '#e8e9f0' } as const,
-  scoreLevel:{ fontSize: 13, color: '#8b8fa8', marginTop: 2 } as const,
-  text:      { fontSize: 14, lineHeight: 1.6, color: '#c8cad8', margin: 0 } as const,
-  list:      { paddingLeft: 18, margin: 0 } as const,
-  listItem:  { fontSize: 14, lineHeight: 1.6, color: '#c8cad8', marginBottom: 4 } as const,
+  wrapper: {
+    background: '#161820',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    overflow: 'hidden',
+  } as const,
+
+  header: {
+    padding: '16px 16px 0',
+  } as const,
+
+  title: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: '#e8e9f0',
+    marginBottom: 12,
+  } as const,
+
+  tabRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
+  } as const,
+
+  tab: (active: boolean): React.CSSProperties => ({
+    padding: '10px 4px',
+    textAlign: 'center',
+    fontSize: 13,
+    fontWeight: active ? 700 : 400,
+    color: active ? '#6c8ef5' : '#8b8fa8',
+    borderBottom: active ? '2px solid #6c8ef5' : '2px solid transparent',
+    cursor: 'pointer',
+    background: 'none',
+    borderTop: 'none',
+    borderLeft: 'none',
+    borderRight: 'none',
+    transition: 'color 0.18s',
+  }),
+
+  body: {
+    padding: 16,
+    display: 'grid',
+    gap: 12,
+  } as const,
+
+  gaugeWrap: {
+    position: 'relative' as const,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+
+  gaugeTrack: {
+    height: 12,
+    borderRadius: 99,
+    background: 'linear-gradient(to right, #f08080, #f5c070, #6dbf87)',
+    position: 'relative' as const,
+  },
+
+  gaugeMarker: (pct: number): React.CSSProperties => ({
+    position: 'absolute',
+    top: '50%',
+    left: `${pct}%`,
+    transform: 'translate(-50%, -50%)',
+    width: 20,
+    height: 20,
+    borderRadius: '50%',
+    background: '#fff',
+    border: '3px solid #6c8ef5',
+    boxShadow: '0 0 0 3px rgba(108,142,245,0.3)',
+  }),
+
+  gaugeLegend: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: 6,
+    fontSize: 11,
+    color: '#8b8fa8',
+  } as const,
+
+  ludicScore: {
+    textAlign: 'center' as const,
+    fontSize: 48,
+    fontWeight: 800,
+    color: '#e8e9f0',
+    lineHeight: 1,
+    marginTop: 16,
+  },
+
+  ludicLabel: {
+    textAlign: 'center' as const,
+    fontSize: 18,
+    fontWeight: 600,
+    color: '#a0b4f8',
+    marginTop: 6,
+    marginBottom: 4,
+  },
+
+  recommendation: {
+    fontSize: 13,
+    color: '#c8cad8',
+    lineHeight: 1.6,
+    padding: '10px 14px',
+    background: 'rgba(108,142,245,0.08)',
+    borderRadius: 10,
+    textAlign: 'center' as const,
+    marginTop: 8,
+  },
+
+  analysisBlock: {
+    fontSize: 14,
+    color: '#c8cad8',
+    lineHeight: 1.7,
+    padding: '12px 14px',
+    background: 'rgba(255,255,255,0.04)',
+    borderRadius: 10,
+  } as const,
+
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: '#8b8fa8',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.07em',
+    marginBottom: 8,
+    marginTop: 2,
+  } as const,
+
+  listItem: {
+    display: 'flex',
+    gap: 8,
+    alignItems: 'flex-start',
+    fontSize: 13,
+    color: '#c8cad8',
+    lineHeight: 1.55,
+    marginBottom: 7,
+  } as const,
+
+  dot: (color: string): React.CSSProperties => ({
+    width: 7,
+    height: 7,
+    borderRadius: '50%',
+    background: color,
+    flexShrink: 0,
+    marginTop: 5,
+  }),
+
+  divider: {
+    height: 1,
+    background: 'rgba(255,255,255,0.06)',
+    margin: '2px 0',
+  } as const,
+
+  levelBadge: (level: string): React.CSSProperties => ({
+    display: 'inline-block',
+    padding: '2px 10px',
+    borderRadius: 99,
+    fontSize: 12,
+    fontWeight: 700,
+    color: LEVEL_COLOR[level] ?? '#e8e9f0',
+    border: `1px solid ${LEVEL_COLOR[level] ?? '#e8e9f0'}`,
+    marginLeft: 8,
+  }),
+
+  disclaimerBox: {
+    fontSize: 12,
+    color: '#8b8fa8',
+    lineHeight: 1.6,
+    padding: '8px 2px',
+    textAlign: 'center' as const,
+  } as const,
 };
 
 const LEVEL_EMOJI: Record<string, string> = {
@@ -28,89 +201,106 @@ const LEVEL_LABEL: Record<string, string> = {
 };
 
 export function ColorShapeReportPanel({ report }: { report: EvaluationReport }) {
+  const [tab, setTab] = useState<Tab>('ludic');
+
   const level = report.level ?? '';
   const emoji = LEVEL_EMOJI[level] ?? '🧩';
-  const label = LEVEL_LABEL[level] ?? 'Resultado processado';
+  const label = LEVEL_LABEL[level] ?? report.ludic?.label ?? 'Resultado processado';
+  const score = report.ludic?.score ?? report.score;
+
+  const allStrengths = [
+    ...(report.general?.strengths ?? []),
+    ...(report.clinical?.strengths ?? []).filter(
+      (c) => !(report.general?.strengths ?? []).some((g) => g.trim() === c.trim())
+    ),
+  ];
+
+  const allWeaknesses = [
+    ...(report.general?.weaknesses ?? []),
+    ...(report.clinical?.weaknesses ?? []).filter(
+      (c) => !(report.general?.weaknesses ?? []).some((g) => g.trim() === c.trim())
+    ),
+  ];
+
+  const clinicalNote = report.clinical?.clinicalNote ?? report.general?.summary ?? '';
+  const recommendation = report.general?.recommendation ?? '';
 
   return (
-    <div style={s.panel}>
+    <div style={s.wrapper}>
+      <div style={s.header}>
+        <p style={s.title}>
+          🤖 Avaliação IA
+          <span style={s.levelBadge(level)}>{level}</span>
+        </p>
+        <div style={s.tabRow}>
+          {(['ludic', 'analysis'] as Tab[]).map((t) => (
+            <button
+              key={t}
+              type="button"
+              style={s.tab(tab === t)}
+              onClick={() => setTab(t)}
+            >
+              {t === 'ludic' ? '🎯 Régua' : '📋 Análise'}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {/* ─ Lúdico ─ */}
-      {report.ludic && (
-        <section style={s.section}>
-          <div style={s.scoreRow}>
-            <span style={s.emoji}>{emoji}</span>
-            <div>
-              <p style={s.scoreLabel}>{label}</p>
-              <p style={s.scoreLevel}>Nível: {level}</p>
+      <div style={s.body}>
+        {tab === 'ludic' && (
+          <>
+            <p style={s.ludicScore}>{emoji} {score}</p>
+            <p style={s.ludicLabel}>{label}</p>
+            <div style={s.gaugeWrap}>
+              <div style={s.gaugeTrack}>
+                <div style={s.gaugeMarker(score)} />
+              </div>
+              <div style={s.gaugeLegend}>
+                <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+              </div>
             </div>
-          </div>
-          {report.ludic.label && (
-            <p style={s.text}>{report.ludic.label}</p>
-          )}
-        </section>
-      )}
+            {recommendation && (
+              <p style={s.recommendation}>💡 {recommendation}</p>
+            )}
+          </>
+        )}
 
-      {/* ─ Geral ─ */}
-      {report.general && (
-        <section style={s.section}>
-          <h3 style={s.title}>📋 Resumo geral</h3>
-          {report.general.summary && <p style={s.text}>{report.general.summary}</p>}
-          {Array.isArray(report.general.strengths) && report.general.strengths.length > 0 && (
-            <div style={{ marginTop: 10 }}>
-              <p style={{ ...s.text, fontWeight: 700, marginBottom: 6 }}>✅ Pontos fortes</p>
-              <ul style={s.list}>
-                {report.general.strengths.map((item, i) => <li key={i} style={s.listItem}>{item}</li>)}
-              </ul>
-            </div>
-          )}
-          {Array.isArray(report.general.weaknesses) && report.general.weaknesses.length > 0 && (
-            <div style={{ marginTop: 10 }}>
-              <p style={{ ...s.text, fontWeight: 700, marginBottom: 6 }}>⚠️ Pontos de atenção</p>
-              <ul style={s.list}>
-                {report.general.weaknesses.map((item, i) => <li key={i} style={s.listItem}>{item}</li>)}
-              </ul>
-            </div>
-          )}
-          {report.general.recommendation && (
-            <div style={{ marginTop: 10 }}>
-              <p style={{ ...s.text, fontWeight: 700, marginBottom: 4 }}>💡 Recomendação</p>
-              <p style={s.text}>{report.general.recommendation}</p>
-            </div>
-          )}
-        </section>
-      )}
+        {tab === 'analysis' && (
+          <>
+            {clinicalNote && (
+              <div style={s.analysisBlock}>
+                {clinicalNote}
+              </div>
+            )}
 
-      {/* ─ Clínico ─ */}
-      {report.clinical && (
-        <section style={s.section}>
-          <h3 style={s.title}>🧠 Perspectiva clínica</h3>
-          {report.clinical.clinicalNote && <p style={s.text}>{report.clinical.clinicalNote}</p>}
-          {Array.isArray(report.clinical.strengths) && report.clinical.strengths.length > 0 && (
-            <div style={{ marginTop: 10 }}>
-              <p style={{ ...s.text, fontWeight: 700, marginBottom: 6 }}>Habilidades preservadas</p>
-              <ul style={s.list}>
-                {report.clinical.strengths.map((item, i) => <li key={i} style={s.listItem}>{item}</li>)}
-              </ul>
-            </div>
-          )}
-          {Array.isArray(report.clinical.weaknesses) && report.clinical.weaknesses.length > 0 && (
-            <div style={{ marginTop: 10 }}>
-              <p style={{ ...s.text, fontWeight: 700, marginBottom: 6 }}>Áreas de dificuldade</p>
-              <ul style={s.list}>
-                {report.clinical.weaknesses.map((item, i) => <li key={i} style={s.listItem}>{item}</li>)}
-              </ul>
-            </div>
-          )}
-          {report.clinical.recommendation && (
-            <div style={{ marginTop: 10 }}>
-              <p style={{ ...s.text, fontWeight: 700, marginBottom: 4 }}>Encaminhamento</p>
-              <p style={s.text}>{report.clinical.recommendation}</p>
-            </div>
-          )}
-        </section>
-      )}
+            {allStrengths.length > 0 && (
+              <>
+                <p style={s.sectionTitle}>✅ Habilidades observadas</p>
+                {allStrengths.map((item, i) => (
+                  <div key={i} style={s.listItem}>
+                    <span style={s.dot('#6dbf87')} />{item}
+                  </div>
+                ))}
+              </>
+            )}
 
+            {allWeaknesses.length > 0 && (
+              <>
+                <p style={s.sectionTitle}>⚠️ Pontos de atenção</p>
+                {allWeaknesses.map((item, i) => (
+                  <div key={i} style={s.listItem}>
+                    <span style={s.dot('#f5c070')} />{item}
+                  </div>
+                ))}
+              </>
+            )}
+
+            <div style={s.divider} />
+
+            <p style={s.disclaimerBox}>{DISCLAIMER}</p>
+          </>
+        )}
+      </div>
     </div>
   );
 }
