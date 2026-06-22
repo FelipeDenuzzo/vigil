@@ -40,6 +40,7 @@ jobs:
         run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
 
       - name: Criar repositório no Artifact Registry se não existir
+        continue-on-error: true
         run: |
           gcloud artifacts repositories describe vigil-evaluator --location=${{ env.REGION }} --quiet || \
           gcloud artifacts repositories create vigil-evaluator \
