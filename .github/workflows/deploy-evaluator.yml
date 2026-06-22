@@ -39,6 +39,15 @@ jobs:
       - name: Configurar Docker para Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
 
+      - name: Criar repositório no Artifact Registry se não existir
+        run: |
+          gcloud artifacts repositories describe vigil-evaluator --location=${{ env.REGION }} --quiet || \
+          gcloud artifacts repositories create vigil-evaluator \
+            --repository-format=docker \
+            --location=${{ env.REGION }} \
+            --description="Docker repository for vigil-evaluator" \
+            --quiet
+
       - name: Build e push da imagem
         run: |
           docker build -t ${{ env.IMAGE }}:${{ github.sha }} -t ${{ env.IMAGE }}:latest .
