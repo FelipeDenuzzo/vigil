@@ -7,3 +7,10 @@ vite.config.d.ts
 .env
 .env.local
 .env.*.local
+
+# GCP keys and credentials
+nova-chave.json
+*-chave.json
+*key.json
+gha-creds-*.json
+
