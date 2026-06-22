@@ -107,7 +107,7 @@ export const RecallPhase: React.FC<Props> = ({
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.instruction}>Recupere a sequência exata</h2>
+      <h2 style={styles.instruction}>Digite as letras na ordem</h2>
 
       {/* Caixa de exibição das letras digitadas */}
       <div style={styles.slotRow}>
@@ -138,9 +138,6 @@ export const RecallPhase: React.FC<Props> = ({
       <div style={styles.controlRow}>
         <Button variant="secondary" onClick={handleBackspace} style={{ flex: 1 }}>
           Apagar
-        </Button>
-        <Button variant="ghost" onClick={handleClear} style={{ flex: 1 }}>
-          Limpar
         </Button>
         <Button
           variant="primary"
