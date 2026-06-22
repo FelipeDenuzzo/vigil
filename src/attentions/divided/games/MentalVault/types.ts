@@ -1,6 +1,6 @@
 // src/attentions/divided/games/MentalVault/types.ts
 
-export type MentalVaultFase = 'instrucoes' | 'codificacao' | 'processamento' | 'recall' | 'resumo';
+export type MentalVaultFase = 'instrucoes' | 'simulacao' | 'codificacao' | 'processamento' | 'recall' | 'resumo';
 export type CondicaoRodada = 'pura' | 'mista';
 
 export interface ConfigJogo {
