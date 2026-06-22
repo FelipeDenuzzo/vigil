@@ -138,17 +138,12 @@ export interface ReportLayers {
 export interface EvaluationReport {
   score:  number;
   level:  'mínimo' | 'leve' | 'moderado' | 'importante';
-  // Estrutura nova (alternada) — campos flat que são remapeados na rota
-  generalSummary?:          string;
-  generalStrengths?:        string[];
-  generalWeaknesses?:       string[];
-  generalRecommendation?:   string;
-  clinicalStrengths?:       string[];
-  clinicalWeaknesses?:      string[];
-  clinicalRecommendation?:  string;
-  clinicalNote?:            string;
-  // Estrutura legada (seletiva / sustentada)
-  strengths?:      string[];
-  weaknesses?:     string[];
-  recommendation?: string;
+  generalSummary:          string;
+  generalStrengths:        string[];
+  generalWeaknesses:       string[];
+  generalRecommendation:   string;
+  clinicalStrengths:       string[];
+  clinicalWeaknesses:      string[];
+  clinicalRecommendation:  string;
+  clinicalNote:            string;
 }

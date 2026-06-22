@@ -1,18 +1,64 @@
+import { Type } from '@google/genai';
 import type { SustainedEvaluatorInput } from '../types';
-import type { Schema } from '@google/genai';
 
 // ─── Schema JSON retornado pelo Gemini ───────────────────────────────────────
-export const SUSTAINED_EVALUATION_SCHEMA: Schema = {
-  type: 'object' as any,
+export const SUSTAINED_EVALUATION_SCHEMA = {
+  type: Type.OBJECT,
+  description: 'Laudo enriquecido de atenção sustentada (labirintos prolongados) com camadas lúdica, geral e clínica',
   properties: {
-    score:          { type: 'number' as any },
-    level:          { type: 'string' as any },
-    strengths:      { type: 'array' as any, items: { type: 'string' as any } },
-    weaknesses:     { type: 'array' as any, items: { type: 'string' as any } },
-    recommendation: { type: 'string' as any },
-    clinicalNote:   { type: 'string' as any },
+    score: {
+      type: Type.NUMBER,
+      description: 'Pontuação global de 0 a 100 refletindo a performance geral.',
+    },
+    level: {
+      type: Type.STRING,
+      enum: ['mínimo', 'leve', 'moderado', 'importante'],
+      description: 'Classificação clínica coerente com a severidade informada.',
+    },
+    // ─ Camada geral (leigos) ──────────────────────────────────────────
+    generalSummary: {
+      type: Type.STRING,
+      description: 'Resumo em 2–3 frases em linguagem acessível para alguém sem formação em saúde. O que foi observado na performance geral do usuário.',
+    },
+    generalStrengths: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: '1–3 pontos positivos concretos desta sessão, escritos de forma encorajadora e sem termos técnicos.',
+    },
+    generalWeaknesses: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: '1–3 pontos de melhoria desta sessão, descritos sem alarmismo e em linguagem simples.',
+    },
+    generalRecommendation: {
+      type: Type.STRING,
+      description: 'Uma orientação prática e encorajadora para o próximo treino.',
+    },
+    // ─ Camada clínica (técnica) ──────────────────────────────────────
+    clinicalStrengths: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: '1–4 pontos positivos técnicos com citação explícita dos valores numéricos.',
+    },
+    clinicalWeaknesses: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: '1–4 pontos de atenção técnicos com citação explícita dos valores numéricos.',
+    },
+    clinicalRecommendation: {
+      type: Type.STRING,
+      description: 'Orientação objetiva baseada nos achados clínicos, sem jargões e lembrando que é um treino (não diagnóstico).',
+    },
+    clinicalNote: {
+      type: Type.STRING,
+      description: 'Texto de 4–6 linhas: (1) visão geral das funções executivas e atenção sustentada, (2) eficiência e perseveração com números, (3) padrão de resposta pós-erro e lapsos, (4) o que o padrão indica sem diagnóstico.',
+    },
   },
-  required: ['score', 'level', 'strengths', 'weaknesses', 'recommendation', 'clinicalNote'],
+  required: [
+    'score', 'level',
+    'generalSummary', 'generalStrengths', 'generalWeaknesses', 'generalRecommendation',
+    'clinicalStrengths', 'clinicalWeaknesses', 'clinicalRecommendation', 'clinicalNote',
+  ],
 };
 
 // ─── Builder do prompt ───────────────────────────────────────────────────────
@@ -72,21 +118,22 @@ Use esta ordem para definir o level e o clinicalNote:
 
 ## Sua tarefa
 
-Retorne um JSON válido com exatamente esta estrutura:
+Gere um laudo em DUAS camadas distintas baseando-se RIGOROSAMENTE nas regras abaixo:
 
-{
-  "score": <número 0-100 proporcional ao desempenho>,
-  "level": <"mínimo" | "leve" | "moderado" | "importante">,
-  "strengths": [<lista de 2 a 3 pontos fortes redigidos de forma acessível ao usuário>],
-  "weaknesses": [<lista de 2 a 3 pontos a desenvolver, sem linguagem alarmista>],
-  "recommendation": <frase curta motivacional e lúdica para o próximo treino>,
-  "clinicalNote": <parágrafo técnico para o profissional de saúde, citando os indicadores clínicos observados>
-}
+│ CAMADA GERAL — para o próprio usuário, sem formação em saúde.
+│ Linguagem simples, encorajadora, sem termos técnicos.
+│ Campos: generalSummary, generalStrengths, generalWeaknesses, generalRecommendation.
+│
+│ CAMADA CLÍNICA — para o avaliador ou equipe de saúde.
+│ Linguagem técnica, prudente, embasada nos dados numéricos.
+│ Campos: clinicalStrengths, clinicalWeaknesses, clinicalRecommendation, clinicalNote.
 
 Regras obrigatórias:
-- "recommendation" deve ser encorajadora, nunca alarmista
-- "clinicalNote" deve mencionar explicitamente os indicadores mais relevantes (eficiência, perseveração, lapsos)
-- não repita informações entre strengths, weaknesses e clinicalNote
-- Responda SOMENTE o JSON, sem texto fora do objeto
+- PROIBIÇÃO TOTAL de usar as palavras: "comprometimento", "déficit", "patologia", "diagnóstico", "lentificação", "lentificação cognitiva", "flutuação da vigilância", "impulsividade", "imaturidade executiva".
+- "generalRecommendation" and "generalSummary" devem ser encorajadoras, lúdicas e fáceis de ler por leigos.
+- "clinicalNote" deve mencionar explicitamente os indicadores mais relevantes (eficiência, perseveração, lapsos) e articular o significado clínico com números de forma cautelosa.
+- Não repita informações textuais de forma idêntica entre os campos de strengths/weaknesses gerais e clínicos.
+- Não feche diagnóstico clínico.
+- score coerente com a severidade: mínimo→80–100, leve→60–79, moderado→40–59, importante→0–39.
 `;
 }

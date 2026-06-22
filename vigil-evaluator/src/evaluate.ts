@@ -24,27 +24,20 @@ function validate(parsed: unknown): EvaluationReport {
   }
   if ((r.level as string) === 'minimo') r.level = 'mínimo';
 
-  // Schema novo (alternada) — valida campos flat general/clinical
-  const isNewSchema = typeof r.generalSummary === 'string';
-  if (isNewSchema) {
-    if (!Array.isArray(r.generalStrengths) || !Array.isArray(r.generalWeaknesses)) {
-      throw new Error('EvaluationReport inválido: generalStrengths/generalWeaknesses ausentes.');
-    }
-    if (!Array.isArray(r.clinicalStrengths) || !Array.isArray(r.clinicalWeaknesses)) {
-      throw new Error('EvaluationReport inválido: clinicalStrengths/clinicalWeaknesses ausentes.');
-    }
-    return r;
+  // Valida campos flat general/clinical do novo schema de duas camadas
+  if (typeof r.generalSummary !== 'string' || typeof r.clinicalNote !== 'string') {
+    throw new Error('EvaluationReport inválido: generalSummary ou clinicalNote ausentes ou inválidos.');
+  }
+  if (!Array.isArray(r.generalStrengths) || !Array.isArray(r.generalWeaknesses)) {
+    throw new Error('EvaluationReport inválido: generalStrengths ou generalWeaknesses ausentes.');
+  }
+  if (!Array.isArray(r.clinicalStrengths) || !Array.isArray(r.clinicalWeaknesses)) {
+    throw new Error('EvaluationReport inválido: clinicalStrengths ou clinicalWeaknesses ausentes.');
+  }
+  if (typeof r.generalRecommendation !== 'string' || typeof r.clinicalRecommendation !== 'string') {
+    throw new Error('EvaluationReport inválido: generalRecommendation ou clinicalRecommendation ausentes.');
   }
 
-  // Schema legado (seletiva / sustentada)
-  if (
-    !Array.isArray(r.strengths) ||
-    !Array.isArray(r.weaknesses) ||
-    typeof r.recommendation !== 'string' ||
-    typeof r.clinicalNote !== 'string'
-  ) {
-    throw new Error('EvaluationReport inválido retornado pelo Gemini.');
-  }
   return r;
 }
 
