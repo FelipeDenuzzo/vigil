@@ -4,6 +4,7 @@ import ProtectedRoute from './lib/ProtectedRoute';
 import { Home } from './pages/Home';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
+import { PoliticaPrivacidade } from './pages/PoliticaPrivacidade';
 import { SelectAttention } from './pages/SelectAttention';
 import { Historico } from './pages/Historico';
 import { SelectiveHub } from './attentions/selective/SelectiveHub';
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/privacidade" element={<PoliticaPrivacidade />} />
           <Route path="/treinar" element={<ProtectedRoute><SelectAttention /></ProtectedRoute>} />
 
           {/* Seletiva */}
