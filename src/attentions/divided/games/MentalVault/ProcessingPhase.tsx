@@ -1,11 +1,12 @@
 // src/attentions/divided/games/MentalVault/ProcessingPhase.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { ProcessingTrialResult, RoundCondition } from './types';
+import { TentativaFase2, CondicaoRodada } from './types';
 
 interface Props {
   trialsCount: number;
-  condition: RoundCondition;
-  onComplete: (results: ProcessingTrialResult[]) => void;
+  condition: CondicaoRodada;
+  digitDurationMs: number;
+  onComplete: (results: TentativaFase2[]) => void;
 }
 
 const VALID_DIGITS = [1, 2, 3, 4, 6, 7, 8, 9]; // Exclui 5
@@ -13,21 +14,28 @@ const VALID_DIGITS = [1, 2, 3, 4, 6, 7, 8, 9]; // Exclui 5
 export const ProcessingPhase: React.FC<Props> = ({
   trialsCount,
   condition,
+  digitDurationMs,
   onComplete,
 }) => {
   const [currentTrial, setCurrentTrial] = useState(0);
   const [digit, setDigit] = useState<number>(1);
-  const [color, setColor] = useState<'blue' | 'red' | 'default'>('default');
-  const [rule, setRule] = useState<'even-odd' | 'greater-less'>('even-odd');
+  const [corOuRegra, setCorOuRegra] = useState<'azul' | 'vermelho' | 'padrao'>('padrao');
+  const [activeRule, setActiveRule] = useState<'even-odd' | 'greater-less'>('even-odd');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | 'timeout' | null>(null);
 
-  const resultsRef = useRef<ProcessingTrialResult[]>([]);
+  const resultsRef = useRef<TentativaFase2[]>([]);
   const trialStartTimeRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const feedbackTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Evita re-entry ou cliques duplos durante a transição
   const transitioningRef = useRef<boolean>(false);
+
+  // Refs mutáveis para evitar closures obsoletas no temporizador
+  const digitRef = useRef<number>(1);
+  const corOuRegraRef = useRef<'azul' | 'vermelho' | 'padrao'>('padrao');
+  const activeRuleRef = useRef<'even-odd' | 'greater-less'>('even-odd');
+  const currentTrialRef = useRef<number>(0);
 
   // Limpa os timers ao desmontar
   useEffect(() => {
@@ -42,62 +50,79 @@ export const ProcessingPhase: React.FC<Props> = ({
     // Sorteia o dígito
     const nextDigit = VALID_DIGITS[Math.floor(Math.random() * VALID_DIGITS.length)];
     setDigit(nextDigit);
+    digitRef.current = nextDigit;
 
     // Define cor e regra de acordo com a condição
-    if (condition === 'pure') {
-      setColor('default');
-      setRule('even-odd');
+    let nextCor: 'azul' | 'vermelho' | 'padrao' = 'padrao';
+    let nextRule: 'even-odd' | 'greater-less' = 'even-odd';
+
+    if (condition === 'pura') {
+      nextCor = 'padrao';
+      nextRule = 'even-odd';
     } else {
       // Condição mista: sorteia Azul (even-odd) ou Vermelho (greater-less)
       const isBlue = Math.random() < 0.5;
-      setColor(isBlue ? 'blue' : 'red');
-      setRule(isBlue ? 'even-odd' : 'greater-less');
+      nextCor = isBlue ? 'azul' : 'vermelho';
+      nextRule = isBlue ? 'even-odd' : 'greater-less';
     }
 
+    setCorOuRegra(nextCor);
+    corOuRegraRef.current = nextCor;
+
+    setActiveRule(nextRule);
+    activeRuleRef.current = nextRule;
+
+    currentTrialRef.current = currentTrial;
     trialStartTimeRef.current = performance.now();
     transitioningRef.current = false;
 
-    // Timer de 750ms para omissão/timeout
+    // Timer de timeout/omissão
     timerRef.current = setTimeout(() => {
       handleTimeout();
-    }, 750);
+    }, digitDurationMs);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [currentTrial, condition]);
+  }, [currentTrial, condition, digitDurationMs]);
 
-  // Função para lidar com timeout (usuário não respondeu a tempo)
+  // Lida com timeout (usuário não respondeu a tempo)
   const handleTimeout = () => {
     if (transitioningRef.current) return;
     transitioningRef.current = true;
 
     triggerFeedback('timeout');
 
-    const reactionTimeMs = 750;
-    const correctAnswer = getCorrectAnswer(digit, rule);
+    const reactionTimeMs = digitDurationMs;
+    const currentDigit = digitRef.current;
+    const currentRule = activeRuleRef.current;
+    const currentCor = corOuRegraRef.current;
+    const currentIdx = currentTrialRef.current;
 
-    const newResult: ProcessingTrialResult = {
-      digit,
-      color,
-      rule,
-      selectedAnswer: 'timeout',
-      correctAnswer,
-      isCorrect: false,
-      reactionTimeMs,
+    const respostaCorreta = getCorrectAnswer(currentDigit, currentRule);
+
+    const newResult: TentativaFase2 = {
+      indiceTentativa: currentIdx + 1,
+      digito: currentDigit,
+      corOuRegra: currentCor,
+      respostaCorreta,
+      respostaUsuario: 'omissao',
+      acertou: false,
+      tipoErro: 'omissao',
+      tempoReacaoMs: reactionTimeMs,
     };
 
     saveAndAdvance(newResult);
   };
 
   // Determina o botão correto com base nas regras cognitivas
-  const getCorrectAnswer = (val: number, activeRule: 'even-odd' | 'greater-less'): 'left' | 'right' => {
-    if (activeRule === 'even-odd') {
+  const getCorrectAnswer = (val: number, ruleName: 'even-odd' | 'greater-less'): 'esquerda' | 'direita' => {
+    if (ruleName === 'even-odd') {
       // Par = Direita, Ímpar = Esquerda
-      return val % 2 === 0 ? 'right' : 'left';
+      return val % 2 === 0 ? 'direita' : 'esquerda';
     } else {
       // Maior que 5 = Direita, Menor que 5 = Esquerda
-      return val > 5 ? 'right' : 'left';
+      return val > 5 ? 'direita' : 'esquerda';
     }
   };
 
@@ -111,7 +136,7 @@ export const ProcessingPhase: React.FC<Props> = ({
   };
 
   // Processa a resposta do usuário
-  const handleAnswer = (answer: 'left' | 'right') => {
+  const handleAnswer = (answer: 'esquerda' | 'direita') => {
     if (transitioningRef.current) return;
     transitioningRef.current = true;
 
@@ -122,26 +147,32 @@ export const ProcessingPhase: React.FC<Props> = ({
     }
 
     const reactionTimeMs = Math.round(performance.now() - trialStartTimeRef.current);
-    const correctAnswer = getCorrectAnswer(digit, rule);
-    const isCorrect = answer === correctAnswer;
+    const currentDigit = digitRef.current;
+    const currentRule = activeRuleRef.current;
+    const currentCor = corOuRegraRef.current;
+    const currentIdx = currentTrialRef.current;
 
-    triggerFeedback(isCorrect ? 'correct' : 'incorrect');
+    const respostaCorreta = getCorrectAnswer(currentDigit, currentRule);
+    const acertou = answer === respostaCorreta;
 
-    const newResult: ProcessingTrialResult = {
-      digit,
-      color,
-      rule,
-      selectedAnswer: answer,
-      correctAnswer,
-      isCorrect,
-      reactionTimeMs,
+    triggerFeedback(acertou ? 'correct' : 'incorrect');
+
+    const newResult: TentativaFase2 = {
+      indiceTentativa: currentIdx + 1,
+      digito: currentDigit,
+      corOuRegra: currentCor,
+      respostaCorreta,
+      respostaUsuario: answer,
+      acertou,
+      tipoErro: acertou ? null : 'comissao',
+      tempoReacaoMs,
     };
 
     saveAndAdvance(newResult);
   };
 
   // Salva o resultado e decide se encerra a fase ou avança
-  const saveAndAdvance = (resultItem: ProcessingTrialResult) => {
+  const saveAndAdvance = (resultItem: TentativaFase2) => {
     resultsRef.current.push(resultItem);
 
     if (currentTrial + 1 >= trialsCount) {
@@ -156,8 +187,8 @@ export const ProcessingPhase: React.FC<Props> = ({
 
   // Estilização das cores funcionais do dígito
   const getDigitColor = () => {
-    if (color === 'blue') return '#6c8ef5'; // Azul
-    if (color === 'red') return '#f08080';  // Vermelho
+    if (corOuRegra === 'azul') return '#6c8ef5'; // Azul
+    if (corOuRegra === 'vermelho') return '#f08080';  // Vermelho
     return 'var(--color-text)';             // Padrão
   };
 
@@ -250,12 +281,12 @@ export const ProcessingPhase: React.FC<Props> = ({
 
   // Renderiza a regra curta no topo
   const renderRuleText = () => {
-    if (condition === 'pure') {
+    if (condition === 'pura') {
       return (
         <span>ÍMPAR ⬅️ &nbsp;|&nbsp; PAR ➡️</span>
       );
     } else {
-      if (rule === 'even-odd') {
+      if (activeRule === 'even-odd') {
         return (
           <span style={styles.blueRule}>🔵 AZUL ➔ ÍMPAR ⬅️ &nbsp;|&nbsp; PAR ➡️</span>
         );
@@ -269,7 +300,7 @@ export const ProcessingPhase: React.FC<Props> = ({
 
   return (
     <div style={styles.container}>
-      {/* Regra ativa visível no topo (Texto Curto) */}
+      {/* Regra ativa visível no topo */}
       <div style={styles.ruleBanner}>
         {renderRuleText()}
       </div>
@@ -279,17 +310,17 @@ export const ProcessingPhase: React.FC<Props> = ({
         <div style={styles.digitDisplay}>{digit}</div>
       </div>
 
-      {/* Dois botões largos e fixos na base (Nunca mudam de posição) */}
+      {/* Dois botões largos e fixos na base */}
       <div style={styles.buttonRow}>
         <button
           style={styles.btn}
-          onClick={() => handleAnswer('left')}
+          onClick={() => handleAnswer('esquerda')}
         >
           ESQUERDA
         </button>
         <button
           style={styles.btn}
-          onClick={() => handleAnswer('right')}
+          onClick={() => handleAnswer('direita')}
         >
           DIREITA
         </button>
