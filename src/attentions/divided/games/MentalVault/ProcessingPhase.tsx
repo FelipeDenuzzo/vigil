@@ -279,16 +279,18 @@ export const ProcessingPhase: React.FC<Props> = ({
   const renderRuleText = () => {
     if (condition === 'pura') {
       return (
-        <span>ÍMPAR ⬅️ &nbsp;|&nbsp; PAR ➡️</span>
+        <span>⬅️ ÍMPAR &nbsp;|&nbsp; PAR ➡️</span>
       );
     } else {
       if (activeRule === 'even-odd') {
         return (
-          <span style={styles.blueRule}>🔵 AZUL ➔ ÍMPAR ⬅️ &nbsp;|&nbsp; PAR ➡️</span>
+          <span style={styles.blueRule}>🔵 ⬅️ ÍMPAR &nbsp;|&nbsp; PAR ➡️</span>
         );
       } else {
         return (
-          <span style={styles.redRule}>🔴 VERMELHO ➔ MENOR QUE 5 ⬅️ &nbsp;|&nbsp; MAIOR QUE 5 ➡️</span>
+          <span style={styles.redRule}>
+            🔴 ⬅️ MENOR QUE <span style={{ fontSize: '1.4em', fontWeight: '800', margin: '0 2px', verticalAlign: 'middle' }}>5</span> &nbsp;|&nbsp; MAIOR QUE <span style={{ fontSize: '1.4em', fontWeight: '800', margin: '0 2px', verticalAlign: 'middle' }}>5</span> ➡️
+          </span>
         );
       }
     }
