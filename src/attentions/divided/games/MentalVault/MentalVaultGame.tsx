@@ -1,6 +1,6 @@
 // src/attentions/divided/games/MentalVault/MentalVaultGame.tsx
 import React, { useState, useRef } from 'react';
-import { MentalVaultFase, ConfigJogo, TentativaFase2, RegistroRodada, ResultadoSessao } from './types';
+import { MentalVaultFase, ConfigJogo, TentativaFase2, RegistroRodada, ResultadoSessao, CondicaoRodada } from './types';
 import { EncodingPhase } from './EncodingPhase';
 import { ProcessingPhase } from './ProcessingPhase';
 import { RecallPhase } from './RecallPhase';
@@ -47,7 +47,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose, onComplet
   const [phase, setPhase] = useState<MentalVaultFase>('instrucoes');
 
   // Estado da sessão (6 rodadas: 3 puras e 3 mistas balanceadas)
-  const [sessionConditions, setSessionConditions] = useState<'pura' | 'mista'[]>([]);
+  const [sessionConditions, setSessionConditions] = useState<CondicaoRodada[]>([]);
   const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
 
   // Dados da rodada ativa
