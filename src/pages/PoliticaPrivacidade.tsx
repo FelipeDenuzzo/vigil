@@ -24,9 +24,19 @@ const Li: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 export const PoliticaPrivacidade: React.FC = () => {
   const navigate = useNavigate();
 
+  // navigate(-1) não funciona quando não há histórico (acesso direto à URL).
+  // Fallback para /cadastro que é a origem mais comum deste link.
+  function handleBack() {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/cadastro');
+    }
+  }
+
   return (
     <div className="container" style={{ maxWidth: 800, paddingTop: 'var(--space-12)', paddingBottom: 'var(--space-16)' }}>
-      <Button variant="ghost" onClick={() => navigate(-1)} style={{ marginBottom: 'var(--space-8)' }}>
+      <Button variant="ghost" onClick={handleBack} style={{ marginBottom: 'var(--space-8)' }}>
         ← Voltar
       </Button>
 
