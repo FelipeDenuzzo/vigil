@@ -120,12 +120,10 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 fontSize: '13px',
                 lineHeight: '1.5'
               }}>
-                <p style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ color: '#8aaaf7', marginRight: '6px', fontSize: '14px' }}>🔵</span>
+                <p style={{ margin: '0 0 8px 0', color: '#8aaaf7' }}>
                   <strong>Número Azul:</strong> Classifique como ÍMPAR (Esquerda) ou PAR (Direita).
                 </p>
-                <p style={{ margin: '0', display: 'flex', alignItems: 'center' }}>
-                  <span style={{ color: '#f08080', marginRight: '6px', fontSize: '14px' }}>🔴</span>
+                <p style={{ margin: '0', color: '#f08080' }}>
                   <strong>Número Vermelho:</strong> Classifique como MENOR QUE 5 (Esquerda) ou MAIOR QUE 5 (Direita).
                 </p>
               </div>
