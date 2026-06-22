@@ -2,9 +2,14 @@ import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useNavigate, Link } from 'react-router-dom';
-import { saveConsent, POLICY_VERSION, type ConsentRecord } from '../lib/useConsent';
+import {
+  saveConsent,
+  saveConsentToFirestore,
+  POLICY_VERSION,
+  type ConsentRecord,
+} from '../lib/useConsent';
 
-// ── Estilos inline reutilizáveis ────────────────────────────────────────────
+// ── Estilos inline reutilizáveis ───────────────────────────────────────────────
 const inputStyle: React.CSSProperties = {
   padding: '10px 14px',
   borderRadius: 'var(--radius-md)',
@@ -36,7 +41,7 @@ const checkboxStyle: React.CSSProperties = {
   cursor: 'pointer',
 };
 
-// ── Modal LGPD ───────────────────────────────────────────────────────────────
+// ── Modal LGPD ───────────────────────────────────────────────────────────
 interface LgpdModalProps {
   onAccept: (record: ConsentRecord) => void;
   onCancel: () => void;
@@ -80,7 +85,6 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
         overflowY: 'auto',
         boxShadow: 'var(--shadow-lg)',
       }}>
-        {/* Cabeçalho */}
         <div style={{ marginBottom: 'var(--space-6)' }}>
           <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>
             🔒 Privacidade e consentimento
@@ -91,7 +95,6 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
           </p>
         </div>
 
-        {/* Aviso de saúde */}
         <div style={{
           background: 'rgba(240,128,128,0.08)',
           border: '1px solid rgba(240,128,128,0.25)',
@@ -108,17 +111,10 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
           profissional de saúde habilitado.
         </div>
 
-        {/* Checkboxes obrigatórios */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
 
-          {/* 1. Termos de uso */}
           <label style={checkRowStyle}>
-            <input
-              type="checkbox"
-              style={checkboxStyle}
-              checked={terms}
-              onChange={e => setTerms(e.target.checked)}
-            />
+            <input type="checkbox" style={checkboxStyle} checked={terms} onChange={e => setTerms(e.target.checked)} />
             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text)', lineHeight: 1.6 }}>
               <span style={{ color: '#f08080' }}>*</span>{' '}
               Li e aceito os <strong>Termos de Uso</strong> do VIGIL. Entendo que se trata
@@ -126,14 +122,8 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
             </span>
           </label>
 
-          {/* 2. Política de privacidade */}
           <label style={checkRowStyle}>
-            <input
-              type="checkbox"
-              style={checkboxStyle}
-              checked={privacyPolicy}
-              onChange={e => setPrivacyPolicy(e.target.checked)}
-            />
+            <input type="checkbox" style={checkboxStyle} checked={privacyPolicy} onChange={e => setPrivacyPolicy(e.target.checked)} />
             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text)', lineHeight: 1.6 }}>
               <span style={{ color: '#f08080' }}>*</span>{' '}
               Li e aceito a{' '}
@@ -150,18 +140,12 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
             </span>
           </label>
 
-          {/* 3. Dados cognitivos / saúde — consentimento explícito LGPD Art. 11 */}
           <label style={{
             ...checkRowStyle,
             border: '1px solid rgba(108,142,245,0.35)',
             background: 'rgba(108,142,245,0.06)',
           }}>
-            <input
-              type="checkbox"
-              style={checkboxStyle}
-              checked={healthData}
-              onChange={e => setHealthData(e.target.checked)}
-            />
+            <input type="checkbox" style={checkboxStyle} checked={healthData} onChange={e => setHealthData(e.target.checked)} />
             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text)', lineHeight: 1.6 }}>
               <span style={{ color: '#f08080' }}>*</span>{' '}
               <strong>Consinto</strong> que o VIGIL colete e processe meus{' '}
@@ -173,14 +157,8 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
             </span>
           </label>
 
-          {/* 4. Comunicações — opcional */}
           <label style={{ ...checkRowStyle, opacity: 0.85 }}>
-            <input
-              type="checkbox"
-              style={checkboxStyle}
-              checked={communications}
-              onChange={e => setCommunications(e.target.checked)}
-            />
+            <input type="checkbox" style={checkboxStyle} checked={communications} onChange={e => setCommunications(e.target.checked)} />
             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
               <span style={{ color: 'var(--color-text-faint)', fontSize: '0.75em', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Opcional — </span>
               Aceito receber e-mails sobre novidades, atualizações e dicas do VIGIL.
@@ -189,7 +167,6 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
           </label>
         </div>
 
-        {/* Rodapé com botões */}
         <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
           <button
             type="button"
@@ -228,7 +205,7 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
 
         <p style={{ marginTop: 'var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--color-text-faint)', textAlign: 'center' }}>
           Ao aceitar, você concorda com o tratamento conforme a LGPD (Lei nº 13.709/2018).
-          Registro de consentimento salvo localmente com data e versão da política.
+          Registro de consentimento salvo localmente e no servidor com data e versão da política.
         </p>
       </div>
     </div>
@@ -237,14 +214,13 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
 
 // ── Página de cadastro ────────────────────────────────────────────────────────
 export default function Cadastro() {
-  const [email,       setEmail]       = useState('');
-  const [senha,       setSenha]       = useState('');
-  const [erro,        setErro]        = useState('');
-  const [showModal,   setShowModal]   = useState(false);
-  const [loading,     setLoading]     = useState(false);
+  const [email,     setEmail]     = useState('');
+  const [senha,     setSenha]     = useState('');
+  const [erro,      setErro]      = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [loading,   setLoading]   = useState(false);
   const navigate = useNavigate();
 
-  // Abre modal apenas se o formulário for válido
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErro('');
@@ -255,14 +231,18 @@ export default function Cadastro() {
     setShowModal(true);
   }
 
-  // Chamado após aceite do modal LGPD
   async function handleConsentAccepted(record: ConsentRecord) {
     setShowModal(false);
     setLoading(true);
     setErro('');
     try {
-      await createUserWithEmailAndPassword(auth, email, senha);
+      const credential = await createUserWithEmailAndPassword(auth, email, senha);
+      const uid = credential.user.uid;
+
+      // Salva localmente (cache) e no Firestore (prova auditável LGPD Art. 8º §5)
       saveConsent(record);
+      await saveConsentToFirestore(uid, record);
+
       navigate('/treinar');
     } catch (error: any) {
       const code = error?.code ?? '';
