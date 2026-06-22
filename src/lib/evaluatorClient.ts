@@ -1,20 +1,17 @@
 // src/lib/evaluatorClient.ts
-// Atualizado: tipagem refletindo os 3 níveis do vigil-evaluator (ludic, general, clinical)
-// + campos de atenção sustentada (LongMazes)
 
 import type {
   VisualSearchTechnicalReport,
   VisualSearchMetrics,
 } from '../attentions/selective/games/VisualSearchHunt/assessment/visualSearchScale.types';
 
-// ── Tipos de entrada ───────────────────────────────────────────────────────────────────
+// ── Tipos de entrada ───────────────────────────────────────────────────────────────
 export interface EvaluatorInput {
   sessionId: string;
   attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida';
   severity?: 'minimo' | 'leve' | 'moderado' | 'importante';
   [key: string]: any;
 
-  // ── Campos seletiva ───────────────────────────────────────────────────────────────
   game?: 'visual-search' | 'color-shape' | 'cofre-mental' | 'long-mazes';
   roundCount?: number;
   totalClicks?: number;
@@ -46,7 +43,6 @@ export interface EvaluatorInput {
     rightMisses: number;
   };
 
-  // ── Campos sustentada (LongMazes) ───────────────────────────────────────────────
   completedPhases?: number;
   totalPhases?: number;
   avgEfficiencyPct?: number;
@@ -66,7 +62,7 @@ export interface EvaluatorInput {
   }[];
 }
 
-// ── Tipos de retorno — 3 níveis ────────────────────────────────────────────────────
+// ── Tipos de retorno ───────────────────────────────────────────────────────────────
 export interface LudicReport {
   score: number;
   label: string;
@@ -95,7 +91,6 @@ export interface EvaluationReport {
   clinical: ClinicalReport;
 }
 
-// ── Tipo raw retornado pelo Cloud Run ────────────────────────────────────────────────
 interface RawEvaluatorResponse {
   score: number;
   severity: string;
@@ -106,12 +101,11 @@ interface RawEvaluatorResponse {
   };
 }
 
-// ── Helpers internos ───────────────────────────────────────────────────────────────────
+// ── Helpers internos ─────────────────────────────────────────────────────────────────────
 const VALID_LEVELS: EvaluationReport['level'][] = ['mínimo', 'leve', 'moderado', 'importante'];
 
 function parseSeverity(raw: string): EvaluationReport['level'] {
   if ((VALID_LEVELS as string[]).includes(raw)) return raw as EvaluationReport['level'];
-  console.warn(`[callEvaluator] severity inesperado do Cloud Run: "${raw}" — usando "leve" como fallback`);
   return 'leve';
 }
 
@@ -157,7 +151,7 @@ function inferNeglectSide(m: VisualSearchMetrics): string {
   return left > right ? 'esquerdo' : 'direito';
 }
 
-// ── Mapeamento principal (seletiva) ──────────────────────────────────────────────────
+// ── Mapeamento principal (seletiva) ──────────────────────────────────────────────────────
 export function buildEvaluatorInput(
   sessionId: string,
   metrics: VisualSearchMetrics,
@@ -224,7 +218,7 @@ export function buildEvaluatorInput(
   };
 }
 
-// ── Chamada ao Cloud Run ───────────────────────────────────────────────────────────────────
+// ── Chamada ao Cloud Run ───────────────────────────────────────────────────────────────────────────
 export async function callEvaluator(
   input: EvaluatorInput
 ): Promise<EvaluationReport | null> {
@@ -232,12 +226,11 @@ export async function callEvaluator(
   const secret = import.meta.env.VITE_EVALUATOR_SECRET;
 
   if (!url || !secret) {
-    console.warn('[callEvaluator] VITE_EVALUATOR_URL ou VITE_EVALUATOR_SECRET não configurados');
+    if (import.meta.env.DEV) console.warn('[callEvaluator] VITE_EVALUATOR_URL ou VITE_EVALUATOR_SECRET não configurados');
     return null;
   }
 
   try {
-    console.log('[callEvaluator] chamando', url);
     const res = await fetch(`${url}/evaluate`, {
       method: 'POST',
       headers: {
@@ -249,26 +242,27 @@ export async function callEvaluator(
     });
 
     if (!res.ok) {
-      const text = await res.text();
-      console.error(`[callEvaluator] HTTP ${res.status}: ${text}`);
+      if (import.meta.env.DEV) {
+        const text = await res.text();
+        console.error(`[callEvaluator] HTTP ${res.status}: ${text}`);
+      }
       return null;
     }
 
     const raw = await res.json() as RawEvaluatorResponse;
 
-    const report: EvaluationReport = {
+    return {
       score:    raw.score,
       level:    parseSeverity(raw.severity),
       ludic:    raw.report.ludic,
       general:  raw.report.general,
       clinical: raw.report.clinical,
     };
-
-    console.log('[callEvaluator] sucesso', report);
-    return report;
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error('[callEvaluator] erro:', msg);
+    if (import.meta.env.DEV) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('[callEvaluator] erro:', msg);
+    }
     return null;
   }
 }
