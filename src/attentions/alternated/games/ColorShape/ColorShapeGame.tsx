@@ -6,6 +6,7 @@ import {
 } from './constants';
 import { buildPureTrials, buildMixedTrials, isCorrect } from './logic';
 import { useColorShapeEvaluation } from './useColorShapeEvaluation';
+import { persistColorShapeLog } from './ColorShapeEvaluationContainer';
 import type { TrialConfig, TrialResult, ColorShapeSessionLog, RuleType, ShapeType, ColorName } from './types';
 
 type GamePhase = 'instructions' | 'tutorial' | 'fixation' | 'stimulus' | 'iti' | 'done';
@@ -209,6 +210,8 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
       mainTrials:     all,
       startedAt:      new Date().toISOString(),
     };
+    // Persiste no sessionStorage para a rota /resultado funcionar após refresh
+    try { persistColorShapeLog(log); } catch { /* silencioso */ }
     useColorShapeEvaluation(log)
       .then(() => { setEvaluating(false); onComplete?.(log); })
       .catch(() => { setEvaluating(false); onComplete?.(log); });

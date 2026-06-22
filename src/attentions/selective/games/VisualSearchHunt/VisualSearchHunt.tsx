@@ -6,6 +6,7 @@ import { Button } from '../../../../shared/components/Button';
 import { Card } from '../../../../shared/components/Card';
 import type { GameResult } from '../../../../shared/types';
 import { saveSession, saveResult } from '../../../../shared/storage';
+import { auth } from '../../../../lib/firebase';
 import type {
   VisualSearchClickLog,
   VisualSearchRoundLog,
@@ -323,6 +324,10 @@ export default function VisualSearchHunt({
   const roundGeneratedRef = useRef(false);
   const generateRoundRef = useRef<(() => void) | null>(null);
 
+  // Resolve o uid uma vez e mantém em ref para evitar leituras repetidas
+  const uidRef = useRef<string | undefined>(auth.currentUser?.uid);
+  useEffect(() => { uidRef.current = auth.currentUser?.uid; }, []);
+
   const persistRoundLog = useCallback((result: RoundResult) => {
     try {
       if (!sessionLogRef.current) return;
@@ -367,7 +372,7 @@ export default function VisualSearchHunt({
         spatialAsymmetryIndex: searchAnalysis.spatialAsymmetryIndex,
       };
       sessionLogRef.current.rounds.push(roundLog);
-      saveSession(sessionLogRef.current);
+      saveSession(sessionLogRef.current, uidRef.current);
     } catch (e) {}
   }, [tiles]);
 
@@ -434,9 +439,9 @@ export default function VisualSearchHunt({
       if (sessionLogRef.current) {
         sessionLogRef.current.completedAt = completedAt;
         sessionLogRef.current.abandoned = false;
-        saveSession(sessionLogRef.current);
+        saveSession(sessionLogRef.current, uidRef.current);
       }
-      saveResult(gameResult);
+      saveResult(gameResult, uidRef.current);
     } catch (e) {}
     onEnd?.(gameResult);
     navigate(`/treinar/seletiva/visual-search/resultado?sessionId=${sessionId}`);
@@ -469,7 +474,7 @@ export default function VisualSearchHunt({
             sessionId: `vsh-${sStarted}`, gameId: 'visual-search-hunt', attentionType: 'selective',
             startedAt: sStarted, sessionStatus: 'started', schemaVersion: 1, abandoned: false, rounds: [],
           };
-          saveSession(sessionLogRef.current);
+          saveSession(sessionLogRef.current, uidRef.current);
         }
         persistRoundLog(result);
       } catch (e) {}
@@ -485,7 +490,7 @@ export default function VisualSearchHunt({
         sessionId: `vsh-${sStarted}`, gameId: 'visual-search-hunt', attentionType: 'selective',
         startedAt: sStarted, sessionStatus: 'started', schemaVersion: 1, abandoned: false, rounds: [],
       };
-      try { saveSession(sessionLogRef.current); } catch {}
+      try { saveSession(sessionLogRef.current, uidRef.current); } catch {}
     }
     setStatus('playing');
     roundStartRef.current = Date.now();
@@ -552,7 +557,7 @@ export default function VisualSearchHunt({
           sessionId: `vsh-${sStarted}`, gameId: 'visual-search-hunt', attentionType: 'selective',
           startedAt: sStarted, sessionStatus: 'started', schemaVersion: 1, abandoned: false, rounds: [],
         };
-        saveSession(sessionLogRef.current);
+        saveSession(sessionLogRef.current, uidRef.current);
       }
       persistRoundLog(result);
     } catch (e) {}
@@ -592,7 +597,7 @@ export default function VisualSearchHunt({
         sessionLogRef.current.abandonedAtLevel = level;
         sessionLogRef.current.completedAt = now;
       }
-      saveSession(sessionLogRef.current);
+      saveSession(sessionLogRef.current, uidRef.current);
     } catch (e) {}
   }, [level, roundIndex]);
 
@@ -614,7 +619,7 @@ export default function VisualSearchHunt({
           sessionLogRef.current.abandonedAtRound = roundIndex;
           sessionLogRef.current.abandonedAtLevel = level;
           sessionLogRef.current.completedAt = Date.now();
-          saveSession(sessionLogRef.current);
+          saveSession(sessionLogRef.current, uidRef.current);
         }
       } catch (e) {}
     };
