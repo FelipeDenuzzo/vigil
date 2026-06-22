@@ -1,6 +1,6 @@
 // src/attentions/divided/games/MentalVault/MentalVaultGame.tsx
 import React, { useState, useRef } from 'react';
-import { MentalVaultFase, TentativaFase2, RegistroRodada, ResultadoSessao, CondicaoRodada } from './types';
+import { MentalVaultFase, TentativaFase2, RegistroRodada, CondicaoRodada } from './types';
 import { EncodingPhase } from './EncodingPhase';
 import { ProcessingPhase } from './ProcessingPhase';
 import { RecallPhase } from './RecallPhase';
@@ -11,7 +11,7 @@ import { calculateSessionMetrics } from '../../../../assessment/mentalVault/calc
 interface Props {
   sessionId: string;
   onClose?: () => void;
-  onComplete?: (resultado: ResultadoSessao) => void;
+  onComplete?: (resultado: { nivelMaximo: number; rodadas: RegistroRodada[]; startedAt: string }) => void;
 }
 
 const CONSONANTS_POOL = 'BCDFGHJKLMNPQRSTVWXYZ';
@@ -35,11 +35,11 @@ interface LevelConfig {
 }
 
 const CONFIG_BY_LEVEL: Record<number, LevelConfig> = {
-  1: { quantidadeConsoantes: 3, tempoLimiteMs: 900, condicaoPadrao: 'pura' },
-  2: { quantidadeConsoantes: 4, tempoLimiteMs: 750, condicaoPadrao: 'pura' },
-  3: { quantidadeConsoantes: 4, tempoLimiteMs: 750, condicaoPadrao: 'mista' },
-  4: { quantidadeConsoantes: 5, tempoLimiteMs: 650, condicaoPadrao: 'mista' },
-  5: { quantidadeConsoantes: 6, tempoLimiteMs: 550, condicaoPadrao: 'mista' },
+  1: { quantidadeConsoantes: 3, tempoLimiteMs: 2500, condicaoPadrao: 'pura' },
+  2: { quantidadeConsoantes: 4, tempoLimiteMs: 2200, condicaoPadrao: 'pura' },
+  3: { quantidadeConsoantes: 4, tempoLimiteMs: 2200, condicaoPadrao: 'mista' },
+  4: { quantidadeConsoantes: 5, tempoLimiteMs: 1800, condicaoPadrao: 'mista' },
+  5: { quantidadeConsoantes: 6, tempoLimiteMs: 1500, condicaoPadrao: 'mista' },
 };
 
 export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClose, onComplete }) => {
@@ -100,7 +100,6 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
   };
 
   const handleRecallComplete = (answers: string[]) => {
-
     const roundResult: RegistroRodada = {
       sequenciaAlvo: targetLetters,
       sequenciaDigitada: answers,
@@ -110,19 +109,13 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
     };
 
     roundHistoryRef.current.push(roundResult);
-    setPhase('feedback');
-  };
 
-  const handleFeedbackNext = () => {
-    const lastResult = roundHistoryRef.current[roundHistoryRef.current.length - 1];
+    // Avança de nível/rodada diretamente sem mostrar resultados parciais intermediários
+    const isRecallCorrect = roundResult.sequenciaDigitada.length === roundResult.sequenciaAlvo.length &&
+      roundResult.sequenciaDigitada.every((val, idx) => val === roundResult.sequenciaAlvo[idx]);
 
-    // Condição de sucesso para avançar de nível:
-    // Acertar a sequência inteira de recall E obter pelo menos 80% de acerto nos dígitos
-    const isRecallCorrect = lastResult.sequenciaDigitada.length === lastResult.sequenciaAlvo.length &&
-      lastResult.sequenciaDigitada.every((val, idx) => val === lastResult.sequenciaAlvo[idx]);
-
-    const correctProcessingCount = lastResult.tentativas.filter((t) => t.acertou).length;
-    const processingAccuracy = (correctProcessingCount / lastResult.totalDigitosApresentados) * 100;
+    const correctProcessingCount = roundResult.tentativas.filter((t) => t.acertou).length;
+    const processingAccuracy = (correctProcessingCount / roundResult.totalDigitosApresentados) * 100;
 
     const success = isRecallCorrect && processingAccuracy >= 80;
 
@@ -149,6 +142,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
       onComplete({
         nivelMaximo: finalLevel,
         rodadas: roundHistoryRef.current,
+        startedAt: startedAtRef.current,
       });
     }
     setPhase('resumo');
@@ -159,31 +153,19 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
     switch (phase) {
       case 'instrucoes':
         return (
-          <Card style={{ padding: 'var(--space-8)', textAlign: 'center', maxWidth: '520px', margin: '0 auto' }}>
+          <Card style={{ padding: 'var(--space-8)', textAlign: 'center', maxWidth: '420px', margin: '0 auto' }}>
             <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)' }}>
-              🔐 Instruções do Jogo
+              🔐 Cofre Mental
             </h2>
-            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', textAlign: 'left', fontSize: '15px', lineHeight: '1.6' }}>
-              O **Cofre Mental** é um desafio de atenção dividida e memória de trabalho.
-              <br /><br />
-              A sessão é composta de **6 rodadas** (3 puras e 3 mistas balanceadas).
-              <br /><br />
-              1. **Memorize**: Uma sequência de consoantes aparecerá no centro. Guarde-as na ordem exata.
-              <br /><br />
-              2. **Decodifique (Classificação de dígitos)**: Responda a uma sequência de 8 dígitos muito rápido!
-              * **Condição Pura**: Regra fixa: ÍMPAR = Esquerda | PAR = Direita.
-              * **Condição Mista**: A cor do dígito define a regra!
-                * 🔵 **Azul**: ÍMPAR = Esquerda | PAR = Direita.
-                * 🔴 **Vermelho**: menor que 5 = Esquerda | maior que 5 = Direita.
-              <br />
-              3. **Abra o cofre**: Digite as letras da sequência na mesma ordem no final.
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', textAlign: 'center', fontSize: '15px', lineHeight: '1.7' }}>
+              Guarde uma sequência de letras e classifique os números que aparecem na tela. No final, digite as letras na mesma ordem para abrir o cofre.
             </p>
             <Button
               variant="primary"
               onClick={handleStartGame}
               style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
             >
-              Iniciar Sessão (6 Rodadas)
+              Iniciar
             </Button>
           </Card>
         );
@@ -214,52 +196,6 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
             onComplete={handleRecallComplete}
           />
         );
-
-      case 'feedback': {
-        const lastResult = roundHistoryRef.current[roundHistoryRef.current.length - 1];
-        const isRecallCorrect = lastResult.sequenciaDigitada.length === lastResult.sequenciaAlvo.length &&
-          lastResult.sequenciaDigitada.every((val, idx) => val === lastResult.sequenciaAlvo[idx]);
-        const correctProcessingCount = lastResult.tentativas.filter((t) => t.acertou).length;
-        const processingAccuracy = (correctProcessingCount / lastResult.totalDigitosApresentados) * 100;
-        const processingAvgRtMs = lastResult.tentativas.reduce((acc, t) => acc + t.tempoReacaoMs, 0) / lastResult.totalDigitosApresentados;
-        const isSuccessful = isRecallCorrect && processingAccuracy >= 80;
-
-        return (
-          <Card style={{ padding: 'var(--space-8)', textAlign: 'center', maxWidth: '460px', margin: '0 auto' }}>
-            {isSuccessful ? (
-              <h3 style={{ color: 'var(--color-sustained)', fontSize: '48px', marginBottom: 'var(--space-2)' }}>🎉</h3>
-            ) : (
-              <h3 style={{ color: 'var(--color-selective)', fontSize: '48px', marginBottom: 'var(--space-2)' }}>🔒</h3>
-            )}
-            <h2 style={{ color: 'var(--color-text)', marginBottom: 'var(--space-4)' }}>
-              {isSuccessful ? 'Cofre Aberto!' : 'Cofre Trancado'}
-            </h2>
-
-            <div style={{ textAlign: 'left', marginBottom: 'var(--space-6)', background: 'rgba(255,255,255,0.02)', padding: 'var(--space-4)', borderRadius: 'var(--radius-md)' }}>
-              <p style={{ color: 'var(--color-text-muted)' }}>
-                Sequência de letras: {isRecallCorrect ? '✅ Acertou!' : '❌ Errou'}
-              </p>
-              <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
-                Precisão de Dígitos: {Math.round(processingAccuracy)}% (Ideal: &gt;= 80%)
-              </p>
-              <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
-                Tempo Médio de Reação: {Math.round(processingAvgRtMs)}ms
-              </p>
-              <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
-                Condição: {lastResult.condicaoRodada === 'pura' ? 'Pura' : 'Mista'}
-              </p>
-            </div>
-
-            <Button
-              variant="primary"
-              onClick={handleFeedbackNext}
-              style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
-            >
-              {currentRoundIndex + 1 < 6 ? 'Ir para Próxima Rodada' : 'Finalizar Sessão'}
-            </Button>
-          </Card>
-        );
-      }
 
       case 'resumo': {
         const metrics = calculateSessionMetrics(level, roundHistoryRef.current);

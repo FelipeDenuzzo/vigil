@@ -27,6 +27,7 @@ export const ProcessingPhase: React.FC<Props> = ({
   const trialStartTimeRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const feedbackTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const transitionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Evita re-entry ou cliques duplos durante a transição
   const transitioningRef = useRef<boolean>(false);
@@ -42,6 +43,7 @@ export const ProcessingPhase: React.FC<Props> = ({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+      if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
     };
   }, []);
 
@@ -91,7 +93,7 @@ export const ProcessingPhase: React.FC<Props> = ({
     if (transitioningRef.current) return;
     transitioningRef.current = true;
 
-    triggerFeedback('timeout');
+    setFeedback('timeout');
 
     const reactionTimeMs = digitDurationMs;
     const currentDigit = digitRef.current;
@@ -112,7 +114,10 @@ export const ProcessingPhase: React.FC<Props> = ({
       tempoReacaoMs: reactionTimeMs,
     };
 
-    saveAndAdvance(newResult);
+    transitionTimerRef.current = setTimeout(() => {
+      setFeedback(null);
+      saveAndAdvance(newResult);
+    }, 500);
   };
 
   // Determina o botão correto com base nas regras cognitivas
@@ -124,15 +129,6 @@ export const ProcessingPhase: React.FC<Props> = ({
       // Maior que 5 = Direita, Menor que 5 = Esquerda
       return val > 5 ? 'direita' : 'esquerda';
     }
-  };
-
-  // Aciona feedback visual rápido (150ms)
-  const triggerFeedback = (type: 'correct' | 'incorrect' | 'timeout') => {
-    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
-    setFeedback(type);
-    feedbackTimerRef.current = setTimeout(() => {
-      setFeedback(null);
-    }, 150);
   };
 
   // Processa a resposta do usuário
@@ -155,7 +151,7 @@ export const ProcessingPhase: React.FC<Props> = ({
     const respostaCorreta = getCorrectAnswer(currentDigit, currentRule);
     const acertou = answer === respostaCorreta;
 
-    triggerFeedback(acertou ? 'correct' : 'incorrect');
+    setFeedback(acertou ? 'correct' : 'incorrect');
 
     const newResult: TentativaFase2 = {
       indiceTentativa: currentIdx + 1,
@@ -168,7 +164,10 @@ export const ProcessingPhase: React.FC<Props> = ({
       tempoReacaoMs: reactionTimeMs,
     };
 
-    saveAndAdvance(newResult);
+    transitionTimerRef.current = setTimeout(() => {
+      setFeedback(null);
+      saveAndAdvance(newResult);
+    }, 500);
   };
 
   // Salva o resultado e decide se encerra a fase ou avança
@@ -176,10 +175,7 @@ export const ProcessingPhase: React.FC<Props> = ({
     resultsRef.current.push(resultItem);
 
     if (currentTrial + 1 >= trialsCount) {
-      // Pequeno atraso na conclusão para que o último feedback pisque antes de sumir
-      setTimeout(() => {
-        onComplete(resultsRef.current);
-      }, 150);
+      onComplete(resultsRef.current);
     } else {
       setCurrentTrial((prev) => prev + 1);
     }

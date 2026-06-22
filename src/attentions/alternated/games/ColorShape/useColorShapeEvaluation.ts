@@ -5,6 +5,7 @@ import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 import { adaptSessionToColorShape }        from '../../../../assessment/colorShape/adaptSessionToColorShape';
 import { buildColorShapeTechnicalReport }  from '../../../../assessment/colorShape/buildColorShapeTechnicalReport';
 import { calculateColorShapeMetrics }      from '../../../../assessment/colorShape/calculateColorShapeMetrics';
+import { saveReport } from '../../../../lib/saveReport';
 
 const EVALUATOR_URL    = import.meta.env.VITE_EVALUATOR_URL    as string | undefined;
 const EVALUATOR_SECRET = import.meta.env.VITE_EVALUATOR_SECRET as string | undefined;
@@ -41,6 +42,19 @@ async function callEvaluator(payload: object): Promise<EvaluationReport | null> 
   } catch (err) {
     console.error('[ColorShape] erro ao chamar evaluator:', err);
     return null;
+  }
+}
+
+async function saveWithRetry(
+  report: EvaluationReport,
+  input: any
+): Promise<void> {
+  const result = await saveReport(report, input);
+  if (result !== null) return;
+  await new Promise((r) => setTimeout(r, 2000));
+  const retry = await saveReport(report, input);
+  if (retry === null) {
+    console.warn('[ColorShape] laudo não persistido após retry:', input.sessionId);
   }
 }
 
@@ -108,5 +122,8 @@ export async function useColorShapeEvaluation(
   };
 
   const geminiReport = await callEvaluator(payload);
+  if (geminiReport) {
+    await saveWithRetry(geminiReport, payload);
+  }
   return { metrics, geminiReport };
 }
