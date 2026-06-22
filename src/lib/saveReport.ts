@@ -1,6 +1,6 @@
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { storage } from './firebase';
+import { auth, storage } from './firebase';
 import db from './firebase';
 import type { EvaluationReport, EvaluatorInput } from './evaluatorClient';
 import { reportToMarkdown } from './reportToMarkdown';
@@ -9,15 +9,22 @@ export async function saveReport(
   report: EvaluationReport,
   input: EvaluatorInput
 ): Promise<string | null> {
+  const uid = auth.currentUser?.uid;
+  if (!uid) {
+    if (import.meta.env.DEV) console.warn('[saveReport] usuário não autenticado');
+    return null;
+  }
+
   try {
     const md = reportToMarkdown(report, input);
-    const storageRef = ref(storage, `laudos/${input.sessionId}.md`);
+    // Laudos no Storage também isolados por uid
+    const storageRef = ref(storage, `laudos/${uid}/${input.sessionId}.md`);
 
     await uploadString(storageRef, md, 'raw', { contentType: 'text/markdown' });
-
     const downloadUrl = await getDownloadURL(storageRef);
 
     await setDoc(doc(db, 'sessions', input.sessionId), {
+      uid,                              // ← campo obrigatório para as Security Rules
       sessionId:     input.sessionId,
       game:          input.game,
       attentionType: input.attentionType,

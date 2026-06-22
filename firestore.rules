@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── sessions ───────────────────────────────────────────────────────────────
+    // Cada sessão só pode ser lida/escrita pelo próprio usuário dono (uid).
+    match /sessions/{sessionId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == resource.data.uid;
+
+      // Permite criar (write sem resource existente) se o uid no payload
+      // corresponde ao usuário autenticado.
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+    }
+
+    // ── sessionReports ────────────────────────────────────────────────────────
+    // Laudos gerados por IA: mesmo isolamento por uid.
+    match /sessionReports/{sessionId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == resource.data.uid;
+
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+    }
+
+    // Bloqueia qualquer outro caminho não mapeado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

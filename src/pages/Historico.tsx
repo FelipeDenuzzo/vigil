@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import db from '../lib/firebase';
+import { useAuth } from '../lib/AuthContext';
 import { Button } from '../shared/components/Button';
 import { Card } from '../shared/components/Card';
 
@@ -39,25 +40,33 @@ function formatDate(entry: SessionEntry): string {
 
 export const Historico: React.FC = () => {
   const navigate = useNavigate();
+  const { user }  = useAuth();
   const [sessions, setSessions] = useState<SessionEntry[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user?.uid) return;
+
     (async () => {
       try {
-        const q = query(collection(db, 'sessions'), orderBy('createdAt', 'desc'));
+        // ── Filtra estritamente pelo uid do usuário autenticado ──
+        const q = query(
+          collection(db, 'sessions'),
+          where('uid', '==', user.uid),
+          orderBy('createdAt', 'desc')
+        );
         const snap = await getDocs(q);
         const data = snap.docs.map(d => d.data() as SessionEntry);
         setSessions(data);
       } catch (err) {
-        console.error('[Historico]', err);
+        if (import.meta.env.DEV) console.error('[Historico]', err);
         setError('Não foi possível carregar o histórico. Tente novamente.');
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [user?.uid]);
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-12)', paddingBottom: 'var(--space-12)' }}>
