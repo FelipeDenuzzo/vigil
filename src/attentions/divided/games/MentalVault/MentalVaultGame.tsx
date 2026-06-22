@@ -7,6 +7,7 @@ import { RecallPhase } from './RecallPhase';
 import { Button } from '../../../../shared/components/Button';
 import { Card } from '../../../../shared/components/Card';
 import { calculateSessionMetrics } from '../../../../assessment/mentalVault/calculateMentalVaultMetrics';
+import MentalVaultSimulation from './MentalVaultSimulation';
 
 interface Props {
   sessionId: string;
@@ -162,12 +163,19 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
             </p>
             <Button
               variant="primary"
-              onClick={handleStartGame}
+              onClick={() => setPhase('simulacao')}
               style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
             >
               Iniciar
             </Button>
           </Card>
+        );
+
+      case 'simulacao':
+        return (
+          <MentalVaultSimulation
+            onDone={handleStartGame}
+          />
         );
 
       case 'codificacao':
@@ -322,7 +330,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
 
   return (
     <div style={{ width: '100%', maxWidth: '640px', margin: '0 auto', padding: 'var(--space-4)' }}>
-      {phase !== 'instrucoes' && phase !== 'resumo' && (
+      {phase !== 'instrucoes' && phase !== 'simulacao' && phase !== 'resumo' && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
           <span>Rodada {currentRoundIndex + 1} de 6 (Nível {level})</span>
           <span>Fase: {
