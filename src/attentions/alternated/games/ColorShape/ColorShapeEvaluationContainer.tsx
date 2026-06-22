@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import db from '../../../../lib/firebase';
+import { auth } from '../../../../lib/firebase';
 import { useColorShapeEvaluation } from './useColorShapeEvaluation';
 import { ColorShapeEvaluationScreen } from './ColorShapeEvaluationScreen';
 import type { EvaluationReport as GeminiReport } from '../../../../lib/evaluatorClient';
@@ -15,12 +16,48 @@ type LoadedState = false | 'organizing' | true;
 
 const RETRYABLE_CODES = new Set(['unavailable', 'permission-denied', 'resource-exhausted']);
 
-async function saveReportToFirestore(sessionId: string, report: GeminiReport): Promise<void> {
+// Chave usada para persistir o log temporariamente no sessionStorage
+function sessionStorageKey(sessionId: string) {
+  return `vigil:cs-log:${sessionId}`;
+}
+
+/** Persiste o log no sessionStorage para sobreviver a navegações dentro da mesma aba. */
+export function persistColorShapeLog(log: ColorShapeSessionLog): void {
+  try {
+    sessionStorage.setItem(sessionStorageKey(log.sessionId), JSON.stringify(log));
+  } catch { /* silencioso — sessionStorage indisponível */ }
+}
+
+/** Recupera o log do sessionStorage (retorna null se não existir). */
+function loadColorShapeLog(sessionId: string): ColorShapeSessionLog | null {
+  try {
+    const raw = sessionStorage.getItem(sessionStorageKey(sessionId));
+    if (!raw) return null;
+    return JSON.parse(raw) as ColorShapeSessionLog;
+  } catch {
+    return null;
+  }
+}
+
+async function saveReportToFirestore(
+  sessionId: string,
+  uid: string,
+  report: GeminiReport
+): Promise<void> {
   try {
     const ref = doc(db, 'sessionReports', sessionId);
-    await setDoc(ref, { geminiReport: report, sessionId, savedAt: serverTimestamp() }, { merge: true });
+    await setDoc(
+      ref,
+      {
+        uid,                      // ← obrigatório para as Security Rules
+        geminiReport: report,
+        sessionId,
+        savedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
   } catch (err) {
-    console.warn('[ColorShape] Falha ao salvar relatório no Firestore:', err);
+    if (import.meta.env.DEV) console.warn('[ColorShape] Falha ao salvar relatório no Firestore:', err);
   }
 }
 
@@ -44,12 +81,10 @@ async function loadReportFromFirestore(sessionId: string): Promise<GeminiReport 
           if (data?.geminiReport) return data.geminiReport as GeminiReport;
         }
         return null;
-      } catch (retryErr) {
-        console.warn('[ColorShape] Falha ao carregar relatório do Firestore (retry):', retryErr);
+      } catch {
         return null;
       }
     }
-    console.warn('[ColorShape] Falha ao carregar relatório do Firestore:', err);
     return null;
   }
 }
@@ -81,9 +116,11 @@ export function ColorShapeEvaluationContainer({ sessionLog: logProp }: Props = {
         return;
       }
 
-      // 2️⃣ Precisa do log para chamar o evaluator
-      if (!logProp) {
-        console.warn('[ColorShape] sessionLog não fornecido e sem cache — sem avaliação.');
+      // 2️⃣ Resolve o log: prop direto > sessionStorage (rota /resultado após refresh)
+      const log = logProp ?? loadColorShapeLog(sessionId);
+      if (!log) {
+        if (import.meta.env.DEV)
+          console.warn('[ColorShape] sessionLog não encontrado e sem cache — sem avaliação.');
         setLoaded(true);
         return;
       }
@@ -91,16 +128,17 @@ export function ColorShapeEvaluationContainer({ sessionLog: logProp }: Props = {
       // 3️⃣ Chama evaluator
       let result = null;
       try {
-        result = await useColorShapeEvaluation(logProp);
+        result = await useColorShapeEvaluation(log);
       } catch (err) {
-        console.warn('[ColorShape] Erro ao avaliar sessão:', err);
+        if (import.meta.env.DEV) console.warn('[ColorShape] Erro ao avaliar sessão:', err);
       }
 
       // 4️⃣ IA respondeu — organiza + salva
       setLoaded('organizing');
 
-      if (result?.geminiReport) {
-        await saveReportToFirestore(sessionId, result.geminiReport);
+      const uid = auth.currentUser?.uid;
+      if (result?.geminiReport && uid) {
+        await saveReportToFirestore(sessionId, uid, result.geminiReport);
         setGeminiReport(result.geminiReport);
       }
 
