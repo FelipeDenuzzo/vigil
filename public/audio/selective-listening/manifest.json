@@ -1,0 +1,26 @@
+{
+  "male": {
+    "0": "/audio/selective-listening/male/0.mp3",
+    "1": "/audio/selective-listening/male/1.mp3",
+    "2": "/audio/selective-listening/male/2.mp3",
+    "3": "/audio/selective-listening/male/3.mp3",
+    "4": "/audio/selective-listening/male/4.mp3",
+    "5": "/audio/selective-listening/male/5.mp3",
+    "6": "/audio/selective-listening/male/6.mp3",
+    "7": "/audio/selective-listening/male/7.mp3",
+    "8": "/audio/selective-listening/male/8.mp3",
+    "9": "/audio/selective-listening/male/9.mp3"
+  },
+  "female": {
+    "0": "/audio/selective-listening/female/0.mp3",
+    "1": "/audio/selective-listening/female/1.mp3",
+    "2": "/audio/selective-listening/female/2.mp3",
+    "3": "/audio/selective-listening/female/3.mp3",
+    "4": "/audio/selective-listening/female/4.mp3",
+    "5": "/audio/selective-listening/female/5.mp3",
+    "6": "/audio/selective-listening/female/6.mp3",
+    "7": "/audio/selective-listening/female/7.mp3",
+    "8": "/audio/selective-listening/female/8.mp3",
+    "9": "/audio/selective-listening/female/9.mp3"
+  }
+}

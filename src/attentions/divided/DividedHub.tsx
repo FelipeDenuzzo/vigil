@@ -32,6 +32,19 @@ export const DividedHub: React.FC = () => {
               Guarde uma sequência de letras e classifique dígitos sob divisão de atenção para abrir o cofre.
             </p>
           </Card>
+
+          <Card
+            interactive
+            accent="var(--color-divided)"
+            onClick={() => navigate('/treinar/dividida/escuta-seletiva')}
+          >
+            <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
+              🎧 Escuta Seletiva
+            </p>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+              Filtre interferências sonoras concorrentes prestando atenção apenas na voz indicada.
+            </p>
+          </Card>
         </div>
       </section>
     </div>
