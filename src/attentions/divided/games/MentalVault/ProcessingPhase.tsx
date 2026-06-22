@@ -165,7 +165,7 @@ export const ProcessingPhase: React.FC<Props> = ({
       respostaUsuario: answer,
       acertou,
       tipoErro: acertou ? null : 'comissao',
-      tempoReacaoMs,
+      tempoReacaoMs: reactionTimeMs,
     };
 
     saveAndAdvance(newResult);
