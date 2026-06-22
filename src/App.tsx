@@ -16,6 +16,8 @@ import ColorShapePlay from './attentions/alternating/ColorShapePlay';
 import ColorShapeEvaluationContainer from './attentions/alternated/games/ColorShape/ColorShapeEvaluationContainer';
 import { DividedHub } from './attentions/divided/DividedHub';
 import MentalVaultPlay from './attentions/divided/MentalVaultPlay';
+import SelectiveListeningPlay from './attentions/divided/SelectiveListeningPlay';
+import SelectiveListeningResult from './attentions/divided/games/SelectiveListening/SelectiveListeningResult';
 import { NotFound } from './pages/NotFound';
 import './shared/base.css';
 
@@ -47,6 +49,8 @@ export default function App() {
           {/* Dividida */}
           <Route path="/treinar/dividida" element={<ProtectedRoute><DividedHub /></ProtectedRoute>} />
           <Route path="/treinar/dividida/cofre-mental" element={<ProtectedRoute><MentalVaultPlay /></ProtectedRoute>} />
+          <Route path="/treinar/dividida/escuta-seletiva" element={<ProtectedRoute><SelectiveListeningPlay /></ProtectedRoute>} />
+          <Route path="/treinar/dividida/escuta-seletiva/resultado" element={<ProtectedRoute><SelectiveListeningResult /></ProtectedRoute>} />
 
           <Route path="/historico" element={<ProtectedRoute><Historico /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />

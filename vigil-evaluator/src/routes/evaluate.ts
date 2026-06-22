@@ -144,6 +144,48 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  // ── Atenção Dividida — Cofre Mental ou Escuta Seletiva ───────────────────────
+  if (game === 'cofre-mental' || game === 'escuta-seletiva' || attentionType === 'dividida') {
+    const input = body as EvaluatorInput;
+    if (!input.severity) {
+      res.status(400).json({ error: 'Invalid payload for divided attention: missing severity' });
+      return;
+    }
+
+    try {
+      const aiReport = await evaluateWithGemini(input) as any;
+      const level = (aiReport.level as string) === 'minimo' ? 'mínimo' : aiReport.level;
+
+      res.json({
+        score:    aiReport.score,
+        severity: level,
+        report: {
+          ludic: {
+            score: aiReport.score,
+            label: levelToLabel(level),
+            emoji: levelToEmoji(level),
+          },
+          general: {
+            summary:        aiReport.generalSummary        ?? '',
+            strengths:      aiReport.generalStrengths      ?? [],
+            weaknesses:     aiReport.generalWeaknesses     ?? [],
+            recommendation: aiReport.generalRecommendation ?? '',
+          },
+          clinical: {
+            strengths:      aiReport.clinicalStrengths      ?? [],
+            weaknesses:     aiReport.clinicalWeaknesses     ?? [],
+            recommendation: aiReport.clinicalRecommendation ?? '',
+            clinicalNote:   aiReport.clinicalNote           ?? '',
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Erro ao gerar laudo Gemini (dividida):', error);
+      res.status(500).json({ error: 'Gemini evaluation failed' });
+    }
+    return;
+  }
+
   // ── Tipo desconhecido ──────────────────────────────────────────────────────────────
   res.status(400).json({ error: `Unknown game/attentionType: game=${game}, attentionType=${attentionType}` });
 });

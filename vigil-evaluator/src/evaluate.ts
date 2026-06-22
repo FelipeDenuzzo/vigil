@@ -3,6 +3,7 @@ import type { EvaluatorInput, EvaluationReport } from './types';
 import { buildSelectivePrompt,   SELECTIVE_EVALUATION_SCHEMA   } from './prompts/selective';
 import { buildSustainedPrompt,   SUSTAINED_EVALUATION_SCHEMA   } from './prompts/sustained';
 import { buildAlternatingPrompt, ALTERNATING_EVALUATION_SCHEMA } from './prompts/alternating';
+import { buildDividedPrompt,     DIVIDED_EVALUATION_SCHEMA     } from './prompts/divided';
 
 // ── Cliente Vertex AI ───────────────────────────────────────────────────────────────────────────
 const ai = new GoogleGenAI({
@@ -51,7 +52,7 @@ function resolvePromptAndSchema(input: EvaluatorInput) {
     case 'alternada':
       return { prompt: buildAlternatingPrompt(input), schema: ALTERNATING_EVALUATION_SCHEMA };
     case 'dividida':
-      return { prompt: buildAlternatingPrompt(input as any), schema: ALTERNATING_EVALUATION_SCHEMA };
+      return { prompt: buildDividedPrompt(input),     schema: DIVIDED_EVALUATION_SCHEMA     };
     default:
       return { prompt: buildSelectivePrompt(input as any), schema: SELECTIVE_EVALUATION_SCHEMA };
   }
