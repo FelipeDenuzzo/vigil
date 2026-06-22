@@ -25,9 +25,6 @@ export const RecallPhase: React.FC<Props> = ({
     setSelectedLetters((prev) => [...prev, letter]);
   };
 
-  const handleClear = () => {
-    setSelectedLetters([]);
-  };
 
   const handleBackspace = () => {
     setSelectedLetters((prev) => prev.slice(0, -1));

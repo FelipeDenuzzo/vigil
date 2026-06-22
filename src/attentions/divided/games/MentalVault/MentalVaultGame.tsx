@@ -1,6 +1,6 @@
 // src/attentions/divided/games/MentalVault/MentalVaultGame.tsx
 import React, { useState, useRef } from 'react';
-import { MentalVaultFase, ConfigJogo, TentativaFase2, RegistroRodada, ResultadoSessao, CondicaoRodada } from './types';
+import { MentalVaultFase, TentativaFase2, RegistroRodada, ResultadoSessao, CondicaoRodada } from './types';
 import { EncodingPhase } from './EncodingPhase';
 import { ProcessingPhase } from './ProcessingPhase';
 import { RecallPhase } from './RecallPhase';
@@ -42,7 +42,7 @@ const CONFIG_BY_LEVEL: Record<number, LevelConfig> = {
   5: { quantidadeConsoantes: 6, tempoLimiteMs: 550, condicaoPadrao: 'mista' },
 };
 
-export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose, onComplete }) => {
+export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClose, onComplete }) => {
   const [level, setLevel] = useState(1);
   const [phase, setPhase] = useState<MentalVaultFase>('instrucoes');
 
@@ -53,7 +53,6 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose, onComplet
   // Dados da rodada ativa
   const [targetLetters, setTargetLetters] = useState<string[]>([]);
   const [processingResults, setProcessingResults] = useState<TentativaFase2[]>([]);
-  const [userRecall, setUserRecall] = useState<string[]>([]);
 
   // Histórico de rodadas concluídas
   const roundHistoryRef = useRef<RegistroRodada[]>([]);
@@ -83,12 +82,11 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose, onComplet
     startRound(0, 1, conditions[0]);
   };
 
-  const startRound = (roundIdx: number, currentLevel: number, cond: 'pura' | 'mista') => {
+  const startRound = (_roundIdx: number, currentLevel: number, _cond: 'pura' | 'mista') => {
     const config = CONFIG_BY_LEVEL[currentLevel] || CONFIG_BY_LEVEL[1];
     const letters = generateConsonants(config.quantidadeConsoantes);
     setTargetLetters(letters);
     setProcessingResults([]);
-    setUserRecall([]);
     setPhase('codificacao');
   };
 
@@ -102,7 +100,6 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId, onClose, onComplet
   };
 
   const handleRecallComplete = (answers: string[]) => {
-    setUserRecall(answers);
 
     const roundResult: RegistroRodada = {
       sequenciaAlvo: targetLetters,
