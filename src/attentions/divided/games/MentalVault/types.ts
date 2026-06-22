@@ -1,31 +1,35 @@
 // src/attentions/divided/games/MentalVault/types.ts
 
-export type MentalVaultPhase = 'instructions' | 'encoding' | 'processing' | 'recall' | 'feedback' | 'summary';
-export type RoundCondition = 'pure' | 'mixed';
+export type MentalVaultFase = 'instrucoes' | 'codificacao' | 'processamento' | 'recall' | 'feedback' | 'resumo';
+export type CondicaoRodada = 'pura' | 'mista';
 
-export interface GameConfig {
-  consonantsCount: number;      // Número de letras a memorizar (3 a 6)
-  displayDurationMs: number;    // Duração de exibição de cada letra (padrão 1500ms)
-  classificationTrials: number; // Número de trials de classificação na fase 2 (padrão 8)
-  condition: RoundCondition;     // Condição: 'pure' ou 'mixed'
+export interface ConfigJogo {
+  quantidadeConsoantes: number;   // Número de consoantes a memorizar (3 a 6)
+  tempoExibicaoMs: number;        // Tempo de exibição de cada consoante (ex: 1500ms)
+  totalTentativasDigitos: number; // Número de trials de dígitos na fase 2 (ex: 8)
+  condicao: CondicaoRodada;       // 'pura' ou 'mista'
 }
 
-export interface ProcessingTrialResult {
-  digit: number;
-  color: 'blue' | 'red' | 'default';
-  rule: 'even-odd' | 'greater-less';
-  selectedAnswer: 'left' | 'right' | 'timeout';
-  correctAnswer: 'left' | 'right';
-  isCorrect: boolean;
-  reactionTimeMs: number;
+export interface TentativaFase2 {
+  indiceTentativa: number;        // 1-indexed (1 a 8)
+  digito: number;                 // Dígito apresentado (1-9, exceto 5)
+  corOuRegra: 'azul' | 'vermelho' | 'padrao';
+  respostaCorreta: 'esquerda' | 'direita';
+  respostaUsuario: 'esquerda' | 'direita' | 'omissao';
+  acertou: boolean;
+  tipoErro: 'comissao' | 'omissao' | null;
+  tempoReacaoMs: number;
 }
 
-export interface RoundResult {
-  roundNumber: number;
-  config: GameConfig;
-  targetLetters: string[];
-  userRecallLetters: string[];
-  isRecallCorrect: boolean;
-  processingAccuracy: number;
-  processingAvgRtMs: number;
+export interface RegistroRodada {
+  sequenciaAlvo: string[];
+  sequenciaDigitada: string[];
+  condicaoRodada: CondicaoRodada;
+  totalDigitosApresentados: number;
+  tentativas: TentativaFase2[];
+}
+
+export interface ResultadoSessao {
+  nivelMaximo: number;
+  rodadas: RegistroRodada[];
 }
