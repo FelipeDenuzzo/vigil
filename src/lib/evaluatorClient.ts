@@ -12,9 +12,10 @@ export interface EvaluatorInput {
   sessionId: string;
   attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida';
   severity?: 'minimo' | 'leve' | 'moderado' | 'importante';
+  [key: string]: any;
 
   // ── Campos seletiva ───────────────────────────────────────────────────────────────
-  game?: 'visual-search';
+  game?: 'visual-search' | 'color-shape' | 'cofre-mental' | 'long-mazes';
   roundCount?: number;
   totalClicks?: number;
   totalHits?: number;

@@ -18,6 +18,8 @@ interface SessionEntry {
 const GAME_LABEL: Record<string, string> = {
   'visual-search': '🎯 Busca Visual',
   'long-mazes':    '🧩 Labirintos',
+  'color-shape':   '🎨 Cor ou Forma',
+  'cofre-mental':  '🔐 Cofre Mental',
 };
 
 const LEVEL_COLOR: Record<string, string> = {
