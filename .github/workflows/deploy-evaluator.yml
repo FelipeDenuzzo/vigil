@@ -42,10 +42,14 @@ jobs:
       - name: Criar repositório no Artifact Registry se não existir
         continue-on-error: true
         run: |
-          gcloud artifacts repositories describe vigil-evaluator --location=${{ env.REGION }} --quiet || \
+          gcloud artifacts repositories describe vigil-evaluator \
+            --location=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --quiet || \
           gcloud artifacts repositories create vigil-evaluator \
             --repository-format=docker \
             --location=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
             --description="Docker repository for vigil-evaluator" \
             --quiet
 
@@ -60,6 +64,7 @@ jobs:
           gcloud run deploy ${{ env.SERVICE }} \
             --image=${{ env.IMAGE }}:${{ github.sha }} \
             --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
             --platform=managed \
             --allow-unauthenticated \
             --service-account=${{ secrets.GCP_SA_EMAIL }} \
