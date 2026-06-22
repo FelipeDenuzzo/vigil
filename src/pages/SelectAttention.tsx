@@ -47,7 +47,7 @@ export const SelectAttention: React.FC = () => {
         <Card accent="var(--color-divided)" interactive onClick={() => navigate('/treinar/dividida')}>
           <div style={{ fontSize: '2rem', marginBottom: 'var(--space-2)' }}>⚖️</div>
           <h2 style={{ color: 'var(--color-text)', marginBottom: 'var(--space-1)' }}>Dividida</h2>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-divided)', marginBottom: 'var(--space-4)' }}>Em breve</p>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-divided)', marginBottom: 'var(--space-4)' }}>Disponível</p>
           <p style={{ color: 'var(--color-text-muted)' }}>Executar duas tarefas ao mesmo tempo com eficiência.</p>
         </Card>
       </div>
