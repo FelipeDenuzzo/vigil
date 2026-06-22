@@ -1,23 +1,23 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationContainer.tsx
-// Atualizado: estado de loading em 3 fases + salvamento do geminiReport no Firestore.
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import db from '../../../../lib/firebase';
+import { auth } from '../../../../lib/firebase';
 import { useVisualSearchEvaluation } from './useVisualSearchEvaluation';
 import type { EvaluationReport as InternalReport } from './useVisualSearchEvaluation';
 import { getSessionById } from '../../../../shared/storage';
 import { VisualSearchEvaluationScreen } from './VisualSearchEvaluationScreen';
 import type { EvaluationReport as GeminiReport } from '../../../../lib/evaluatorClient';
 
-/** false = IA chamando | 'organizing' = IA ok, app montando | true = tudo pronto */
 type LoadedState = false | 'organizing' | true;
 
 const RETRYABLE_CODES = new Set(['unavailable', 'permission-denied', 'resource-exhausted']);
 
 async function saveReportToFirestore(
   sessionId: string,
+  uid: string,
   report: GeminiReport
 ): Promise<void> {
   try {
@@ -25,6 +25,7 @@ async function saveReportToFirestore(
     await setDoc(
       ref,
       {
+        uid,                     // ← obrigatório para as Security Rules
         geminiReport: report,
         sessionId,
         savedAt: serverTimestamp(),
@@ -32,7 +33,7 @@ async function saveReportToFirestore(
       { merge: true }
     );
   } catch (err) {
-    console.warn('Falha ao salvar relatório no Firestore:', err);
+    if (import.meta.env.DEV) console.warn('[saveReportToFirestore] erro:', err);
   }
 }
 
@@ -48,7 +49,6 @@ async function loadReportFromFirestore(
     }
     return null;
   } catch (err: any) {
-    // Retenta após 2s para erros transitórios de conectividade, permissão ou quota
     if (RETRYABLE_CODES.has(err?.code)) {
       try {
         await new Promise(r => setTimeout(r, 2000));
@@ -59,12 +59,10 @@ async function loadReportFromFirestore(
           if (data?.geminiReport) return data.geminiReport as GeminiReport;
         }
         return null;
-      } catch (retryErr) {
-        console.warn('Falha ao carregar relatório do Firestore (retry):', retryErr);
+      } catch {
         return null;
       }
     }
-    console.warn('Falha ao carregar relatório do Firestore:', err);
     return null;
   }
 }
@@ -75,9 +73,9 @@ export function VisualSearchEvaluationContainer() {
   const navigate = useNavigate();
   const sessionLog = getSessionById(sessionId);
 
-  const [evaluation, setEvaluation] = useState<InternalReport | null>(null);
+  const [evaluation,   setEvaluation]   = useState<InternalReport | null>(null);
   const [geminiReport, setGeminiReport] = useState<GeminiReport | undefined>(undefined);
-  const [loaded, setLoaded] = useState<LoadedState>(false);
+  const [loaded,       setLoaded]       = useState<LoadedState>(false);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -87,7 +85,6 @@ export function VisualSearchEvaluationContainer() {
     setEvaluation(null);
 
     (async () => {
-      // 1️⃣ Verifica cache no Firestore (resultado permanente)
       const cached = await loadReportFromFirestore(sessionId);
       if (cached) {
         setGeminiReport(cached);
@@ -95,21 +92,19 @@ export function VisualSearchEvaluationContainer() {
         return;
       }
 
-      // 2️⃣ Sem cache — chama Gemini (fase 1: IA analisando)
       let result: InternalReport | null = null;
       try {
         result = await useVisualSearchEvaluation(sessionId);
-      } catch (err) {
-        console.warn('Erro ao avaliar sessão:', err);
+      } catch {
+        // silencioso em produção
       }
 
       setEvaluation(result);
-
-      // 3️⃣ IA respondeu — fase 2: App organizando + salva no Firestore
       setLoaded('organizing');
 
-      if (result?.geminiReport) {
-        await saveReportToFirestore(sessionId, result.geminiReport);
+      const uid = auth.currentUser?.uid;
+      if (result?.geminiReport && uid) {
+        await saveReportToFirestore(sessionId, uid, result.geminiReport);
         setGeminiReport(result.geminiReport);
       }
 
@@ -128,36 +123,36 @@ export function VisualSearchEvaluationContainer() {
   const sessionLogMapped = {
     sessionId: sessionLog.sessionId,
     gameId: sessionLog.gameId,
-    startedAt: sessionLog.startedAt ? new Date(sessionLog.startedAt).toISOString() : undefined,
+    startedAt:   sessionLog.startedAt   ? new Date(sessionLog.startedAt).toISOString()   : undefined,
     completedAt: sessionLog.completedAt ? new Date(sessionLog.completedAt).toISOString() : undefined,
     rounds: (sessionLog.rounds ?? []).map((round: any, idx: number) => ({
       round: idx + 1,
       totalTargets: round.totalTargets ?? 0,
-      hits: round.hits ?? 0,
-      errors: round.errors ?? 0,
-      missedTargets: round.missedTargets ?? 0,
-      durationMs: round.durationMs,
-      reactionTimes: round.reactionTimes,
-      gridSize: round.gridSize,
+      hits:         round.hits         ?? 0,
+      errors:       round.errors       ?? 0,
+      missedTargets:round.missedTargets ?? 0,
+      durationMs:   round.durationMs,
+      reactionTimes:round.reactionTimes,
+      gridSize:     round.gridSize,
       clicks: Array.isArray(round.clicks)
         ? round.clicks.map((c: any) => ({
-            isTarget: c.isTarget ?? false,
+            isTarget:     c.isTarget     ?? false,
             clickedShape: c.clickedShape ?? '',
             clickedColor: c.clickedColor ?? '',
-            targetShape: c.targetShape ?? '',
-            targetColor: c.targetColor ?? '',
-            row: c.row ?? 0,
-            col: c.col ?? 0,
-            screenHalf: c.screenHalf ?? 'left',
+            targetShape:  c.targetShape  ?? '',
+            targetColor:  c.targetColor  ?? '',
+            row:          c.row          ?? 0,
+            col:          c.col          ?? 0,
+            screenHalf:   c.screenHalf   ?? 'left',
           }))
         : undefined,
-      systematicMoves: round.systematicMoves,
-      erraticMoves: round.erraticMoves,
-      organizationIndex: round.organizationIndex,
-      scanPattern: round.scanPattern,
-      leftSideClicks: round.leftSideClicks,
-      rightSideClicks: round.rightSideClicks,
-      leftSideTargetMisses: round.leftSideTargetMisses,
+      systematicMoves:       round.systematicMoves,
+      erraticMoves:          round.erraticMoves,
+      organizationIndex:     round.organizationIndex,
+      scanPattern:           round.scanPattern,
+      leftSideClicks:        round.leftSideClicks,
+      rightSideClicks:       round.rightSideClicks,
+      leftSideTargetMisses:  round.leftSideTargetMisses,
       rightSideTargetMisses: round.rightSideTargetMisses,
       spatialAsymmetryIndex: round.spatialAsymmetryIndex,
     })),
