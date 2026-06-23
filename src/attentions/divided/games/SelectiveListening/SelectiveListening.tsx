@@ -446,7 +446,7 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
                               color: 'var(--color-text)'
                             }}
                           >
-                            {hasDigit ? digit : ''}
+                            {hasDigit ? (digit === -1 ? '-' : digit) : ''}
                           </motion.div>
                         );
                       })}
@@ -508,7 +508,7 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
                     </button>
 
                     <button
-                      onClick={() => handleSubmit(true)}
+                      onClick={() => handleKeyPress(-1)}
                       style={{
                         height: '44px',
                         borderRadius: '8px',
