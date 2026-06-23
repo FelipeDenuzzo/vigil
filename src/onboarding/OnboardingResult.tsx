@@ -4,7 +4,7 @@ import { Button } from '../shared/components/Button';
 import { UserBaseline, OnboardingState } from './types';
 import { useAuth } from '../lib/AuthContext';
 import { callOnboardingEvaluator, OnboardingReport, EvaluatorInput } from '../lib/evaluatorClient';
-import { EvaluationLoadingAnimation } from '../shared/components/EvaluationLoadingAnimation';
+import { EvaluationLoadingAnimation } from '../shared/EvaluationLoadingAnimation';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
 interface Props {
