@@ -11,10 +11,11 @@ export type AccessStatus = 'approved' | 'pending' | 'blocked';
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  accessStatus: AccessStatus | null;  // null enquanto carrega
+  accessStatus: AccessStatus | null;
   isAdmin: boolean;
+  displayName: string | null; // ← ADICIONADO
   logout: () => Promise<void>;
-  refreshAccess: () => Promise<void>; // força re-leitura do Firestore
+  refreshAccess: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   accessStatus: null,
   isAdmin: false,
+  displayName: null, // ← ADICIONADO
   logout: async () => {},
   refreshAccess: async () => {},
 });
@@ -32,7 +34,6 @@ async function fetchUserProfile(
   try {
     const snap = await getDoc(doc(db, 'users', uid));
     if (!snap.exists()) {
-      // Documento ainda não criado (race condition no cadastro) — trata como pending
       return { accessStatus: 'pending', isAdmin: false };
     }
     const data = snap.data();
@@ -44,6 +45,17 @@ async function fetchUserProfile(
   } catch {
     return { accessStatus: 'pending', isAdmin: false };
   }
+}
+
+// ← ADICIONADO: extrai primeiro nome do displayName ou parte local do e-mail
+function resolveDisplayName(user: User): string | null {
+  if (user.displayName) {
+    return user.displayName.split(' ')[0];
+  }
+  if (user.email) {
+    return user.email.split('@')[0];
+  }
+  return null;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -93,8 +105,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user?.uid) await loadProfile(user.uid);
   }
 
+  // ← ADICIONADO: derivado do user, sem estado próprio
+  const displayName = user ? resolveDisplayName(user) : null;
+
   return (
-    <AuthContext.Provider value={{ user, loading, accessStatus, isAdmin, logout, refreshAccess }}>
+    <AuthContext.Provider value={{ user, loading, accessStatus, isAdmin, displayName, logout, refreshAccess }}>
       {!loading && children}
     </AuthContext.Provider>
   );
