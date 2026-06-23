@@ -12,8 +12,8 @@ export const SELECTIVE_EVALUATION_SCHEMA = {
     },
     level: {
       type: Type.STRING,
-      enum: ['mínimo', 'leve', 'moderado', 'importante'],
       description: 'Classificação clínica coerente com a severidade informada.',
+      enum: ['mínimo', 'leve', 'moderado', 'importante'],
     },
     // ─ Camada geral (leigos) ──────────────────────────────────────────
     generalSummary: {
@@ -62,7 +62,6 @@ export const SELECTIVE_EVALUATION_SCHEMA = {
 };
 
 // ─── Prompt clínico — Atenção Seletiva ──────────────────────────────────────
-// ─── Prompt clínico — Atenção Seletiva ──────────────────────────────────────
 export function buildSelectivePrompt(input: SelectiveEvaluatorInput): string {
   const game = input.game || 'visual-search';
   const displaySeverity = input.severity === 'minimo' ? 'mínimo' : (input.severity ?? 'indeterminado');
@@ -75,7 +74,7 @@ export function buildSelectivePrompt(input: SelectiveEvaluatorInput): string {
 
     return `
 Você é um avaliador técnico-clínico de uma tarefa de atenção seletiva chamada "Achar o Faltando".
-Neste treino, o usuário deve escanear duas grades de símbolos lado a lado ou de forma alternada e encontrar o elemento discrepante (que está faltando ou sobrando).
+Neste treino, o usuário deve escanear grades de símbolos, letras ou números e encontrar o elemento discrepante (que está diferente). O teste avança por 10 fases distintas, cada uma com características específicas de complexidade e estímulos visuais.
 Deve gerar um laudo em DUAS camadas distintas baseando-se RIGOROSAMENTE nas regras abaixo.
 
 REGRAS ABSOLUTAS DE LINGUAGEM — LEIA ANTES DE TUDO:
@@ -83,31 +82,29 @@ REGRAS ABSOLUTAS DE LINGUAGEM — LEIA ANTES DE TUDO:
 - TOM OBRIGATÓRIO: explique como se fosse para alguém sem formação em saúde. Encorajador e descritivo, nunca alarmista ou clínico. Baseado apenas nesta sessão específica. Use frases como: "o ideal seria...", "nesta sessão foi observado...", "isso pode indicar...".
 - NÃO feche diagnóstico.
 
-GUIA DE INTERPRETAÇÃO DAS MÉTRICAS:
-- Tempo de resposta (averageResponseMs): Média de tempo por rodada. <5000ms: muito rápido. 5000ms-10000ms: adequado. >10000ms: lento/cauteloso.
-- Erros por omissão (totalOmissions): Rodadas onde o usuário não indicou a resposta correta no tempo limite. Elevado indica lentidão de busca ou falha no filtro.
-- Falsos positivos (totalFalsePositives): Cliques fora do ponto discrepante. Alto indica impulsividade motora ou falha na discriminação.
-- Eficiência de varredura (accuracyPerMinute): Razão de acertos por tempo decorrido. Valores mais altos indicam busca focada rápida.
-- Estilo de resposta (speedStyle):
-  - 'efficient': Rastreio eficiente — velocidade e precisão preservadas.
-  - 'impulsive': Precipitação motora — falhas de precisão por rapidez motora.
-  - 'slow': Lentificação de processamento — velocidade comprometida com foco preservado.
-  - 'disorganized': Sobrecarga cognitiva — estratégia de busca desorganizada.
-- Fadiga Atencional (hasFatigue):
-  - true: Indica declínio de vigilância (fadiga) com o tempo (omissões aumentaram na segunda metade).
-  - false: Indica estabilidade e vigilância sustentada durante toda a sessão.
-- Assimetria Espacial (spatialAsymmetryDominant e asymmetryRatio):
-  - 'insufficient-data': Omissões insuficientes para análise espacial (menos de 3 omissões).
-  - 'symmetric': Distribuição de erros homogênea entre os lados esquerdo e direito.
-  - 'left': Omissões concentradas no lado esquerdo da grade (alerta para assimetria visuoespacial à esquerda).
-  - 'right': Omissões concentradas no lado direito da grade (alerta para assimetria visuoespacial à direita).
-  - Se asymmetryRatio >= 0.8 de um dos lados, relate uma forte assimetria sistemática e inclua uma observação de alerta.
+TABELA DE REFERÊNCIA POR FASE (CALIBRAÇÃO CLÍNICA):
+- Fase 1 e 2 (Símbolos Clássicos I/II): Atenção seletiva geral e discriminação visual de símbolos. RT Esperado < 5000ms.
+- Fase 3 (Triângulos e Círculos): Discriminação morfológica simples (forma vs cor). RT Esperado < 4000ms.
+- Fase 4 e 5 (Busca Q/O e O/Q): Discriminação de alto contraste e inibição de distratores de formato similar. RT Esperado < 3000ms.
+- Fase 6 (Busca Serial O/Q com Distratores): Carga atencional moderada, exigindo busca serial entre distratores. RT Esperado < 6000ms.
+- Fase 7 (Dígitos 2/7): Rastreamento simples de numerais similares. RT Esperado < 4000ms.
+- Fase 8 (Busca 2/7 com Distratores): Carga atencional complexa com distratores de dígitos. RT Esperado < 6500ms.
+- Fase 9 (Letras Espelhadas d/p): Alta complexidade visuoespacial e discriminação de simetria (d vs p). RT Esperado < 5000ms.
+- Fase 10 (Estímulos Mistos): Flexibilidade cognitiva extrema (Switching). Exige transição rápida entre símbolos, letras e números. RT Esperado < 7000ms.
+
+GUIA DE INTERPRETAÇÃO DAS FLAGS CLÍNICAS E MÉTRICAS:
+- flagImpulsividade: Indica aceleração motora inadequada com erros de comissão nas fases complexas.
+- flagLentificacao: Indica lentidão geral nas fases iniciais simples acompanhada de poucas rodadas finalizadas.
+- flagSwitchCost: Custo de transição elevado, indicando lentificação marcante na fase mista 10 comparado às fases 8 e 9.
+- flagFadigaAtencional: Indica queda severa de consistência (SDRT) e aumento de omissões na segunda metade do treino.
+- d' (d-prime): Nível de discriminação de estímulos. Valores > 2.0 indicam excelente sensibilidade discriminativa. < 1.0 indicam dificuldade severa em separar estímulos corretos de distratores.
+- PES (Desaceleração Pós-Erro): Aumento do tempo de resposta após cometer um erro, refletindo monitoramento de performance preservado. Valores positivos e moderados (ex: 200ms a 800ms) são esperados e normais.
 
 FORMATO E EXIGÊNCIAS POR CAMPO (siga a estrutura de schema):
 - generalSummary: 2-3 frases acessíveis sobre o que ocorreu (velocidade, acertos, erros).
 - generalStrengths / Weaknesses: Pontos encorajadores / Pontos de melhoria sem alarmismo.
-- clinicalStrengths / Weaknesses: Cite o que foi avaliado, o ideal, e o que foi observado (números simples).
-- clinicalNote: Texto corrido com (1) visão geral da atenção seletiva do usuário, (2) análise de velocidade e acertos utilizando dados numéricos, (3) qualidade da discriminação de estímulos e impulsividade, (4) análise de fadiga atencional e de assimetria espacial (se houver), (5) o que isso indica sem usar termos proibidos e sem dar diagnósticos.
+- clinicalStrengths / Weaknesses: Cite o que foi avaliado, o ideal por fase, e o que foi observado (compare os RTs reais com a tabela de calibração).
+- clinicalNote: Texto corrido com (1) visão geral da atenção seletiva do usuário ao longo das fases, (2) análise de velocidade e acertos utilizando dados numéricos comparados com os esperados, (3) qualidade da discriminação de estímulos (d') e impulsividade/lentificação (flags), (4) análise de fadiga atencional e de assimetria espacial (se houver), (5) o que isso indica sem usar termos proibidos e sem dar diagnósticos.
 
 ${noEngagementWarning}
 
@@ -130,6 +127,25 @@ Métricas globais:
   Assimetria espacial de omissões (spatialAsymmetryDominant): ${input.spatialAsymmetryDominant ?? 'indeterminado'} (taxa: ${input.asymmetryRatio ?? 0}, omissões esquerda: ${input.leftOmissions ?? 0}, omissões direita: ${input.rightOmissions ?? 0})
   Nota de precisão local: ${input.accuracyNote ?? 'sem nota'}
   Nota de velocidade local: ${input.speedNote ?? 'sem nota'}
+
+Flags clínicas calculadas:
+  Flag Impulsividade: ${input.flagImpulsividade ? 'Sim' : 'Não'}
+  Flag Lentificação: ${input.flagLentificacao ? 'Sim' : 'Não'}
+  Flag Switch Cost: ${input.flagSwitchCost ? 'Sim' : 'Não'}
+  Flag Fadiga Atencional: ${input.flagFadigaAtencional ? 'Sim' : 'Não'}
+
+Indicadores de Time-on-Task (Split-Half):
+  Primeira metade (Fases 1–5): RT médio: ${input.firstHalfRtMean ?? 0} ms | SDRT: ${input.firstHalfSdrt ?? 0} ms
+  Segunda metade (Fases 6–10): RT médio: ${input.secondHalfRtMean ?? 0} ms | SDRT: ${input.secondHalfSdrt ?? 0} ms
+
+Detalhamento da Performance por Fase:
+${(input.phaseMetrics ?? []).map(pm => `
+* Fase ${pm.phase} - ${pm.phaseLabel}:
+  - Rodadas completadas: ${pm.roundsInPhase}
+  - Acertos: ${pm.hits} | Omissões: ${pm.omissions} | Falsos Positivos: ${pm.falsePositives}
+  - RT Médio: ${pm.rtMean} ms | SDRT: ${pm.rtSdrt} ms | d' (d-prime): ${pm.dPrime}
+  - Desaceleração Pós-Erro (PES): ${pm.postErrorSlowing !== null ? `${pm.postErrorSlowing} ms` : 'N/A'}
+`).join('\n')}
 ─────────────────────────────────────────────────────────────────────────────
 
 Gere o laudo nos 3 níveis do schema (pontuação, geral e clínica) rigorosamente seguindo as instruções e proibições de palavras.

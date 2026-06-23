@@ -52,6 +52,28 @@ export interface SelectiveEvaluatorInput {
   rightOmissions?: number;
   asymmetryRatio?: number;
   spatialAsymmetryDominant?: 'left' | 'right' | 'symmetric' | 'insufficient-data';
+
+  // Métricas avançadas de fase e flags clínicas
+  phaseMetrics?: Array<{
+    phase: number;
+    phaseLabel: string;
+    roundsInPhase: number;
+    hits: number;
+    omissions: number;
+    falsePositives: number;
+    rtMean: number;
+    rtSdrt: number;
+    dPrime: number;
+    postErrorSlowing: number | null;
+  }>;
+  flagImpulsividade?: boolean;
+  flagLentificacao?: boolean;
+  flagSwitchCost?: boolean;
+  flagFadigaAtencional?: boolean;
+  firstHalfRtMean?: number;
+  secondHalfRtMean?: number;
+  firstHalfSdrt?: number;
+  secondHalfSdrt?: number;
 }
 
 // ─── Sustentada (LongMazes) ──────────────────────────────────────────────────
