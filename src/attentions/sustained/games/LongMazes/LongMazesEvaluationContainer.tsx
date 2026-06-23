@@ -157,7 +157,7 @@ const s: Record<string, React.CSSProperties> = {
     minHeight: '100%', background: '#12131e', color: '#e8e9f0',
   },
   title: { fontSize: 22, fontWeight: 800, margin: 0 },
-  sub:   { fontSize: 13, color: '#8b8fa8', margin: 0 },
+  sub:   { fontSize: 13, color: '#ffffff', margin: 0 },
   fallbackBox: {
     background: 'rgba(255,255,255,0.04)',
     border: '1px solid rgba(255,255,255,0.08)',
@@ -170,7 +170,7 @@ const s: Record<string, React.CSSProperties> = {
   },
   btnBack: {
     padding: '8px 20px', borderRadius: 99, fontSize: 13,
-    background: 'rgba(255,255,255,0.06)', color: '#8b8fa8',
+    background: 'rgba(255,255,255,0.06)', color: '#ffffff',
     border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer',
   },
 };

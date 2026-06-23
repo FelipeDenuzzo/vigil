@@ -46,7 +46,7 @@ function VoiceCard({
       }}
     >
       <span style={{ fontSize: '2.5rem', marginBottom: 'var(--space-2)' }}>{icon}</span>
-      <span style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>
+      <span style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ffffff', marginBottom: 'var(--space-3)' }}>
         {label}
       </span>
 
@@ -218,7 +218,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                 Como Funciona o Treino?
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
                 Você vai ouvir duas vozes falando números diferentes ao mesmo tempo, como se fossem duas conversas paralelas.
               </p>
 
@@ -264,7 +264,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                 Indicação da Voz-Alvo
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
                 Antes do áudio tocar, uma mensagem indicará qual voz você deve seguir. Neste exemplo, a voz-alvo é a <strong style={{ color: 'var(--color-divided)' }}>feminina</strong>.
               </p>
 
@@ -323,7 +323,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                 Ouvindo a Sequência
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
                 Cada canal reproduzirá 3 números simultaneamente. Lembre-se apenas dos dígitos da voz feminina.
               </p>
 
@@ -404,7 +404,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                 Agora é Sua Vez!
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
                 Digite os 3 números ditados pela <strong style={{ color: 'var(--color-divided)' }}>voz feminina</strong> na ordem correta:
               </p>
 
@@ -480,7 +480,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 Você entendeu como funciona?
               </h2>
 
-              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
                 {answer === SIM_TARGET_DIGITS.join('') ? (
                   <>Você filtrou a voz masculina distratora e gravou a sequência correta da voz feminina: <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>.</>
                 ) : (
@@ -498,15 +498,15 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 marginBottom: 'var(--space-6)'
               }}>
                 <div style={{ marginBottom: 'var(--space-2)' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Voz feminina (Alvo):</span>{' '}
+                  <span style={{ color: '#ffffff' }}>Voz feminina (Alvo):</span>{' '}
                   <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>
                 </div>
                 <div style={{ marginBottom: 'var(--space-2)' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Voz masculina (Ignorar):</span>{' '}
+                  <span style={{ color: '#ffffff' }}>Voz masculina (Ignorar):</span>{' '}
                   <strong style={{ color: 'var(--color-text-faint)' }}>{SIM_DISTRACTOR_DIGITS.join(' ')}</strong>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Sua Resposta:</span>{' '}
+                  <span style={{ color: '#ffffff' }}>Sua Resposta:</span>{' '}
                   <strong style={{ color: answer === SIM_TARGET_DIGITS.join('') ? 'var(--color-sustained)' : '#f08080' }}>
                     {answer.split('').join(' ') || '-'}
                   </strong>

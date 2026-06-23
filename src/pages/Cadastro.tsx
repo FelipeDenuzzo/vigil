@@ -91,7 +91,7 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
           <h2 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-2)' }}>
             🔒 Privacidade e consentimento
           </h2>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', lineHeight: 1.6 }}>
+          <p style={{ color: '#ffffff', fontSize: 'var(--text-sm)', lineHeight: 1.6 }}>
             Antes de criar sua conta, leia e aceite os termos abaixo. Os itens marcados com
             {' '}<span style={{ color: '#f08080' }}>*</span> são obrigatórios para o funcionamento do VIGIL.
           </p>
@@ -104,7 +104,7 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
           padding: 'var(--space-4)',
           marginBottom: 'var(--space-6)',
           fontSize: 'var(--text-sm)',
-          color: 'var(--color-text-muted)',
+          color: '#ffffff',
           lineHeight: 1.6,
         }}>
           ⚠️ <strong style={{ color: 'var(--color-text)' }}>Aviso importante:</strong> O VIGIL é um
@@ -161,7 +161,7 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
 
           <label style={{ ...checkRowStyle, opacity: 0.85 }}>
             <input type="checkbox" style={checkboxStyle} checked={communications} onChange={e => setCommunications(e.target.checked)} />
-            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
+            <span style={{ fontSize: 'var(--text-sm)', color: '#ffffff', lineHeight: 1.6 }}>
               <span style={{ color: 'var(--color-text-faint)', fontSize: '0.75em', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Opcional — </span>
               Aceito receber e-mails sobre novidades, atualizações e dicas do VIGIL.
               Posso cancelar a qualquer momento.
@@ -178,7 +178,7 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-border)',
               background: 'transparent',
-              color: 'var(--color-text-muted)',
+              color: '#ffffff',
               fontSize: 'var(--text-sm)',
               cursor: 'pointer',
             }}
@@ -282,7 +282,7 @@ export default function Cadastro() {
 
       <div style={{ maxWidth: 420, margin: '80px auto', padding: '0 24px' }}>
         <h1 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-2)' }}>Criar conta</h1>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-8)' }}>
+        <p style={{ color: '#ffffff', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-8)' }}>
           Crie sua conta para começar a treinar. Você precisará aceitar os termos de uso
           e a política de privacidade antes de continuar.
         </p>
@@ -338,7 +338,7 @@ export default function Cadastro() {
           </button>
         </form>
 
-        <p style={{ marginTop: 'var(--space-6)', textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+        <p style={{ marginTop: 'var(--space-6)', textAlign: 'center', fontSize: 'var(--text-sm)', color: '#ffffff' }}>
           Já tem conta?{' '}
           <Link to="/login" style={{ color: 'var(--color-primary)' }}>Entrar</Link>
         </p>

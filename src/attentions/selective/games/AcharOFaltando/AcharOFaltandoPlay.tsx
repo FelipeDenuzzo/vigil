@@ -195,7 +195,7 @@ export default function AcharOFaltandoPlay() {
           style={{
             background: 'none',
             border: 'none',
-            color: 'var(--color-text-muted)',
+            color: '#ffffff',
             cursor: 'pointer',
             fontSize: 14,
             marginBottom: 'var(--space-8)',
@@ -317,11 +317,11 @@ export default function AcharOFaltandoPlay() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <button
             onClick={() => navigate('/treinar/seletiva')}
-            style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: 14 }}
+            style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: 14 }}
           >
             ← Voltar
           </button>
-          <div style={{ display: 'flex', gap: 24, fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+          <div style={{ display: 'flex', gap: 24, fontSize: 'var(--text-sm)', color: '#ffffff' }}>
             <span>Rodada {roundNumber}/{config.roundLimit}</span>
             <span>⏱ {formatSec(remainingSec)}</span>
             {isAlternating && <span>Exibindo: Grade {visibleBoard}</span>}

@@ -94,7 +94,7 @@ export const AttentionRadar: React.FC<Props> = ({ byType }) => {
       </svg>
 
       {/* Legenda */}
-      <div style={{ display: 'flex', gap: 'var(--space-6)', fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-6)', fontSize: 'var(--text-xs)', color: '#ffffff' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <svg width={16} height={4}><line x1={0} y1={2} x2={16} y2={2} stroke="rgba(139,143,168,0.6)" strokeWidth={1.5} strokeDasharray="4,3" /></svg>
           Baseline

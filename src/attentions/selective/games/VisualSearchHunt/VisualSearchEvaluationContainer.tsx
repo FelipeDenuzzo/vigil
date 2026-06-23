@@ -115,7 +115,7 @@ export function VisualSearchEvaluationContainer() {
   if (!sessionLog) {
     return (
       <div style={{ maxWidth: 920, margin: '0 auto', padding: 16, textAlign: 'center' }}>
-        <p style={{ color: '#8b8fa8' }}>Sessão não encontrada.</p>
+        <p style={{ color: '#ffffff' }}>Sessão não encontrada.</p>
       </div>
     );
   }

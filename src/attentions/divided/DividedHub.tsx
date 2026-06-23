@@ -13,7 +13,7 @@ export const DividedHub: React.FC = () => {
           ← Voltar
         </Button>
         <h1 style={{ fontSize: 'var(--text-2xl)', color: 'var(--color-divided)' }}>Atenção Dividida</h1>
-        <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+        <p style={{ color: '#ffffff', marginTop: 'var(--space-2)' }}>
           Esta modalidade desafia você a focar em múltiplos pontos ao mesmo tempo, dividindo sua atenção com eficiência.
         </p>
       </header>
@@ -28,7 +28,7 @@ export const DividedHub: React.FC = () => {
             <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
               🔐 Cofre Mental
             </p>
-            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff' }}>
               Guarde uma sequência de letras e classifique dígitos sob divisão de atenção para abrir o cofre.
             </p>
           </Card>
@@ -41,7 +41,7 @@ export const DividedHub: React.FC = () => {
             <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
               🎧 Escuta Seletiva
             </p>
-            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff' }}>
               Filtre interferências sonoras concorrentes prestando atenção apenas na voz indicada.
             </p>
           </Card>

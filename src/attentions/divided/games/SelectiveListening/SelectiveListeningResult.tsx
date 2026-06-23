@@ -76,7 +76,7 @@ const s = {
     fontSize: 16, fontWeight: 700, cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background-color 0.2s'
   } as const,
-  helperText: { marginTop: 8, fontSize: 13, color: '#8b8fa8', textAlign: 'center' as const } as const,
+  helperText: { marginTop: 8, fontSize: 13, color: '#ffffff', textAlign: 'center' as const } as const,
   metricsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -94,7 +94,7 @@ const s = {
   } as const,
   metricLabel: {
     fontSize: 12,
-    color: '#8b8fa8',
+    color: '#ffffff',
     fontWeight: 600,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.05em',
@@ -191,7 +191,7 @@ export function SelectiveListeningResult() {
   if (!sessionId) {
     return (
       <div style={{ maxWidth: 920, margin: '0 auto', padding: 16, textAlign: 'center' }}>
-        <p style={{ color: '#8b8fa8' }}>Sessão não especificada.</p>
+        <p style={{ color: '#ffffff' }}>Sessão não especificada.</p>
       </div>
     );
   }

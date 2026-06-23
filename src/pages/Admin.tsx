@@ -109,7 +109,7 @@ export function Admin() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
         <div>
           <h1 style={{ fontSize: 'var(--text-xl)', margin: 0 }}>Painel Admin</h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginTop: 4 }}>
+          <p style={{ color: '#ffffff', fontSize: 'var(--text-sm)', marginTop: 4 }}>
             Logado como <strong>{user?.email}</strong>
           </p>
         </div>
@@ -119,7 +119,7 @@ export function Admin() {
             style={{
               padding: '8px 16px', borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-border)', background: 'transparent',
-              color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', cursor: 'pointer',
+              color: '#ffffff', fontSize: 'var(--text-sm)', cursor: 'pointer',
             }}
           >
             ↻ Atualizar
@@ -129,7 +129,7 @@ export function Admin() {
             style={{
               padding: '8px 16px', borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-border)', background: 'transparent',
-              color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', cursor: 'pointer',
+              color: '#ffffff', fontSize: 'var(--text-sm)', cursor: 'pointer',
             }}
           >
             ← Voltar ao app
@@ -161,7 +161,7 @@ export function Admin() {
             }}
           >
             <div style={{ fontSize: 28, fontWeight: 800, color: c.color }}>{c.value}</div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 4, fontWeight: statusFilter === c.id ? 'bold' : 'normal' }}>{c.label}</div>
+            <div style={{ fontSize: 'var(--text-xs)', color: '#ffffff', marginTop: 4, fontWeight: statusFilter === c.id ? 'bold' : 'normal' }}>{c.label}</div>
           </button>
         ))}
       </div>
@@ -185,9 +185,9 @@ export function Admin() {
 
       {/* Tabela */}
       {loading ? (
-        <p style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>Carregando…</p>
+        <p style={{ textAlign: 'center', color: '#ffffff' }}>Carregando…</p>
       ) : filtered.length === 0 ? (
-        <p style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>Nenhum usuário encontrado.</p>
+        <p style={{ textAlign: 'center', color: '#ffffff' }}>Nenhum usuário encontrado.</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           {filtered.map(u => (
@@ -218,7 +218,7 @@ export function Admin() {
                     }}>admin</span>
                   )}
                 </div>
-                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 2 }}>
+                <div style={{ fontSize: 'var(--text-xs)', color: '#ffffff', marginTop: 2 }}>
                   {STATUS_LABEL[u.accessStatus]} · cadastro em {formatDate(u.createdAt)}
                 </div>
               </div>

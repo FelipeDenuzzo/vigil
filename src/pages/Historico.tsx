@@ -46,14 +46,14 @@ export const Historico: React.FC = () => {
           <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-3) var(--space-5)', textAlign: 'center' }}>
             <span style={{ fontSize: '1.4rem' }}>🔥</span>
             <p style={{ margin: '2px 0 0', fontWeight: 700, fontSize: 'var(--text-lg)' }}>{streak.current} dia{streak.current > 1 ? 's' : ''}</p>
-            <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+            <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: '#ffffff' }}>
               sequência atual{streak.best > streak.current ? ` · recorde: ${streak.best}` : ' · recorde!'}
             </p>
           </div>
         )}
       </div>
 
-      {loading && <p style={{ color: 'var(--color-text-muted)' }}>Carregando...</p>}
+      {loading && <p style={{ color: '#ffffff' }}>Carregando...</p>}
       {error   && <p style={{ color: '#f08080' }}>{error}</p>}
 
       {!loading && !error && (
@@ -65,7 +65,7 @@ export const Historico: React.FC = () => {
                 padding: '6px 16px', borderRadius: 99, fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer',
                 border: `1.5px solid ${activeTab === type ? color : 'var(--color-border)'}`,
                 background: activeTab === type ? `${color}22` : 'transparent',
-                color: activeTab === type ? color : 'var(--color-text-muted)',
+                color: activeTab === type ? color : '#ffffff',
                 transition: 'all 0.15s',
               }}>
                 {label}
@@ -84,7 +84,7 @@ export const Historico: React.FC = () => {
                   { label: 'Sessões', value: String(prog.sessions.length) },
                 ].map(({ label, value }) => (
                   <Card key={label} style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
-                    <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{label}</p>
+                    <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: '#ffffff' }}>{label}</p>
                     <p style={{ margin: '4px 0 0', fontWeight: 800, fontSize: 'var(--text-xl)' }}>{value}</p>
                   </Card>
                 ))}
@@ -97,15 +97,15 @@ export const Historico: React.FC = () => {
                   <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={prog.sessions.map((s) => ({ date: formatShortDate(s.date), score: s.score }))}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} />
-                      <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#ffffff' }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#ffffff' }} />
                       <Tooltip
                         contentStyle={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 8 }}
-                        labelStyle={{ color: 'var(--color-text-muted)' }}
+                        labelStyle={{ color: '#ffffff' }}
                       />
                       {prog.baseline && (
                         <ReferenceLine y={prog.baseline.score} stroke="rgba(139,143,168,0.5)"
-                          strokeDasharray="4 3" label={{ value: 'baseline', fill: 'var(--color-text-muted)', fontSize: 10 }} />
+                          strokeDasharray="4 3" label={{ value: 'baseline', fill: '#ffffff', fontSize: 10 }} />
                       )}
                       <Line type="monotone" dataKey="score" stroke={TABS.find((t) => t.type === activeTab)?.color ?? '#6c8ef5'}
                         strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
@@ -114,7 +114,7 @@ export const Historico: React.FC = () => {
                 </Card>
               ) : (
                 <Card style={{ textAlign: 'center', padding: 'var(--space-8)', marginBottom: 'var(--space-6)' }}>
-                  <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>
+                  <p style={{ color: '#ffffff', margin: 0 }}>
                     Complete pelo menos 2 sessões de {TABS.find((t) => t.type === activeTab)?.label} para ver o gráfico de evolução.
                   </p>
                 </Card>
@@ -123,16 +123,16 @@ export const Historico: React.FC = () => {
               {/* Lista de sessões */}
               {[...prog.sessions].reverse().map((s) => (
                 <Card key={s.sessionId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)', marginBottom: 'var(--space-3)', padding: 'var(--space-4) var(--space-5)' }}>
-                  <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+                  <span style={{ fontSize: 'var(--text-sm)', color: '#ffffff' }}>
                     {new Date(s.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                     <span style={{ fontWeight: 800, fontSize: 'var(--text-xl)' }}>{s.score}</span>
                     <span style={{
                       padding: '3px 10px', borderRadius: 99, fontSize: 'var(--text-xs)', fontWeight: 600,
-                      background: `${LEVEL_COLOR[s.level] ?? '#8b8fa8'}22`,
-                      color: LEVEL_COLOR[s.level] ?? '#8b8fa8',
-                      border: `1px solid ${LEVEL_COLOR[s.level] ?? '#8b8fa8'}55`,
+                      background: `${LEVEL_COLOR[s.level] ?? '#ffffff'}22`,
+                      color: LEVEL_COLOR[s.level] ?? '#ffffff',
+                      border: `1px solid ${LEVEL_COLOR[s.level] ?? '#ffffff'}55`,
                     }}>
                       {s.level}
                     </span>

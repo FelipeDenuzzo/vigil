@@ -40,7 +40,7 @@ export const SustainedHub: React.FC = () => {
           ← Voltar
         </Button>
         <h1 style={{ fontSize: 'var(--text-2xl)', color: 'var(--color-sustained)' }}>Atenção Sustentada</h1>
-        <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+        <p style={{ color: '#ffffff', marginTop: 'var(--space-2)' }}>
           Esta modalidade treina sua capacidade de manter o foco por períodos longos, aumentando a resistência cognitiva perante o cansaço.
         </p>
       </header>
@@ -82,7 +82,7 @@ export const SustainedHub: React.FC = () => {
                   <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
                     🧩 Labirintos Prolongados
                   </p>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff' }}>
                     Navegue por labirintos estendidos para testar e treinar a manutenção do seu foco.
                   </p>
                 </Card>
@@ -91,7 +91,7 @@ export const SustainedHub: React.FC = () => {
 
             {!ENABLE_LONG_MAZES && (
               <Card style={{ textAlign: 'center', padding: 'var(--space-12) var(--space-6)' }}>
-                <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)' }}>
+                <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)' }}>
                   Exercícios chegando em breve. Volte para a tela principal e explore outro tipo de atenção.
                 </p>
                 <Button variant="secondary" onClick={() => navigate('/treinar')}>

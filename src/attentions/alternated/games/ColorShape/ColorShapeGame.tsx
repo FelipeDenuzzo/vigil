@@ -296,7 +296,7 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
             <h2 style={{ margin: '8px 0 0 0', textTransform: 'uppercase', fontSize: '18px', fontWeight: 700, color: '#e8e9f0' }}>
               Você entendeu como funciona?
             </h2>
-            <p style={{ color: '#8b8fa8', fontSize: '14px', lineHeight: '1.6', marginBottom: '8px' }}>
+            <p style={{ color: '#ffffff', fontSize: '14px', lineHeight: '1.6', marginBottom: '8px' }}>
               Você já sabe jogar! Agora o jogo real vai começar, mas sem as ajudas e balões explicativos.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
@@ -446,14 +446,14 @@ const css: Record<string, React.CSSProperties> = {
     display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 160,
   },
   title:   { fontSize: 22, fontWeight: 800, margin: 0 },
-  sub:     { fontSize: 14, color: '#8b8fa8', margin: 0, lineHeight: 1.6 },
+  sub:     { fontSize: 14, color: '#ffffff', margin: 0, lineHeight: 1.6 },
   primaryBtn: {
     padding: '12px 36px', borderRadius: 99, fontSize: 15, fontWeight: 700,
     background: '#6c8ef5', color: '#fff', border: 'none', cursor: 'pointer',
   },
   ghostBtn: {
     padding: '10px 22px', borderRadius: 99, fontSize: 13, fontWeight: 500,
-    background: 'rgba(255,255,255,0.06)', color: '#8b8fa8',
+    background: 'rgba(255,255,255,0.06)', color: '#ffffff',
     border: '1px solid rgba(255,255,255,0.10)', cursor: 'pointer',
   },
   progressTrack: {

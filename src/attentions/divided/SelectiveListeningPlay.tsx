@@ -52,7 +52,7 @@ const SelectiveListeningPlay: React.FC = () => {
       </header>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {saving ? (
-          <div style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
+          <div style={{ textAlign: 'center', color: '#ffffff' }}>
             <p>Salvando dados do treino...</p>
           </div>
         ) : (

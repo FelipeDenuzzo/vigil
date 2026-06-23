@@ -59,5 +59,5 @@ const s: Record<string, React.CSSProperties> = {
     animation: 'spin 1s linear infinite',
   },
   text: { fontSize: 16, fontWeight: 700, color: '#e8e9f0', margin: 0 },
-  sub:  { fontSize: 12, color: '#8b8fa8', margin: 0 },
+  sub:  { fontSize: 12, color: '#ffffff', margin: 0 },
 };

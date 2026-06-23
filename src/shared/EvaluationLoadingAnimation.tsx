@@ -98,7 +98,7 @@ export function EvaluationLoadingAnimation({ organizing = false }: Props) {
         {phase.title}{dots}
       </p>
 
-      <p key={phase.id + '-sub'} style={{ fontSize: 13, color: '#8b8fa8', marginBottom: 24, animation: 'vigilSlideUp 0.4s ease' }}>
+      <p key={phase.id + '-sub'} style={{ fontSize: 13, color: '#ffffff', marginBottom: 24, animation: 'vigilSlideUp 0.4s ease' }}>
         {phase.subtitle}
       </p>
 

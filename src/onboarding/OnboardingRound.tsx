@@ -49,11 +49,11 @@ function MotorRound({ onDone }: { onDone: (r: MotorRoundResult) => void }) {
 
   return (
     <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
-      <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }}>
+      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
         Etapa 1 de 3 — Calibragem
       </p>
       <h2 style={{ marginBottom: 'var(--space-6)' }}>Reaja quando aparecer o círculo verde</h2>
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-8)' }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
         {count}/{TOTAL_STIMULI} estímulos
       </p>
 
@@ -74,7 +74,7 @@ function MotorRound({ onDone }: { onDone: (r: MotorRoundResult) => void }) {
         <Button variant="primary" onClick={handleStart}>Começar</Button>
       )}
       {phase === 'done' && (
-        <p style={{ color: 'var(--color-text-muted)' }}>Calculando...</p>
+        <p style={{ color: '#ffffff' }}>Calculando...</p>
       )}
     </div>
   );
@@ -149,14 +149,14 @@ function InhibitoryRound({ onDone }: { onDone: (r: InhibitoryRoundResult) => voi
 
   return (
     <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
-      <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }}>
+      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
         Etapa 2 de 3 — Controle Inibitório
       </p>
       <h2 style={{ marginBottom: 'var(--space-4)' }}>Aperte apenas no quadrado preto {GO_SYMBOL}</h2>
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)' }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
         Ignore o quadrado branco {NOGO_SYMBOL}
       </p>
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-8)' }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
         {trial}/{TOTAL}
       </p>
 
@@ -230,7 +230,7 @@ function FlexibleRound({ onDone }: { onDone: (r: FlexibleRoundResult) => void })
 
   return (
     <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
-      <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }}>
+      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
         Etapa 3 de 3 — Flexibilidade
       </p>
       <h2 style={{ marginBottom: 'var(--space-4)' }}>Clique na sequência: 1 → A → 2 → B → ...</h2>

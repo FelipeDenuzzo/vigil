@@ -39,7 +39,7 @@ export function AguardandoAcesso() {
         <h1 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-2)' }}>
           Conta criada com sucesso!
         </h1>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', lineHeight: 1.7 }}>
+        <p style={{ color: '#ffffff', fontSize: 'var(--text-sm)', lineHeight: 1.7 }}>
           Sua conta está sendo analisada. Assim que o acesso for liberado,
           você poderá entrar normalmente.
         </p>
@@ -52,7 +52,7 @@ export function AguardandoAcesso() {
           background: 'var(--color-surface-2)',
           border: '1px solid var(--color-border)',
           fontSize: 'var(--text-sm)',
-          color: 'var(--color-text-muted)',
+          color: '#ffffff',
           width: '100%',
         }}>
           Conta registrada como <strong style={{ color: 'var(--color-text)' }}>{user.email}</strong>
@@ -82,7 +82,7 @@ export function AguardandoAcesso() {
             padding: '10px',
             borderRadius: 'var(--radius-md)',
             background: 'transparent',
-            color: 'var(--color-text-muted)',
+            color: '#ffffff',
             fontSize: 'var(--text-sm)',
             border: '1px solid var(--color-border)',
             cursor: 'pointer',

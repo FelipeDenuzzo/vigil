@@ -272,7 +272,7 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
         <span>⏱ {timeLeft}s</span>
         <span>👣 {steps}</span>
         <span style={{ color: '#f08080' }}>↩ {revisits}</span>
-        <span style={{ color: '#8b8fa8' }}>Fase {levelIdx + 1}/{LONG_MAZE_LEVELS.length}</span>
+        <span style={{ color: '#ffffff' }}>Fase {levelIdx + 1}/{LONG_MAZE_LEVELS.length}</span>
       </div>
       <div style={{ display: 'flex', gap: 24, alignItems: 'center', justifyContent: 'center', width: '100%', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}
@@ -309,10 +309,10 @@ const css: Record<string, React.CSSProperties> = {
     minHeight: '100%', background: '#12131e', color: '#e8e9f0',
   },
   title: { fontSize: 22, fontWeight: 800, margin: 0 },
-  sub: { fontSize: 13, color: '#8b8fa8', margin: 0 },
+  sub: { fontSize: 13, color: '#ffffff', margin: 0 },
   hint: { fontSize: 16, color: '#ffffff', textAlign: 'center', maxWidth: 320, fontWeight: 700, margin: '8px 0' },
   infoBox: {
-    display: 'flex', gap: 16, fontSize: 13, color: '#8b8fa8',
+    display: 'flex', gap: 16, fontSize: 13, color: '#ffffff',
     background: 'rgba(255,255,255,0.04)', padding: '6px 16px', borderRadius: 8,
   },
   primaryBtn: {
@@ -321,7 +321,7 @@ const css: Record<string, React.CSSProperties> = {
   },
   ghostBtn: {
     padding: '10px 22px', borderRadius: 99, fontSize: 13, fontWeight: 500,
-    background: 'rgba(255,255,255,0.06)', color: '#8b8fa8',
+    background: 'rgba(255,255,255,0.06)', color: '#ffffff',
     border: '1px solid rgba(255,255,255,0.10)', cursor: 'pointer',
   },
   hud: {
