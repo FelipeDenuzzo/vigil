@@ -42,6 +42,7 @@ export type MissingItemRoundResponse = {
   markedCells?: Array<{ board: 'A' | 'B'; index: number }>;
   selectedItems: string[];
   responseTimeMs: number;
+  clickTimestamps?: number[];
 };
 
 export type MissingItemRoundResult = {
@@ -62,6 +63,7 @@ export type MissingItemRoundResult = {
   omissions: number;
   falsePositives: number;
   responseTimeMs: number;
+  clickTimestamps?: number[];
 };
 
 export type MissingItemSessionMetrics = {

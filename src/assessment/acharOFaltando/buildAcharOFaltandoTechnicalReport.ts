@@ -21,6 +21,26 @@ export interface AcharOFaltandoEvaluatorInput {
   rightOmissions?: number;
   asymmetryRatio?: number;
   spatialAsymmetryDominant?: 'left' | 'right' | 'symmetric' | 'insufficient-data';
+  phaseMetrics?: Array<{
+    phase: number;
+    phaseLabel: string;
+    roundsInPhase: number;
+    hits: number;
+    omissions: number;
+    falsePositives: number;
+    rtMean: number;
+    rtSdrt: number;
+    dPrime: number;
+    postErrorSlowing: number | null;
+  }>;
+  flagImpulsividade?: boolean;
+  flagLentificacao?: boolean;
+  flagSwitchCost?: boolean;
+  flagFadigaAtencional?: boolean;
+  firstHalfRtMean?: number;
+  secondHalfRtMean?: number;
+  firstHalfSdrt?: number;
+  secondHalfSdrt?: number;
 }
 
 /**
@@ -58,5 +78,27 @@ export function buildAcharOFaltandoTechnicalReport(
     rightOmissions: metrics.spatialAsymmetry.rightOmissions,
     asymmetryRatio: Number(metrics.spatialAsymmetry.asymmetryRatio.toFixed(2)),
     spatialAsymmetryDominant: metrics.spatialAsymmetry.dominant,
+    
+    // Novas métricas avançadas
+    phaseMetrics: metrics.phaseMetrics.map(pm => ({
+      phase: pm.phase,
+      phaseLabel: pm.phaseLabel,
+      roundsInPhase: pm.roundsInPhase,
+      hits: pm.hits,
+      omissions: pm.omissions,
+      falsePositives: pm.falsePositives,
+      rtMean: Math.round(pm.rtMean),
+      rtSdrt: Math.round(pm.rtSdrt),
+      dPrime: Number(pm.dPrime.toFixed(3)),
+      postErrorSlowing: pm.postErrorSlowing !== null ? Math.round(pm.postErrorSlowing) : null,
+    })),
+    flagImpulsividade: metrics.flagImpulsividade,
+    flagLentificacao: metrics.flagLentificacao,
+    flagSwitchCost: metrics.flagSwitchCost,
+    flagFadigaAtencional: metrics.flagFadigaAtencional,
+    firstHalfRtMean: Math.round(metrics.firstHalfRtMean),
+    secondHalfRtMean: Math.round(metrics.secondHalfRtMean),
+    firstHalfSdrt: Math.round(metrics.firstHalfSdrt),
+    secondHalfSdrt: Math.round(metrics.secondHalfSdrt),
   };
 }

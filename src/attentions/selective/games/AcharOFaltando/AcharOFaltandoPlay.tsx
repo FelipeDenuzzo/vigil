@@ -45,6 +45,7 @@ export default function AcharOFaltandoPlay() {
   const [results, setResults] = useState<MissingItemRoundResult[]>([]);
   const [markedCells, setMarkedCells] = useState<Array<{ board: 'A' | 'B'; index: number }>>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [clickTimestamps, setClickTimestamps] = useState<number[]>([]);
   const [remainingSec, setRemainingSec] = useState(config.durationSec);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [feedbackResult, setFeedbackResult] = useState<MissingItemRoundResult | null>(null);
@@ -58,6 +59,7 @@ export default function AcharOFaltandoPlay() {
     setCurrentRound(round);
     setMarkedCells([]);
     setSelectedItems([]);
+    setClickTimestamps([]);
     roundStartRef.current = Date.now();
     if (config.presentationMode === 'alternating') setVisibleBoard('A');
   }
@@ -93,6 +95,8 @@ export default function AcharOFaltandoPlay() {
 
   function handleCellClick(board: 'A' | 'B', index: number) {
     if (phase !== 'playing' || config.responseMode !== 'click-difference') return;
+    const timeMs = Date.now() - roundStartRef.current;
+    setClickTimestamps(prev => [...prev, timeMs]);
     setMarkedCells(prev => {
       const key = `${board}:${index}`;
       const exists = prev.some(c => `${c.board}:${c.index}` === key);
@@ -102,6 +106,8 @@ export default function AcharOFaltandoPlay() {
 
   function handleSelectItem(item: string) {
     if (phase !== 'playing' || config.responseMode !== 'select-item') return;
+    const timeMs = Date.now() - roundStartRef.current;
+    setClickTimestamps(prev => [...prev, timeMs]);
     setSelectedItems(prev =>
       prev.includes(item) ? prev.filter(x => x !== item) : [...prev, item],
     );
@@ -113,7 +119,7 @@ export default function AcharOFaltandoPlay() {
     const result = buildRoundResult({
       config,
       round: currentRound,
-      response: { markedIndexes: [], markedCells, selectedItems, responseTimeMs },
+      response: { markedIndexes: [], markedCells, selectedItems, responseTimeMs, clickTimestamps },
     });
     const updated = [...results, result];
     setResults(updated);
@@ -160,6 +166,7 @@ export default function AcharOFaltandoPlay() {
           targetItems: r.targetItems,
           differencePositions: r.differencePositions,
           response: r.response,
+          clickTimestamps: r.clickTimestamps || [],
         })),
       },
       uid

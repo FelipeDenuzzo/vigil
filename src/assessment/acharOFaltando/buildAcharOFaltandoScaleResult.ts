@@ -11,13 +11,13 @@ export function buildAcharOFaltandoScaleResult(
     totalCorrectRounds,
     roundsPlayed,
     totalOmissions,
-    totalFalsePositives,
-    accuracyPerMinute,
-    speedStyle,
-    hasFatigue,
+    flagImpulsividade,
+    flagLentificacao,
+    flagSwitchCost,
+    flagFadigaAtencional,
     spatialAsymmetry,
   } = metrics;
-  
+
   if (totalOmissions === roundsPlayed || roundsPlayed === 0) {
     return {
       score: 0,
@@ -28,76 +28,74 @@ export function buildAcharOFaltandoScaleResult(
   }
 
   const accuracyRate = totalCorrectRounds / roundsPlayed;
-
-  // Pontuação de 0 a 100 baseada principalmente na taxa de acerto das rodadas
   const score = Math.round(accuracyRate * 100);
 
-  // --- ÁRVORE DE DECISÃO DE SEVERIDADE ---
+  // --- DERIVAÇÃO DO NÍVEL DE SEVERIDADE BASEADO EM FLAGS ---
+  let activeFlagsCount = 0;
+  if (flagImpulsividade) activeFlagsCount++;
+  if (flagLentificacao) activeFlagsCount++;
+  if (flagSwitchCost) activeFlagsCount++;
+  if (flagFadigaAtencional) activeFlagsCount++;
+
   let level: 'mínimo' | 'leve' | 'moderado' | 'importante';
 
-  // 1. Severe (importante)
-  if (
-    accuracyPerMinute < 0.5 ||
-    totalOmissions > roundsPlayed * 0.6 ||
-    spatialAsymmetry.asymmetryRatio >= 0.8
-  ) {
+  if (activeFlagsCount === 0) {
+    // Nenhuma flag -> 'mínimo' ou 'leve' (depende do score global)
+    level = score >= 85 ? 'mínimo' : 'leve';
+  } else if (activeFlagsCount === 1) {
+    // 1 flag -> 'leve' ou 'moderado'
+    level = score >= 80 ? 'leve' : 'moderado';
+  } else {
+    // 2+ flags ou flag de fadiga associada a baixo rendimento
+    // 2+ flags -> 'moderado' ou 'importante'
+    level = score < 60 || spatialAsymmetry.asymmetryRatio >= 0.8 ? 'importante' : 'moderado';
+  }
+
+  // Em caso de fadiga atencional ativada com baixa taxa de acertos geral
+  if (flagFadigaAtencional && score < 70) {
     level = 'importante';
   }
-  // 2. Moderate (moderado)
-  else if (
-    accuracyPerMinute < 1.5 &&
-    (totalFalsePositives > 2 || totalOmissions > 2) &&
-    (speedStyle === 'disorganized' || hasFatigue === true)
-  ) {
-    level = 'moderado';
-  }
-  // 3. Minimal (mínimo)
-  else if (
-    accuracyPerMinute >= 3.0 &&
-    totalFalsePositives <= 1 &&
-    totalOmissions === 0 &&
-    speedStyle === 'efficient'
-  ) {
-    level = 'mínimo';
-  }
-  // 4. Default / Mild (leve)
-  else {
-    level = 'leve';
-  }
 
-  // --- TEXTOS DO LAUDO POR SEVERIDADE ---
+  // --- TEXTOS DO LAUDO BASEADOS NAS FLAGS ---
   let accuracyNote = '';
-  if (level === 'mínimo') {
-    accuracyNote = 'Rastreio visual sistemático e eficiente. Excelente capacidade de discriminação com controle inibitório preservado. Velocidade e precisão dentro do padrão esperado.';
-  } else if (level === 'leve') {
-    if (speedStyle === 'impulsive') {
-      accuracyNote = 'Desempenho oscilante na relação velocidade-precisão. O usuário apresenta precipitação motora para processar os estímulos visuais, com performance ainda funcional.';
-    } else if (speedStyle === 'slow') {
-      accuracyNote = 'Desempenho oscilante na relação velocidade-precisão. O usuário apresenta necessidade de tempo prolongado para processar os estímulos visuais, com performance ainda funcional.';
-    } else {
-      accuracyNote = 'Desempenho oscilante na relação velocidade-precisão. O usuário apresenta oscilação no ritmo para processar os estímulos visuais, com performance ainda funcional.';
-    }
-  } else if (level === 'moderado') {
-    accuracyNote = 'Filtro atencional comprometido. A carga de distratores visuais desorganizou a estratégia de busca, resultando em dificuldade para reter o padrão de referência e identificar diferenças morfológicas.';
-  } else {
-    // level === 'importante'
-    if (spatialAsymmetry.asymmetryRatio >= 0.8) {
-      accuracyNote = 'Colapso da atenção seletiva visuoespacial. Suspeita de assimetria atencional (negligência espacial) — padrão compatível com omissões unilaterais sistemáticas. Incapacidade severa de inibir distratores de fundo.';
-    } else {
-      accuracyNote = 'Colapso da atenção seletiva visuoespacial. Incapacidade severa de inibir distratores de fundo.';
-    }
+  const notes: string[] = [];
+
+  if (flagFadigaAtencional) {
+    notes.push('Sinais proeminentes de oscilação atencional por fadiga cognitiva (Time-on-Task). O usuário iniciou com desempenho adequado, mas apresentou declínio acentuado de precisão e aumento de omissões nas fases finais.');
+  }
+  if (flagImpulsividade) {
+    notes.push('Padrão de resposta impulsivo com falha no controle inibitório. O usuário responde de forma rápida nas fases de maior complexidade discriminativa, incorrendo em elevado índice de comissões (falsos positivos).');
+  }
+  if (flagLentificacao) {
+    notes.push('Lentificação no processamento visual e na busca ativa. O tempo médio de rastreamento foi prolongado desde as primeiras rodadas do teste, impactando a produtividade geral.');
+  }
+  if (flagSwitchCost) {
+    notes.push('Prejuízo na flexibilidade cognitiva e custo de transição (Switch Cost). O usuário demonstrou desorganização e lentificação acentuada ao transitar para o bloco misto de estímulos (Fase 10).');
+  }
+  if (spatialAsymmetry.asymmetryRatio >= 0.5 && spatialAsymmetry.dominant !== 'insufficient-data') {
+    notes.push(`Suspeita de assimetria atencional visuoespacial com dominância no hemicampo ${spatialAsymmetry.dominant === 'left' ? 'esquerdo' : 'direito'}.`);
   }
 
-  let speedNote = '';
-  if (speedStyle === 'efficient') {
-    speedNote = 'Velocidade e precisão dentro do padrão esperado (Rastreio eficiente).';
-  } else if (speedStyle === 'impulsive') {
-    speedNote = 'Velocidade de processamento visual rápida, porém com prejuízo na precisão por precipitação motora.';
-  } else if (speedStyle === 'slow') {
-    speedNote = 'Velocidade de busca visual notavelmente lenta ou com tempo de busca prolongado, com foco preservado.';
+  if (notes.length === 0) {
+    if (level === 'mínimo') {
+      accuracyNote = 'Rastreio visual sistemático e eficiente. Excelente capacidade de discriminação com controle inibitório preservado. Velocidade e precisão dentro do padrão esperado.';
+    } else {
+      accuracyNote = 'Desempenho atencional dentro do padrão funcional normativo, com oscilações normais e sem sinais clínicos de desatenção ou fadiga.';
+    }
   } else {
-    // speedStyle === 'disorganized'
-    speedNote = 'Velocidade oscilante acompanhada de alto índice de erros, indicando sobrecarga ou busca desorganizada.';
+    accuracyNote = notes.join(' ');
+  }
+
+  // --- VELOCIDADE/RITMO ---
+  let speedNote = '';
+  if (flagLentificacao) {
+    speedNote = 'Velocidade de busca significativamente lenta, com necessidade de tempo prolongado para processar os estímulos.';
+  } else if (flagImpulsividade) {
+    speedNote = 'Tempo de resposta acelerado associado a falhas frequentes de precisão (perfil impulsivo).';
+  } else if (flagSwitchCost) {
+    speedNote = 'Custo de alternância (Switch Cost) elevado, indicando lentificação específica ao mudar o padrão de estímulos.';
+  } else {
+    speedNote = 'Velocidade e precisão equilibradas, sem sinais de fadiga ou lentificação atípica.';
   }
 
   return {
