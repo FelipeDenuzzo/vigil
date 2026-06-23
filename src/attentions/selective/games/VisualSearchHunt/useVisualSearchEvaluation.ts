@@ -372,7 +372,7 @@ export async function useVisualSearchEvaluation(
         game: GAME_ID,
         attentionType: 'seletiva',
         score: current.score,
-        level: scaleResult.level,
+        level: technicalReport.severity,
         createdAt: serverTimestamp(),
       }, { merge: true });
     }
