@@ -34,6 +34,7 @@ export function Admin() {
   const [loading, setLoading] = useState(true);
   const [saving,  setSaving]  = useState<string | null>(null); // uid em salvamento
   const [search,  setSearch]  = useState('');
+  const [statusFilter, setStatusFilter] = useState<AccessStatus | 'all'>('all');
 
   useEffect(() => { loadUsers(); }, []);
 
@@ -88,9 +89,11 @@ export function Admin() {
     } catch { return '—'; }
   }
 
-  const filtered = users.filter(u =>
-    u.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = users.filter(u => {
+    const matchSearch = u.email.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === 'all' || u.accessStatus === statusFilter;
+    return matchSearch && matchStatus;
+  });
 
   const counts = {
     total:    users.length,
@@ -134,24 +137,32 @@ export function Admin() {
         </div>
       </div>
 
-      {/* Cards de resumo */}
+      {/* Cards de resumo (Clicáveis para filtrar) */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
         {([
-          { label: 'Total',     value: counts.total,    color: 'var(--color-primary)' },
-          { label: 'Aprovados', value: counts.approved, color: '#22c55e' },
-          { label: 'Pendentes', value: counts.pending,  color: '#eab308' },
-          { label: 'Bloqueados',value: counts.blocked,  color: '#ef4444' },
+          { id: 'all',      label: 'Total',     value: counts.total,    color: 'var(--color-primary)' },
+          { id: 'approved', label: 'Aprovados', value: counts.approved, color: '#22c55e' },
+          { id: 'pending',  label: 'Pendentes', value: counts.pending,  color: '#eab308' },
+          { id: 'blocked',  label: 'Bloqueados',value: counts.blocked,  color: '#ef4444' },
         ] as const).map(c => (
-          <div key={c.label} style={{
-            padding: 'var(--space-4)',
-            borderRadius: 'var(--radius-md)',
-            background: 'var(--color-surface-2)',
-            border: '1px solid var(--color-border)',
-            textAlign: 'center',
-          }}>
+          <button
+            key={c.id}
+            onClick={() => setStatusFilter(c.id as any)}
+            style={{
+              padding: 'var(--space-4)',
+              borderRadius: 'var(--radius-md)',
+              background: statusFilter === c.id ? 'var(--color-surface)' : 'var(--color-surface-2)',
+              border: `1px solid ${statusFilter === c.id ? c.color : 'var(--color-border)'}`,
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              transform: statusFilter === c.id ? 'scale(1.02)' : 'scale(1)',
+              boxShadow: statusFilter === c.id ? `0 4px 12px ${c.color}20` : 'none',
+            }}
+          >
             <div style={{ fontSize: 28, fontWeight: 800, color: c.color }}>{c.value}</div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 4 }}>{c.label}</div>
-          </div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 4, fontWeight: statusFilter === c.id ? 'bold' : 'normal' }}>{c.label}</div>
+          </button>
         ))}
       </div>
 
