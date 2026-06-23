@@ -167,28 +167,45 @@ export default function AcharOFaltandoPlay() {
 
   if (phase === 'instructions') {
     return (
-      <div style={{ maxWidth: 560, margin: '80px auto', padding: '0 24px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>🔎 Achar o Faltando</h1>
-        <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.7, marginBottom: 'var(--space-6)' }}>
-          Compare as duas grades que aparecem na tela. Elas são quase iguais, mas existe uma
-          diferença: um item <strong>faltando</strong> ou um item <strong>a mais</strong>.
-          Encontre e marque essa diferença clicando na célula ou selecionando o item.
-        </p>
+      <div style={{ maxWidth: 560, margin: '0 auto', padding: '40px 24px' }}>
         <button
-          onClick={startGame}
+          onClick={() => navigate('/treinar/seletiva')}
           style={{
-            padding: '12px 32px',
-            background: 'var(--color-primary)',
-            color: 'white',
+            background: 'none',
             border: 'none',
-            borderRadius: 'var(--radius-md)',
-            fontSize: 'var(--text-base)',
-            fontWeight: 600,
+            color: 'var(--color-text-muted)',
             cursor: 'pointer',
+            fontSize: 14,
+            marginBottom: 'var(--space-8)',
+            padding: 0,
+            display: 'block',
           }}
         >
-          Começar
+          ← Voltar
         </button>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>🔎 Achar o Faltando</h1>
+          <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.7, marginBottom: 'var(--space-6)' }}>
+            Compare as duas grades que aparecem na tela. Elas são quase iguais, mas existe uma
+            diferença: um item <strong>faltando</strong> ou um item <strong>a mais</strong>.
+            Encontre e marque essa diferença clicando na célula ou selecionando o item.
+          </p>
+          <button
+            onClick={startGame}
+            style={{
+              padding: '12px 32px',
+              background: 'var(--color-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              fontSize: 'var(--text-base)',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Começar
+          </button>
+        </div>
       </div>
     );
   }
