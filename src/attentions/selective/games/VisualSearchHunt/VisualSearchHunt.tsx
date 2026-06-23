@@ -449,11 +449,11 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
         background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)',
-        color: '#eab308', padding: '6px 16px', borderRadius: '99px',
-        fontWeight: 'bold', fontSize: '12px', letterSpacing: '0.05em',
+        color: '#eab308', padding: '8px 20px', borderRadius: '99px',
+        fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.05em',
         width: 'fit-content', margin: '0 auto 8px auto'
       }}>
-        <span style={{ fontSize: '14px' }}>🚧</span> MODO DE PRÁTICA
+        <span style={{ fontSize: '18px' }}>🚧</span> MODO DE PRÁTICA
       </div>
       <Card>
         <div style={{ display: 'grid', gap: 10 }}>
@@ -471,6 +471,22 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
               {SHAPE_LABEL[state.targetShape]} {COLOR_LABEL[state.targetColor]}
             </span>
           </div>
+          {state.round === 1 && (
+            <div style={{
+              textAlign: 'center',
+              fontSize: '13px',
+              color: 'var(--color-text-muted)',
+              lineHeight: '1.5',
+              padding: '10px 16px',
+              background: 'rgba(59, 130, 246, 0.05)',
+              border: '1px dashed rgba(59, 130, 246, 0.25)',
+              borderRadius: '12px',
+              margin: '0 auto',
+              maxWidth: '360px',
+            }}>
+              A figura que você precisa localizar vai aparecer aqui, só vou te avisar dessa vez, nas outras fases só vai aparecer a figura
+            </div>
+          )}
           <div
             key={`sim-target-${state.round}`}
             className="vsh-target-fade"
@@ -945,22 +961,7 @@ export default function VisualSearchHunt({
                 </span>.
               </p>
             </div>
-            {roundIndex === 1 && (
-              <div style={{
-                textAlign: 'center',
-                fontSize: '13px',
-                color: 'var(--color-text-muted)',
-                lineHeight: '1.5',
-                padding: '10px 16px',
-                background: 'rgba(59, 130, 246, 0.05)',
-                border: '1px dashed rgba(59, 130, 246, 0.25)',
-                borderRadius: '12px',
-                margin: '0 auto',
-                maxWidth: '360px',
-              }}>
-                A figura que você precisa localizar vai aparecer aqui, só vou te avisar dessa vez, nas outras fases só vai aparecer a figura
-              </div>
-            )}
+
             <div
               key={`target-${roundIndex}`}
               className="vsh-target-fade"

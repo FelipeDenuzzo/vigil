@@ -287,12 +287,27 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
   if (phase === 'tutorial') {
     if (tutorialStep === 3) {
       return (
-        <div style={css.screen}>
-          <p style={css.title}>Pronto para o Treino Real?</p>
-          <p style={{ ...css.sub, maxWidth: 360, textAlign: 'center', lineHeight: 1.7 }}>
-            Você já sabe jogar! Agora o jogo real vai começar, mas sem as ajudas e balões explicativos.
-          </p>
-          <button style={css.primaryBtn} onClick={startRealGame}>Começar Treino</button>
+        <div style={{ ...css.screen, padding: '24px' }}>
+          <div style={{ padding: '32px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <span style={{ fontSize: '3rem', margin: '0 auto' }}>🚀</span>
+            <h2 style={{ margin: 0, color: '#6c8ef5', fontSize: '24px', fontWeight: 700 }}>
+              Prática concluída!
+            </h2>
+            <h2 style={{ margin: '8px 0 0 0', textTransform: 'uppercase', fontSize: '18px', fontWeight: 700, color: '#e8e9f0' }}>
+              Você entendeu como funciona?
+            </h2>
+            <p style={{ color: '#8b8fa8', fontSize: '14px', lineHeight: '1.6', marginBottom: '8px' }}>
+              Você já sabe jogar! Agora o jogo real vai começar, mas sem as ajudas e balões explicativos.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+              <button style={{ ...css.primaryBtn, width: '100%', padding: '12px 16px', fontSize: '15px' }} onClick={startRealGame}>
+                Ir para o Treino de Atenção →
+              </button>
+              <button style={{ ...css.ghostBtn, width: '100%', padding: '12px 16px', fontSize: '15px' }} onClick={() => setTutorialStep(1)}>
+                Repetir o Simulado
+              </button>
+            </div>
+          </div>
         </div>
       );
     }
@@ -319,6 +334,17 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
 
     return (
       <div style={{ ...css.gameScreen, background: NEUTRAL_BG }}>
+        {/* BADGE DE MODO DE PRÁTICA */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)',
+          color: '#eab308', padding: '8px 20px', borderRadius: '99px',
+          fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.05em',
+          width: 'fit-content', margin: '0 auto 16px auto'
+        }}>
+          <span style={{ fontSize: '18px' }}>🚧</span> MODO DE PRÁTICA
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: '100%', textAlign: 'center', padding: '0 20px' }}>
           <p style={{ ...css.title, fontSize: 20 }}>{titleText}</p>
           <p style={{ ...css.sub, maxWidth: 400, lineHeight: 1.5 }}>{descText}</p>
