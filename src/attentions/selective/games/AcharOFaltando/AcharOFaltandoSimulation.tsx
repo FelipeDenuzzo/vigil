@@ -230,7 +230,7 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
                 Tudo Pronto!
               </h2>
               <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
-                Você aprendeu a mecânica. O treino real terá **10 rodadas** com tempo limite global de **3 minutos**. 
+                Você aprendeu a mecânica. O treino real terá **10 rodadas** com tempo limite de **20 segundos por fase**. 
                 O escaner e as respostas rápidas garantirão um melhor resultado!
               </p>
               

@@ -71,13 +71,14 @@ export function generateRound(
 
   if (phase === 1 || phase === 2) {
     // 1 e 2 - usaremos os simbolos como está hoje, mas sem usar o faltando, sempre com um diferente
-    const basePool = sampleMany(symbolsPool, 8, rng);
+    const filteredSymbols = symbolsPool.filter(s => s !== '25' && s !== '29');
+    const basePool = sampleMany(filteredSymbols, 8, rng);
     itemsA = Array.from({ length: totalCells }, () => sampleOne(basePool, rng));
     itemsB = [...itemsA];
 
     const targetIndex = Math.floor(rng() * totalCells);
     const original = itemsA[targetIndex]!;
-    const remainingSymbols = symbolsPool.filter(s => s !== original);
+    const remainingSymbols = filteredSymbols.filter(s => s !== original);
     const replacement = sampleOne(remainingSymbols, rng);
 
     itemsB[targetIndex] = replacement;
@@ -88,7 +89,7 @@ export function generateRound(
       originalItem: original,
     });
 
-    const filler = shuffle(symbolsPool.filter(s => s !== replacement && s !== original), rng).slice(0, 3);
+    const filler = shuffle(filteredSymbols.filter(s => s !== replacement && s !== original), rng).slice(0, 3);
     options = shuffle([replacement, ...filler], rng);
 
   } else if (phase === 3) {

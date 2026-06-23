@@ -18,7 +18,7 @@ const DEFAULT_CONFIG: MissingItemConfig = {
   itemType: 'symbols',
   differenceMode: 'mixed',
   differenceCount: 1,
-  durationSec: 180,
+  durationSec: 20,
   roundLimit: 10,
   seed: '',
   responseMode: 'click-difference',
@@ -60,6 +60,7 @@ export default function AcharOFaltandoPlay() {
     setMarkedCells([]);
     setSelectedItems([]);
     setClickTimestamps([]);
+    setRemainingSec(config.durationSec);
     roundStartRef.current = Date.now();
     if (config.presentationMode === 'alternating') setVisibleBoard('A');
   }
@@ -73,17 +74,23 @@ export default function AcharOFaltandoPlay() {
     setPhase('playing');
   }
 
+  const submitRoundRef = useRef(submitRound);
+  submitRoundRef.current = submitRound;
+
   useEffect(() => {
     if (phase !== 'playing') return;
     timerRef.current = setInterval(() => {
-      setRemainingSec(prev => {
-        if (prev <= 1) { finishGame(); return 0; }
-        return prev - 1;
-      });
+      setRemainingSec(prev => Math.max(0, prev - 1));
       setElapsedSec(prev => prev + 1);
     }, 1000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase]);
+
+  useEffect(() => {
+    if (phase === 'playing' && remainingSec <= 0) {
+      submitRoundRef.current();
+    }
+  }, [remainingSec, phase]);
 
   useEffect(() => {
     if (phase !== 'playing' || config.presentationMode !== 'alternating') return;
@@ -126,7 +133,7 @@ export default function AcharOFaltandoPlay() {
     setFeedbackResult(result);
     setPhase('feedback');
     setTimeout(() => {
-      if (roundNumber >= config.roundLimit || remainingSec <= 0) {
+      if (roundNumber >= config.roundLimit) {
         finishGame(updated);
       } else {
         const next = roundNumber + 1;
@@ -267,7 +274,8 @@ export default function AcharOFaltandoPlay() {
                   border: isMarked || isDiff ? '2px solid black' : '1px solid var(--color-border)',
                   borderRadius: 4,
                   cursor: config.responseMode === 'click-difference' ? 'pointer' : 'default',
-                  color: isMarked ? 'white' : 'var(--color-text)',
+                  color: isMarked ? 'white' : '#000000',
+                  fontWeight: 'bold',
                   userSelect: 'none',
                 }}
               >
