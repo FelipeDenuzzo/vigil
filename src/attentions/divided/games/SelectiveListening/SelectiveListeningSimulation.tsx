@@ -80,12 +80,49 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
   const [revealed, setRevealed] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   
+  const targetAudiosRef = useRef<HTMLAudioElement[]>([]);
+  const distractorAudiosRef = useRef<HTMLAudioElement[]>([]);
   const activeAudiosRef = useRef<HTMLAudioElement[]>([]);
+
+  useEffect(() => {
+    const targetKey = 'female';
+    const distractorKey = 'male';
+
+    targetAudiosRef.current = SIM_TARGET_DIGITS.map(
+      (digit) => new Audio(`/audio/selective-listening/${targetKey}/${digit}.mp3`)
+    );
+    distractorAudiosRef.current = SIM_DISTRACTOR_DIGITS.map(
+      (digit) => new Audio(`/audio/selective-listening/${distractorKey}/${digit}.mp3`)
+    );
+
+    targetAudiosRef.current.forEach(a => a.preload = 'auto');
+    distractorAudiosRef.current.forEach(a => a.preload = 'auto');
+
+    return () => {
+      [...targetAudiosRef.current, ...distractorAudiosRef.current].forEach(a => {
+        try {
+          a.pause();
+        } catch (e) {}
+      });
+    };
+  }, []);
+
+  const warmUpAudios = () => {
+    [...targetAudiosRef.current, ...distractorAudiosRef.current].forEach((audio) => {
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+      }).catch((e) => {
+        console.warn('Erro ao desbloquear áudio da simulação:', e);
+      });
+    });
+  };
 
   const stopAllAudios = () => {
     activeAudiosRef.current.forEach((audio) => {
       try {
         audio.pause();
+        audio.currentTime = 0;
       } catch (e) {
         // ignore
       }
@@ -98,24 +135,14 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
     stopAllAudios();
     setIsPlayingAudio(true);
 
-    const targetKey = 'female';
-    const distractorKey = 'male';
     const len = SIM_TARGET_DIGITS.length;
+    const tAudios = targetAudiosRef.current;
+    const dAudios = distractorAudiosRef.current;
 
-    const tAudios: HTMLAudioElement[] = [];
-    const dAudios: HTMLAudioElement[] = [];
+    tAudios.forEach(a => a.currentTime = 0);
+    dAudios.forEach(a => a.currentTime = 0);
 
-    for (let i = 0; i < len; i++) {
-      const tAudio = new Audio(`/audio/selective-listening/${targetKey}/${SIM_TARGET_DIGITS[i]}.mp3`);
-      const dAudio = new Audio(`/audio/selective-listening/${distractorKey}/${SIM_DISTRACTOR_DIGITS[i]}.mp3`);
-      
-      tAudio.preload = 'auto';
-      dAudio.preload = 'auto';
-
-      tAudios.push(tAudio);
-      dAudios.push(dAudio);
-      activeAudiosRef.current.push(tAudio, dAudio);
-    }
+    activeAudiosRef.current = [...tAudios, ...dAudios];
 
     // Aguarda um pequeno tempo para garantir carregamento
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -148,7 +175,10 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
 
   const advance = () => {
     if (step === 1) setStep(2);
-    else if (step === 2) setStep(3);
+    else if (step === 2) {
+      warmUpAudios();
+      setStep(3);
+    }
     else if (step === 3) setStep(4);
     else if (step === 'done') onDone();
   };
@@ -327,7 +357,10 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
                 <Button
                   variant="secondary"
-                  onClick={playSimAudio}
+                  onClick={() => {
+                    warmUpAudios();
+                    playSimAudio();
+                  }}
                   disabled={isPlayingAudio}
                   style={{ flex: 1, fontSize: '13px', padding: '8px 12px', border: '1px solid rgba(255,255,255,0.1)', opacity: isPlayingAudio ? 0.35 : 1 }}
                 >

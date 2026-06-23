@@ -47,6 +47,8 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
 
   // Audio references para controle de interrupção
   const activeAudiosRef = useRef<HTMLAudioElement[]>([]);
+  const currentTargetAudiosRef = useRef<HTMLAudioElement[]>([]);
+  const currentDistractorAudiosRef = useRef<HTMLAudioElement[]>([]);
 
   // Timers e referências temporais
   const playbackStartRef = useRef<number>(0);
@@ -60,13 +62,59 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
     return () => {
       // Cleanup de qualquer áudio tocando se desmontar
       stopAllAudios();
+      [...currentTargetAudiosRef.current, ...currentDistractorAudiosRef.current].forEach(a => {
+        try {
+          a.pause();
+        } catch (e) {}
+      });
     };
   }, []);
+
+  const prepareRoundAudios = (idx: number) => {
+    const config = ROUNDS_CONFIG[idx] || ROUNDS_CONFIG[0];
+    const targetKey = config.targetVoice === 'masculina' ? 'male' : 'female';
+    const distractorKey = config.targetVoice === 'masculina' ? 'female' : 'male';
+
+    const tAudios = config.targetDigits.map(
+      (digit) => new Audio(`/audio/selective-listening/${targetKey}/${digit}.mp3`)
+    );
+    const dAudios = config.distractorDigits.map(
+      (digit) => new Audio(`/audio/selective-listening/${distractorKey}/${digit}.mp3`)
+    );
+
+    tAudios.forEach(a => a.preload = 'auto');
+    dAudios.forEach(a => a.preload = 'auto');
+
+    currentTargetAudiosRef.current = tAudios;
+    currentDistractorAudiosRef.current = dAudios;
+
+    // Desbloqueia todos os áudios sincronamente no evento do clique do usuário
+    [...tAudios, ...dAudios].forEach((audio) => {
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+      }).catch((e) => {
+        console.warn('Erro ao pré-desbloquear áudio da rodada:', e);
+      });
+    });
+  };
+
+  const warmUpRoundAudios = () => {
+    [...currentTargetAudiosRef.current, ...currentDistractorAudiosRef.current].forEach((audio) => {
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+      }).catch((e) => {
+        console.warn('Erro ao re-desbloquear áudio:', e);
+      });
+    });
+  };
 
   const stopAllAudios = () => {
     activeAudiosRef.current.forEach((audio) => {
       try {
         audio.pause();
+        audio.currentTime = 0;
       } catch (e) {
         // ignore
       }
@@ -88,6 +136,10 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
     setPhase('playing');
     setRoundIdx(0);
     roundHistoryRef.current = [];
+    
+    // Pré-carrega e desbloqueia os áudios da rodada 0 no clique do botão
+    prepareRoundAudios(0);
+
     startRound(0);
   };
 
@@ -109,25 +161,15 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
     stopAllAudios();
 
     const config = ROUNDS_CONFIG[idx] || ROUNDS_CONFIG[0];
-    const targetKey = config.targetVoice === 'masculina' ? 'male' : 'female';
-    const distractorKey = config.targetVoice === 'masculina' ? 'female' : 'male';
     const len = config.targetDigits.length;
 
-    // Carrega antecipadamente todos os elementos
-    const tAudios: HTMLAudioElement[] = [];
-    const dAudios: HTMLAudioElement[] = [];
+    const tAudios = currentTargetAudiosRef.current;
+    const dAudios = currentDistractorAudiosRef.current;
 
-    for (let i = 0; i < len; i++) {
-      const tAudio = new Audio(`/audio/selective-listening/${targetKey}/${config.targetDigits[i]}.mp3`);
-      const dAudio = new Audio(`/audio/selective-listening/${distractorKey}/${config.distractorDigits[i]}.mp3`);
-      
-      tAudio.preload = 'auto';
-      dAudio.preload = 'auto';
+    tAudios.forEach(a => a.currentTime = 0);
+    dAudios.forEach(a => a.currentTime = 0);
 
-      tAudios.push(tAudio);
-      dAudios.push(dAudio);
-      activeAudiosRef.current.push(tAudio, dAudio);
-    }
+    activeAudiosRef.current = [...tAudios, ...dAudios];
 
     // Aguarda um pequeno tempo para garantir carregamento
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -159,6 +201,10 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
   const handleReplay = () => {
     if (replayCount >= 1) return;
     setReplayCount((prev) => prev + 1);
+    
+    // Re-desbloqueia no clique antes de tocar de forma assíncrona
+    warmUpRoundAudios();
+
     playAudioSequence(roundIdx);
   };
 
@@ -195,6 +241,8 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
 
     const nextIdx = roundIdx + 1;
     if (nextIdx < ROUNDS_CONFIG.length) {
+      // Pré-carrega e desbloqueia os áudios da próxima rodada no clique do botão
+      prepareRoundAudios(nextIdx);
       startRound(nextIdx);
     } else {
       // Salva e finaliza sessão
