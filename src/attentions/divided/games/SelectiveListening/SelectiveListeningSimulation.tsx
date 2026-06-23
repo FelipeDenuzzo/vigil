@@ -360,6 +360,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                     Tocando áudio...
                   </span>
                 </div>
+              ) : (
                 <>
                   <span style={{ fontSize: '14px', color: '#ffffff', display: 'block', marginBottom: 'var(--space-2)' }}>
                     * No treino de verdade você só vai <strong>ouvir</strong> os números, sem vê-los na tela.
