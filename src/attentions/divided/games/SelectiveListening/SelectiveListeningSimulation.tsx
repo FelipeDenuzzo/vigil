@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../../../shared/components/Button';
 import { Card } from '../../../../shared/components/Card';
@@ -78,6 +78,73 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
   const [step, setStep] = useState<SimStep>(1);
   const [answer, setAnswer] = useState('');
   const [revealed, setRevealed] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  
+  const activeAudiosRef = useRef<HTMLAudioElement[]>([]);
+
+  const stopAllAudios = () => {
+    activeAudiosRef.current.forEach((audio) => {
+      try {
+        audio.pause();
+      } catch (e) {
+        // ignore
+      }
+    });
+    activeAudiosRef.current = [];
+    setIsPlayingAudio(false);
+  };
+
+  const playSimAudio = async () => {
+    stopAllAudios();
+    setIsPlayingAudio(true);
+
+    const targetKey = 'female';
+    const distractorKey = 'male';
+    const len = SIM_TARGET_DIGITS.length;
+
+    const tAudios: HTMLAudioElement[] = [];
+    const dAudios: HTMLAudioElement[] = [];
+
+    for (let i = 0; i < len; i++) {
+      const tAudio = new Audio(`/audio/selective-listening/${targetKey}/${SIM_TARGET_DIGITS[i]}.mp3`);
+      const dAudio = new Audio(`/audio/selective-listening/${distractorKey}/${SIM_DISTRACTOR_DIGITS[i]}.mp3`);
+      
+      tAudio.preload = 'auto';
+      dAudio.preload = 'auto';
+
+      tAudios.push(tAudio);
+      dAudios.push(dAudio);
+      activeAudiosRef.current.push(tAudio, dAudio);
+    }
+
+    // Aguarda um pequeno tempo para garantir carregamento
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // Toca os dígitos concorrentemente com delay de 1.2s entre cada um
+    for (let i = 0; i < len; i++) {
+      if (activeAudiosRef.current.length === 0) return; // Parado no cleanup ou avanço
+      
+      tAudios[i].play().catch((e) => console.warn('Erro ao tocar alvo na simulação:', e));
+      dAudios[i].play().catch((e) => console.warn('Erro ao tocar distrator na simulação:', e));
+
+      if (i < len - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+      }
+    }
+
+    // Aguarda o término da última reprodução (cerca de 1s)
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsPlayingAudio(false);
+  };
+
+  useEffect(() => {
+    if (step === 3) {
+      playSimAudio();
+    } else {
+      stopAllAudios();
+    }
+    return () => stopAllAudios();
+  }, [step]);
 
   const advance = () => {
     if (step === 1) setStep(2);
@@ -236,17 +303,45 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 />
               </div>
 
-              <span style={{ fontSize: '11px', color: 'var(--color-text-faint)', display: 'block', marginBottom: 'var(--space-4)' }}>
-                * No treino de verdade você só vai <strong>ouvir</strong> os números, sem vê-los na tela.
-              </span>
+              {/* Feedback visual de reprodução do áudio */}
+              {isPlayingAudio ? (
+                <div style={{ display: 'flex', gap: '4px', height: '24px', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--space-4)' }}>
+                  {[1, 2, 3, 4, 5].map((val) => (
+                    <motion.div
+                      key={val}
+                      animate={{ height: [8, 24, 8] }}
+                      transition={{ repeat: Infinity, duration: 0.5 + val * 0.1, ease: 'easeInOut' }}
+                      style={{ width: '3px', background: 'var(--color-divided)', borderRadius: '1.5px' }}
+                    />
+                  ))}
+                  <span style={{ fontSize: '11px', color: 'var(--color-divided)', marginLeft: '8px', fontWeight: 'bold' }}>
+                    Tocando áudio...
+                  </span>
+                </div>
+              ) : (
+                <span style={{ fontSize: '11px', color: 'var(--color-text-faint)', display: 'block', marginBottom: 'var(--space-4)' }}>
+                  * No treino de verdade você só vai <strong>ouvir</strong> os números, sem vê-los na tela.
+                </span>
+              )}
 
-              <Button
-                variant="primary"
-                onClick={advance}
-                style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
-              >
-                Tentar Responder →
-              </Button>
+              <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
+                <Button
+                  variant="secondary"
+                  onClick={playSimAudio}
+                  disabled={isPlayingAudio}
+                  style={{ flex: 1, fontSize: '13px', padding: '8px 12px', border: '1px solid rgba(255,255,255,0.1)', opacity: isPlayingAudio ? 0.35 : 1 }}
+                >
+                  Repetir Áudio
+                </Button>
+                
+                <Button
+                  variant="primary"
+                  onClick={advance}
+                  style={{ flex: 1, backgroundColor: 'var(--color-divided)' }}
+                >
+                  Tentar Responder →
+                </Button>
+              </div>
             </Card>
           </motion.div>
         )}
