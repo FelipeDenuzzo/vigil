@@ -4,6 +4,7 @@ import { buildSelectivePrompt,   SELECTIVE_EVALUATION_SCHEMA   } from './prompts
 import { buildSustainedPrompt,   SUSTAINED_EVALUATION_SCHEMA   } from './prompts/sustained';
 import { buildAlternatingPrompt, ALTERNATING_EVALUATION_SCHEMA } from './prompts/alternating';
 import { buildDividedPrompt,     DIVIDED_EVALUATION_SCHEMA     } from './prompts/divided';
+import { buildOnboardingPrompt,  ONBOARDING_EVALUATION_SCHEMA  } from './prompts/onboarding';
 import { buildProgressContext } from './assessment/buildProgressContext';
 import { buildLongitudinalBlock } from './prompts/_longitudinalBlock';
 
@@ -15,7 +16,13 @@ const ai = new GoogleGenAI({
 });
 
 // ── Validação mínima do retorno ─────────────────────────────────────────────────────
-function validate(parsed: unknown): EvaluationReport {
+function validate(parsed: unknown, isOnboarding = false): any {
+  if (isOnboarding) {
+    // Para onboarding, o schema já obriga `mensagem_ux` e `dados_grafico_teia`. 
+    // Aceitamos o que o Gemini devolver como válido caso o parser tenha funcionado.
+    return parsed;
+  }
+
   const r = parsed as EvaluationReport;
   const validLevels = ['mínimo', 'minimo', 'leve', 'moderado', 'importante'];
 
@@ -55,6 +62,8 @@ function resolvePromptAndSchema(input: EvaluatorInput) {
       return { prompt: buildAlternatingPrompt(input), schema: ALTERNATING_EVALUATION_SCHEMA };
     case 'dividida':
       return { prompt: buildDividedPrompt(input),     schema: DIVIDED_EVALUATION_SCHEMA     };
+    case 'onboarding':
+      return { prompt: buildOnboardingPrompt(input),  schema: ONBOARDING_EVALUATION_SCHEMA  };
     default:
       return { prompt: buildSelectivePrompt(input as any), schema: SELECTIVE_EVALUATION_SCHEMA };
   }
@@ -114,5 +123,5 @@ export async function evaluateWithGemini(
     }
   }
 
-  return validate(parsed);
+  return validate(parsed, input.attentionType === 'onboarding');
 }

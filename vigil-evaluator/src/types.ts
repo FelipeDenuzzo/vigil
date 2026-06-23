@@ -151,12 +151,20 @@ export interface DividedEvaluatorInput {
   [key: string]: unknown;
 }
 
+// ─── Onboarding (Avaliação Inicial Gamificada) ──────────────────────────────
+export interface OnboardingEvaluatorInput {
+  attentionType: 'onboarding';
+  sessionId: string;
+  [key: string]: unknown;
+}
+
 // ─── Union discriminada ──────────────────────────────────────────────────────
 export type EvaluatorInput =
   | SelectiveEvaluatorInput
   | SustainedEvaluatorInput
   | AlternatingEvaluatorInput
-  | DividedEvaluatorInput;
+  | DividedEvaluatorInput
+  | OnboardingEvaluatorInput;
 
 // ─── Camadas do laudo (alternada e futuras) ────────────────────────────────────
 export interface ReportLayers {
@@ -186,6 +194,22 @@ export interface EvaluationReport {
   clinicalWeaknesses:      string[];
   clinicalRecommendation:  string;
   clinicalNote:            string;
+}
+
+// ─── Resposta do Gemini (Onboarding Gamificado) ──────────────────────────────
+export interface OnboardingReport {
+  mensagem_ux: {
+    titulo: string;
+    paragrafo_boas_vindas: string;
+    superpoder: string;
+    foco_de_treino: string;
+  };
+  dados_grafico_teia: {
+    "Agilidade Mental": number;
+    "Foco Contínuo": number;
+    "Controle e Calma": number;
+    "Organização Visual": number;
+  };
 }
 
 // ─── Contexto longitudinal (Fase 3) ──────────────────────────────────────────

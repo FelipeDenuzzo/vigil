@@ -1,120 +1,173 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../shared/components/Button';
-import { UserBaseline, BaselineLevel } from './types';
+import { UserBaseline, OnboardingState } from './types';
 import { useAuth } from '../lib/AuthContext';
+import { callOnboardingEvaluator, OnboardingReport, EvaluatorInput } from '../lib/evaluatorClient';
+import { EvaluationLoadingAnimation } from '../shared/components/EvaluationLoadingAnimation';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
 interface Props {
-  baseline: UserBaseline;
+  state: OnboardingState;
   onSave: (baseline: UserBaseline) => Promise<void>;
   saving: boolean;
   saveError: string | null;
 }
 
-const LABELS: Record<string, string> = {
-  seletiva: 'Seletiva',
-  sustentada: 'Sustentada',
-  alternada: 'Alternada',
-  dividida: 'Dividida',
-};
-
-const LEVEL_LABEL: Record<BaselineLevel, string> = {
-  minimo: 'Referência',
-  leve: 'Leve',
-  moderado: 'Moderado',
-  importante: 'Alta prioridade',
-};
-
-const LEVEL_COLOR: Record<BaselineLevel, string> = {
-  minimo: 'var(--color-selective)',
-  leve: 'var(--color-alternating)',
-  moderado: 'var(--color-sustained)',
-  importante: 'var(--color-divided)',
-};
-
-function findPriority(baseline: UserBaseline): string {
-  const entries = Object.entries(baseline) as [string, UserBaseline[keyof UserBaseline]][];
-  const lowest = entries.reduce((min, curr) => curr[1].score < min[1].score ? curr : min);
-  return LABELS[lowest[0]];
-}
-
-export const OnboardingResult: React.FC<Props> = ({ baseline, onSave, saving, saveError }) => {
+export const OnboardingResult: React.FC<Props> = ({ state, onSave, saving, saveError }) => {
   const navigate = useNavigate();
   const { refreshAccess } = useAuth();
+  
+  const [report, setReport] = useState<OnboardingReport | null>(null);
+  const [evaluating, setEvaluating] = useState(true);
   const [saved, setSaved] = useState(false);
-  const priority = findPriority(baseline);
 
   useEffect(() => {
-    if (saved) return;
-    onSave(baseline)
+    // 1. Inicia a avaliação do Gemini
+    async function evaluate() {
+      if (!state.baseline) return;
+      
+      const payload: EvaluatorInput = {
+        sessionId: 'onboarding-' + Date.now(),
+        attentionType: 'onboarding',
+        motorResult: state.motorResult,
+        inhibitoryResult: state.inhibitoryResult,
+        flexibleResult: state.flexibleResult,
+      };
+
+      try {
+        const result = await callOnboardingEvaluator(payload);
+        if (result) {
+          setReport(result);
+        }
+      } catch (err) {
+        console.warn('Erro ao avaliar onboarding:', err);
+      } finally {
+        setEvaluating(false);
+      }
+    }
+
+    evaluate();
+  }, [state]);
+
+  useEffect(() => {
+    // 2. Salva o baseline (silencioso)
+    if (saved || !state.baseline) return;
+    onSave(state.baseline)
       .then(() => refreshAccess())
       .then(() => setSaved(true))
       .catch(() => {}); // erro exibido via saveError
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state.baseline, onSave, refreshAccess, saved]);
 
-  function handleContinue() {
-    navigate('/treinar', { replace: true });
+  if (evaluating) {
+    return (
+      <EvaluationLoadingAnimation 
+        label="Avaliando seu perfil cognitivo..." 
+        isLongAnalysis={false}
+      />
+    );
   }
 
+  // Fallback caso a IA falhe
+  if (!report) {
+    return (
+      <div className="container" style={{ paddingTop: 'var(--space-12)', maxWidth: '600px' }}>
+        <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-2)' }}>
+          Perfil Salvo!
+        </h1>
+        <p style={{ color: '#ffffff', marginBottom: 'var(--space-8)' }}>
+          Tudo pronto para iniciarmos o seu treinamento.
+        </p>
+        <Button variant="primary" onClick={() => navigate('/treinar', { replace: true })} style={{ width: '100%' }}>
+          Ir para o treino
+        </Button>
+      </div>
+    );
+  }
+
+  // Prepara dados para o RadarChart
+  const radarData = [
+    { subject: 'Agilidade Mental', A: report.dados_grafico_teia['Agilidade Mental'] || 0, fullMark: 100 },
+    { subject: 'Foco Contínuo', A: report.dados_grafico_teia['Foco Contínuo'] || 0, fullMark: 100 },
+    { subject: 'Controle e Calma', A: report.dados_grafico_teia['Controle e Calma'] || 0, fullMark: 100 },
+    { subject: 'Organização Visual', A: report.dados_grafico_teia['Organização Visual'] || 0, fullMark: 100 },
+  ];
+
+  const { mensagem_ux } = report;
+
   return (
-    <div className="container" style={{ paddingTop: 'var(--space-12)', maxWidth: '600px' }}>
-      <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-2)' }}>
-        Seu ponto de partida
+    <div className="container" style={{ paddingTop: 'var(--space-12)', maxWidth: '600px', paddingBottom: 'var(--space-8)' }}>
+      <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-2)', textAlign: 'center' }}>
+        {mensagem_ux.titulo}
       </h1>
-      <p style={{ color: '#ffffff', marginBottom: 'var(--space-8)' }}>
-        Este é o seu baseline — a referência que a IA vai usar para medir sua evolução em cada sessão.
+      <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-8)', textAlign: 'center' }}>
+        {mensagem_ux.paragrafo_boas_vindas}
       </p>
 
-      {/* Cards de resultado por tipo */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }}>
-        {(Object.entries(baseline) as [string, UserBaseline[keyof UserBaseline]][]).map(([key, entry]) => (
-          <div key={key} style={{
-            background: 'var(--color-surface)',
-            borderRadius: 'var(--radius-md)',
-            padding: 'var(--space-4)',
-            borderLeft: `4px solid ${LEVEL_COLOR[entry.level]}`,
-          }}>
-            <p style={{ fontWeight: 600, marginBottom: 'var(--space-1)' }}>{LABELS[key]}</p>
-            <p style={{ fontSize: 'var(--text-2xl)', fontWeight: 700, marginBottom: 'var(--space-1)' }}>
-              {entry.score}
-              <span style={{ fontSize: 'var(--text-sm)', color: '#ffffff', fontWeight: 400 }}> /100</span>
-            </p>
-            <p style={{ fontSize: 'var(--text-sm)', color: LEVEL_COLOR[entry.level] }}>
-              {LEVEL_LABEL[entry.level]}
-            </p>
-          </div>
-        ))}
+      {/* Gráfico de Teia */}
+      <div style={{ 
+        width: '100%', 
+        height: 300, 
+        background: 'var(--color-surface)', 
+        borderRadius: 'var(--radius-lg)',
+        padding: 'var(--space-4)',
+        marginBottom: 'var(--space-6)'
+      }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+            <PolarGrid stroke="var(--color-border)" />
+            <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--color-text-muted)', fontSize: 12 }} />
+            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+            <Radar name="Habilidades" dataKey="A" stroke="var(--color-selective)" fill="var(--color-selective)" fillOpacity={0.5} />
+          </RadarChart>
+        </ResponsiveContainer>
       </div>
 
-      {/* Recomendação do tipo prioritário */}
+      {/* Superpoder */}
       <div style={{
         background: 'var(--color-surface)',
         borderRadius: 'var(--radius-md)',
-        padding: 'var(--space-6)',
-        marginBottom: 'var(--space-6)',
-        borderTop: '3px solid var(--color-selective)',
+        padding: 'var(--space-4)',
+        marginBottom: 'var(--space-4)',
+        borderLeft: '4px solid var(--color-sustained)',
       }}>
-        <p style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Por onde começar</p>
-        <p style={{ color: '#ffffff' }}>
-          Seu maior potencial de melhora agora está na atenção{' '}
-          <strong style={{ color: 'var(--color-text)' }}>{priority}</strong>.
-          Comece por ela para sentir progressos mais rápidos.
+        <h3 style={{ fontSize: 'var(--text-md)', marginBottom: 'var(--space-1)', color: 'var(--color-sustained)' }}>
+          Seu Superpoder ⚡
+        </h3>
+        <p style={{ color: '#ffffff', fontSize: 'var(--text-sm)' }}>
+          {mensagem_ux.superpoder}
+        </p>
+      </div>
+
+      {/* Foco de Treino */}
+      <div style={{
+        background: 'var(--color-surface)',
+        borderRadius: 'var(--radius-md)',
+        padding: 'var(--space-4)',
+        marginBottom: 'var(--space-8)',
+        borderLeft: '4px solid var(--color-alternating)',
+      }}>
+        <h3 style={{ fontSize: 'var(--text-md)', marginBottom: 'var(--space-1)', color: 'var(--color-alternating)' }}>
+          Nosso Foco de Treino 🎯
+        </h3>
+        <p style={{ color: '#ffffff', fontSize: 'var(--text-sm)' }}>
+          {mensagem_ux.foco_de_treino}
         </p>
       </div>
 
       {saveError && (
-        <p style={{ color: 'var(--color-error, red)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
+        <p style={{ color: 'var(--color-error, red)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)', textAlign: 'center' }}>
           {saveError}
         </p>
       )}
 
       <Button
         variant="primary"
-        onClick={handleContinue}
+        onClick={() => navigate('/treinar', { replace: true })}
         disabled={saving || !saved}
         style={{ width: '100%' }}
       >
-        {saving ? 'Salvando...' : 'Ir para o treino'}
+        {saving ? 'Finalizando...' : 'Começar a Treinar!'}
       </Button>
     </div>
   );
