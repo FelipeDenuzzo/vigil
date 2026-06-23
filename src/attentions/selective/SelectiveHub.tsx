@@ -88,7 +88,7 @@ export const SelectiveHub: React.FC = () => {
                     marginBottom: 'var(--space-2)',
                   }}
                 >
-                  🔎 Achar o Faltando
+                  🔎 Achar o Diferente
                 </p>
                 <p
                   style={{
@@ -96,8 +96,7 @@ export const SelectiveHub: React.FC = () => {
                     color: 'var(--color-text-muted)',
                   }}
                 >
-                  Compare duas grades quase idênticas e encontre o item que está faltando
-                  ou a mais antes que o tempo acabe.
+                  Compare duas imagens quase idênticas e encontre o elemento que está diferente antes que o tempo acabe.
                 </p>
               </Card>
             </div>

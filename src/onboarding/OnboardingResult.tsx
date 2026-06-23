@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../shared/components/Button';
 import { UserBaseline, BaselineLevel } from './types';
+import { useAuth } from '../lib/AuthContext';
 
 interface Props {
   baseline: UserBaseline;
@@ -39,12 +40,14 @@ function findPriority(baseline: UserBaseline): string {
 
 export const OnboardingResult: React.FC<Props> = ({ baseline, onSave, saving, saveError }) => {
   const navigate = useNavigate();
+  const { refreshAccess } = useAuth();
   const [saved, setSaved] = useState(false);
   const priority = findPriority(baseline);
 
   useEffect(() => {
     if (saved) return;
     onSave(baseline)
+      .then(() => refreshAccess())
       .then(() => setSaved(true))
       .catch(() => {}); // erro exibido via saveError
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

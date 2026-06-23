@@ -367,7 +367,7 @@ export default function AcharOFaltandoReportPanel({
       <div style={s.header}>
         <div style={s.headerTop}>
           <h1 style={s.title}>
-            🔎 Achar o Faltando — Laudo Técnico
+            🔎 Achar o Diferente — Laudo Técnico
             <span style={s.levelBadge(level)}>{level}</span>
           </h1>
           <div style={s.buttonGroup}>

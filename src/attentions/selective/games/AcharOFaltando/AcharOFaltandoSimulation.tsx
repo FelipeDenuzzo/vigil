@@ -6,21 +6,22 @@ import { Card } from '../../../../shared/components/Card';
 
 interface Props {
   onDone: () => void;
+  onBack: () => void;
 }
 
-type SimStep = 1 | 2 | 3 | 'done';
+type SimStep = 1 | 3 | 'done';
 
 const SIM_GRID_A = ['18', '19', '20', '21', '22', '23', '24', '25', '26'];
-const SIM_GRID_B = ['18', '19', '20', '21', '22', '', '24', '25', '26']; // index 5 is missing!
+const SIM_GRID_B = ['18', '19', '20', '21', '22', '27', '24', '25', '26']; // index 5 is different! ('27' instead of '23')
 
-export default function AcharOFaltandoSimulation({ onDone }: Props) {
+export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
   const [step, setStep] = useState<SimStep>(1);
   const [hasClickedCorrect, setHasClickedCorrect] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
   const advance = () => {
-    if (step === 1) setStep(2);
-    else if (step === 2) setStep(3);
+    if (step === 1) setStep(3);
+    else if (step === 3) setStep('done');
     else if (step === 'done') onDone();
   };
 
@@ -65,58 +66,28 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
             <Card style={{ padding: 'var(--space-6)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <span style={{ fontSize: '3rem' }}>🔎</span>
               <h2 style={{ color: 'var(--color-primary)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
-                Como Funciona o Achar o Faltando?
+                Como funciona o treino
               </h2>
               <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
-                Este treino testa a sua **Atenção Seletiva** e velocidade de processamento visual.
-                Sua tarefa é comparar duas grades e encontrar o único elemento que está **diferente** (faltando ou sobrando).
+                Sua tarefa é comparar dois conjuntos de símbolos e encontrar o único elemento que está diferente entre eles.
               </p>
               
-              <Button
-                variant="primary"
-                onClick={advance}
-                style={{ marginTop: '8px', width: '100%' }}
-              >
-                Como identificar? →
-              </Button>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* ── STEP 2: Explicação da grade concorrente ── */}
-        {step === 2 && (
-          <motion.div
-            key="step2"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card style={{ padding: 'var(--space-6)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <span style={{ fontSize: '3rem' }}>💡</span>
-              <h2 style={{ color: 'var(--color-primary)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
-                Escanear e Comparar
-              </h2>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
-                Uma das grades estará completa. A outra grade terá uma célula vazia (indicando o símbolo que falta) ou terá um símbolo diferente.
-              </p>
-              <div style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                border: '1px dashed var(--color-border)',
-                borderRadius: 'var(--radius-md)',
-                padding: 'var(--space-3) var(--space-4)',
-                fontSize: '13px',
-                color: 'var(--color-text-muted)'
-              }}>
-                ℹ️ No jogo oficial, a disposição pode ser **Lado a Lado** ou **Alternante** (piscando na tela). Mantenha o foco estável!
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+                <Button
+                  variant="primary"
+                  onClick={advance}
+                  style={{ width: '100%' }}
+                >
+                  Vamos ver como funciona
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={onBack}
+                  style={{ width: '100%' }}
+                >
+                  ← Voltar
+                </Button>
               </div>
-              <Button
-                variant="primary"
-                onClick={advance}
-                style={{ width: '100%' }}
-              >
-                Fazer um Teste Prático! →
-              </Button>
             </Card>
           </motion.div>
         )}
@@ -136,7 +107,7 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
                   Encontre a diferença!
                 </h3>
                 <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '4px' }}>
-                  Compare a Grade A com a Grade B. Clique na célula vazia/diferente na **Grade B**.
+                  Compare a Imagem A com a Imagem B. Clique na célula diferente na **Imagem B**.
                 </p>
               </div>
 
@@ -145,7 +116,7 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
                 {/* Grade A */}
                 <div>
                   <p style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-muted)' }}>
-                    Grade A (Referência)
+                    Imagem A (Referência)
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', border: '1px solid var(--color-border)', padding: '6px', borderRadius: '6px', background: '#ffffff' }}>
                     {SIM_GRID_A.map((sym, i) => (
@@ -165,7 +136,7 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
                 {/* Grade B */}
                 <div>
                   <p style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-primary)' }}>
-                    Grade B (Achar a Diferença)
+                    Imagem B (Achar a Diferença)
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', border: '1px solid var(--color-border)', padding: '6px', borderRadius: '6px', background: '#ffffff' }}>
                     {SIM_GRID_B.map((sym, i) => {
@@ -218,7 +189,7 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
                   border: `1px solid ${hasClickedCorrect ? '#22c55e' : '#ef4444'}`
                 }}>
                   {hasClickedCorrect
-                    ? 'Muito bem! Você encontrou a célula vazia.'
+                    ? 'Muito bem! Você encontrou a célula diferente.'
                     : 'Tente novamente! Olhe para a segunda linha, na última coluna.'}
                 </div>
               )}
@@ -246,7 +217,6 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
               </h2>
 
               <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', lineHeight: '1.6', marginBottom: '8px' }}>
-                Você aprendeu a mecânica. O treino real terá **10 rodadas** com tempo limite de **20 segundos por fase**. 
                 O escaner e as respostas rápidas garantirão um melhor resultado!
               </p>
               

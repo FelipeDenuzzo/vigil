@@ -202,11 +202,9 @@ export default function AcharOFaltandoPlay() {
           ← Voltar
         </button>
         <div style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>🔎 Achar o Faltando</h1>
+          <h1 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>🔎 Achar o Diferente</h1>
           <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.7, marginBottom: 'var(--space-6)' }}>
-            Compare as duas grades que aparecem na tela. Elas são quase iguais, mas existe uma
-            diferença: um item <strong>faltando</strong> ou um item <strong>a mais</strong>.
-            Encontre e marque essa diferença clicando na célula ou selecionando o item.
+            Compare duas imagens quase idênticas e encontre o item que está diferente antes que o tempo acabe.
           </p>
           <button
             onClick={() => setPhase('simulation')}
@@ -221,7 +219,7 @@ export default function AcharOFaltandoPlay() {
               cursor: 'pointer',
             }}
           >
-            Começar
+            Veja como o treino funciona
           </button>
         </div>
       </div>
@@ -229,7 +227,7 @@ export default function AcharOFaltandoPlay() {
   }
 
   if (phase === 'simulation') {
-    return <AcharOFaltandoSimulation onDone={startGame} />;
+    return <AcharOFaltandoSimulation onDone={startGame} onBack={() => setPhase('instructions')} />;
   }
 
   if ((phase === 'playing' || phase === 'feedback') && currentRound) {
@@ -320,21 +318,21 @@ export default function AcharOFaltandoPlay() {
 
         {isSideBySide && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-            {renderGrid(currentRound.itemsA, 'A', 'Grade A')}
-            {renderGrid(currentRound.itemsB, 'B', 'Grade B')}
+            {renderGrid(currentRound.itemsA, 'A', 'Imagem A')}
+            {renderGrid(currentRound.itemsB, 'B', 'Imagem B')}
           </div>
         )}
         {isAlternating && (
           <div style={{ marginBottom: 16 }}>
             {visibleBoard === 'A'
-              ? renderGrid(currentRound.itemsA, 'A', 'Grade A')
-              : renderGrid(currentRound.itemsB, 'B', 'Grade B')}
+              ? renderGrid(currentRound.itemsA, 'A', 'Imagem A')
+              : renderGrid(currentRound.itemsB, 'B', 'Imagem B')}
           </div>
         )}
 
         {config.responseMode === 'select-item' && (
           <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: 'var(--text-sm)', marginBottom: 8 }}>Qual item está faltando ou a mais?</p>
+            <p style={{ fontSize: 'var(--text-sm)', marginBottom: 8 }}>Qual item está diferente?</p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {currentRound.options.map(opt => (
                 <button

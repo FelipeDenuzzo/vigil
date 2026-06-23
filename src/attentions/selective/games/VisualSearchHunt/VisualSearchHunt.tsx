@@ -456,20 +456,53 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
         <span style={{ fontSize: '18px' }}>🚧</span> MODO DE PRÁTICA
       </div>
       <Card>
-        <div style={{ display: 'grid', gap: 10 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+        <div style={{ display: 'grid', gap: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+            <span style={{ fontSize: 13, color: 'var(--color-text-muted)', position: 'relative' }}>
               Prática {state.round}/{SIMULATOR_ROUNDS}
+              {state.round === 1 && (
+                <span style={{
+                  position: 'absolute', left: 0, top: '20px', whiteSpace: 'nowrap',
+                  background: 'var(--color-primary)', color: '#fff', fontSize: '10px',
+                  padding: '2px 6px', borderRadius: '4px', zIndex: 10
+                }}>
+                  ↑ quantidade de fases
+                </span>
+              )}
             </span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-primary)' }}>
-              Sem timer — sem pressão!
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-primary)', position: 'relative' }}>
+              {state.round === 1 ? 'Aqui aparece o tempo que você tem para concluir a fase' : 'Sem timer — sem pressão!'}
+              {state.round === 1 && (
+                <span style={{
+                  position: 'absolute', right: 0, top: '20px', whiteSpace: 'nowrap',
+                  background: 'var(--color-primary)', color: '#fff', fontSize: '10px',
+                  padding: '2px 6px', borderRadius: '4px', zIndex: 10
+                }}>
+                  ↑ indicador de tempo
+                </span>
+              )}
             </span>
           </div>
-          <div style={{ textAlign: 'center', fontWeight: 700 }}>
-            Encontre os{' '}
-            <span style={{ textTransform: 'uppercase' }}>
-              {SHAPE_LABEL[state.targetShape]} {COLOR_LABEL[state.targetColor]}
-            </span>
+          <div style={{ textAlign: 'center', fontWeight: 700, position: 'relative', marginTop: state.round === 1 ? '12px' : '0' }}>
+            {state.round === 1 ? (
+              <>
+                Aqui aparece o item que você precisa encontrar na grade abaixo
+                <span style={{
+                  position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '24px', whiteSpace: 'nowrap',
+                  background: 'var(--color-primary)', color: '#fff', fontSize: '10px',
+                  padding: '2px 6px', borderRadius: '4px', zIndex: 10
+                }}>
+                  ↑ item-alvo a buscar
+                </span>
+              </>
+            ) : (
+              <>
+                Encontre os{' '}
+                <span style={{ textTransform: 'uppercase' }}>
+                  {SHAPE_LABEL[state.targetShape]} {COLOR_LABEL[state.targetColor]}
+                </span>
+              </>
+            )}
           </div>
           {state.round === 1 && (
             <div style={{
@@ -481,10 +514,10 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
               background: 'rgba(59, 130, 246, 0.05)',
               border: '1px dashed rgba(59, 130, 246, 0.25)',
               borderRadius: '12px',
-              margin: '0 auto',
+              margin: '12px auto 0 auto',
               maxWidth: '360px',
             }}>
-              A figura que você precisa localizar vai aparecer aqui, só vou te avisar dessa vez, nas outras fases só vai aparecer a figura
+              Essa é a figura que você precisa encontrar. No treino real, ela será mostrada antes da fase começar e não aparecerá durante a fase.
             </div>
           )}
           <div
@@ -578,13 +611,13 @@ function IntroScreen({ onSimulator, onSkip }: { onSimulator: () => void; onSkip:
       <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
         <div style={{ fontSize: 40 }}>🎯</div>
         <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
-        <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.6, margin: 0 }}>
+        <p style={{ color: '#fff', fontSize: '1.15rem', lineHeight: 1.6, margin: 0 }}>
           Você verá uma grade com figuras coloridas. Encontre e clique em{' '}
           <strong>todas as figuras que correspondem ao alvo</strong> mostrado no topo.
           O timer começa quando você iniciar cada fase.
         </p>
         <div style={{ display: 'grid', gap: 8 }}>
-          <Button onClick={onSimulator}>Praticar antes (recomendado)</Button>
+          <Button onClick={onSimulator}>Veja como o treino funciona</Button>
           <button
             onClick={onSkip}
             style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
@@ -991,9 +1024,6 @@ export default function VisualSearchHunt({
         <div style={{ display: 'grid', gap: 8 }}>
           <Card>
             <div style={{ display: 'grid', gap: 8 }}>
-              <div style={{ textAlign: 'left', fontWeight: 700, color: '#111827' }}>
-                Encontre os {SHAPE_LABEL[targetShape]} {COLOR_LABEL[targetColor]}
-              </div>
               <div style={{ height: 6, width: '100%', borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${Math.max(0, (remainingTime / FIXED_TIME_SECONDS) * 100)}%`, background: '#111827', transition: 'width 100ms linear' }} />
               </div>
@@ -1106,7 +1136,7 @@ export default function VisualSearchHunt({
             <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
               <div style={{ fontSize: 40 }}>{status === 'won' ? '🎯' : '⏱️'}</div>
               <h2 style={{ margin: 0 }}>{status === 'won' ? 'Fase concluída!' : 'Tempo esgotado'}</h2>
-              {last && (
+              {status === 'won' && last && (
                 <div style={{ display: 'grid', gap: 6, fontSize: 14 }}>
                   <div>✅ Acertos: <strong>{last.hits}</strong> / {last.totalTargets}</div>
                   <div>❌ Erros: <strong>{last.errors}</strong></div>
