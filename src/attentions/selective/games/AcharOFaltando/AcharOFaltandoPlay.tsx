@@ -54,8 +54,10 @@ export default function AcharOFaltandoPlay() {
   const roundStartRef = useRef<number>(Date.now());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const sessionSeedRef = useRef(Math.random().toString(36).substring(7));
+
   function startRound(rNum: number) {
-    const round = generateRound(config, rNum);
+    const round = generateRound({ ...config, seed: sessionSeedRef.current }, rNum);
     setCurrentRound(round);
     setMarkedCells([]);
     setSelectedItems([]);
