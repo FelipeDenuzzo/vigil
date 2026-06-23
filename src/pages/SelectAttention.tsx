@@ -5,6 +5,9 @@ import { Button } from '../shared/components/Button';
 import { Card } from '../shared/components/Card';
 import { useAuth } from '../lib/AuthContext';
 import { useAttentionStatus, AttentionType, AttentionStatus } from '../hooks/useAttentionStatus';
+import { useProgressData } from '../hooks/useProgressData';
+import { AttentionRadar } from '../components/progress/AttentionRadar';
+import { DailySuggestion } from '../components/progress/DailySuggestion';
 
 // ─── Badge de estado individual do card ──────────────────────────────────────
 
@@ -108,6 +111,7 @@ export const SelectAttention: React.FC = () => {
   const navigate = useNavigate();
   const { user, displayName } = useAuth();
   const statusMap = useAttentionStatus(user?.uid);
+  const progressData = useProgressData();
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-12)', paddingBottom: 'var(--space-12)' }}>
@@ -130,6 +134,15 @@ export const SelectAttention: React.FC = () => {
       </div>
 
       <Greeting name={displayName} />
+
+      {!progressData.loading && progressData.byType && Object.keys(progressData.byType).length === 4 && (
+        <>
+          <DailySuggestion byType={progressData.byType} />
+          <div style={{ display: 'flex', justifyContent: 'center', margin: 'var(--space-4) 0 var(--space-8)' }}>
+            <AttentionRadar byType={progressData.byType} />
+          </div>
+        </>
+      )}
 
       <div style={{
         display: 'grid',
