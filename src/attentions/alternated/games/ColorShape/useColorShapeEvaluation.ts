@@ -7,6 +7,8 @@ import { buildColorShapeTechnicalReport }  from '../../../../assessment/colorSha
 import { calculateColorShapeMetrics }      from '../../../../assessment/colorShape/calculateColorShapeMetrics';
 import { saveReport } from '../../../../lib/saveReport';
 import { auth } from '../../../../lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import db from '../../../../lib/firebase';
 
 const EVALUATOR_URL    = import.meta.env.VITE_EVALUATOR_URL    as string | undefined;
 const EVALUATOR_SECRET = import.meta.env.VITE_EVALUATOR_SECRET as string | undefined;
@@ -121,6 +123,23 @@ export async function useColorShapeEvaluation(
 
     trialSummary: technicalReport.trialSummary,
   };
+
+  // Salva score e level localmente antes do Gemini, garantindo que o Histórico funcione mesmo em caso de falha de IA
+  try {
+    if (auth.currentUser?.uid) {
+      await setDoc(doc(db, 'sessions', technicalReport.sessionId), {
+        uid: auth.currentUser.uid,
+        sessionId: technicalReport.sessionId,
+        game: 'color-shape',
+        attentionType: 'alternada',
+        score: s.score,
+        level: s.severity,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+    }
+  } catch (err) {
+    console.error('[ColorShape] erro ao salvar sessão localmente:', err);
+  }
 
   const geminiReport = await callEvaluator(payload);
   if (geminiReport) {

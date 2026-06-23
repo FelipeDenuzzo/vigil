@@ -5,6 +5,9 @@ import { TentativaRodada } from '../../../../assessment/selectiveListening/types
 import type { EvaluationReport, EvaluatorInput } from '../../../../lib/evaluatorClient';
 import { callEvaluator } from '../../../../lib/evaluatorClient';
 import { saveReport } from '../../../../lib/saveReport';
+import { auth } from '../../../../lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import db from '../../../../lib/firebase';
 
 export interface SelectiveListeningEvaluationResult {
   metrics: any;
@@ -52,6 +55,23 @@ export async function useSelectiveListeningEvaluation(
     accuracyNote: technicalReport.accuracyNote,
     intrusionNote: technicalReport.intrusionNote,
   };
+
+  // Salva score e level localmente antes do Gemini, garantindo que o Histórico funcione mesmo em caso de falha de IA
+  try {
+    if (auth.currentUser?.uid) {
+      await setDoc(doc(db, 'sessions', sessionId), {
+        uid: auth.currentUser.uid,
+        sessionId: sessionId,
+        game: 'escuta-seletiva',
+        attentionType: 'dividida',
+        score: scaleResult.score,
+        level: scaleResult.severity,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+    }
+  } catch (err) {
+    console.error('[SelectiveListening] erro ao salvar sessão localmente:', err);
+  }
 
   // Chama o evaluator (Gemini)
   const geminiReport = await callEvaluator(evaluatorInput);
