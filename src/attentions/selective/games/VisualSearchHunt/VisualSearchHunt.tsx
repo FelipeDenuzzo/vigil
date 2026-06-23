@@ -14,6 +14,7 @@ import type {
   VisualSearchShape,
   VisualSearchColor,
 } from './types';
+import { useScaleToFit } from '../../../../hooks/useScaleToFit';
 
 type Shape = 'circle' | 'square' | 'triangle';
 type Color = 'red' | 'blue' | 'green' | 'yellow';
@@ -663,6 +664,8 @@ export default function VisualSearchHunt({
   const uidRef = useRef<string | undefined>(auth.currentUser?.uid);
   useEffect(() => { uidRef.current = auth.currentUser?.uid; }, []);
 
+  const scale = useScaleToFit(640, 800, 24);
+
   const persistRoundLog = useCallback((result: RoundResult) => {
     try {
       if (!sessionLogRef.current) return;
@@ -966,7 +969,14 @@ export default function VisualSearchHunt({
   const tileGap = config.gridSize <= 5 ? 6 : config.gridSize <= 6 ? 5 : 3;
 
   return (
-    <div style={{ maxWidth: 460, margin: '0 auto', padding: 12 }}>
+    <div style={{ 
+      maxWidth: 640, 
+      margin: '0 auto', 
+      padding: 12,
+      transform: `scale(${scale})`,
+      transformOrigin: 'top center',
+      width: '100%'
+    }}>
 
       {status === 'intro' && (
         <IntroScreen
@@ -1023,109 +1033,113 @@ export default function VisualSearchHunt({
       {status === 'playing' && (
         <div style={{ display: 'grid', gap: 8 }}>
           <Card>
-            <div style={{ display: 'grid', gap: 8 }}>
-              <div style={{ height: 6, width: '100%', borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${Math.max(0, (remainingTime / FIXED_TIME_SECONDS) * 100)}%`, background: '#111827', transition: 'width 100ms linear' }} />
-              </div>
-              <div><Button onClick={advanceRoundNow} style={{ width: '100%' }}>Avançar</Button></div>
+            <div style={{ height: 6, width: '100%', borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${Math.max(0, (remainingTime / FIXED_TIME_SECONDS) * 100)}%`, background: '#111827', transition: 'width 100ms linear' }} />
             </div>
           </Card>
-          <Card>
-            <div style={{ position: 'relative' }}>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns,
-                  gap: tileGap,
-                  padding: 3,
-                  borderRadius: 8,
-                  width: '100%',
-                  maxHeight: '72vh',
-                  aspectRatio: '1 / 1',
-                  overflow: 'hidden',
-                }}
-              >
-                {tiles.map((tile) => {
-                  const isSelected = tile.selected;
-                  return (
-                    <button
-                      key={tile.id}
-                      onClick={() => handleTileClick(tile)}
-                      style={{
-                        aspectRatio: '1',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: 6,
-                        border: isSelected ? '3px solid #6b7280' : '2px solid #e5e7eb',
-                        background: isSelected ? '#f3f4f6' : '#f9fafb',
-                        cursor: 'pointer',
-                        padding: 0,
-                        transition: 'border-color 80ms, background 80ms, box-shadow 80ms',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        boxShadow: isSelected
-                          ? 'inset 0 0 0 1px #d1d5db, 0 0 0 2px rgba(107,114,128,0.18)'
-                          : 'none',
-                      }}
-                      aria-label={`${tile.shape} ${tile.color}${isSelected ? ' selecionado' : ''}`}
-                    >
-                      <img
-                        src={SHAPE_IMAGE[tile.shape][tile.color]}
-                        alt=""
-                        loading="eager"
-                        decoding="sync"
-                        style={{
-                          width: '62%',
-                          height: '62%',
-                          objectFit: 'contain',
-                          display: 'block',
-                          opacity: isSelected ? 0.55 : 1,
-                          transition: 'opacity 80ms',
-                        }}
-                        onError={(e) => {
-                          const img = e.currentTarget;
-                          img.style.display = 'none';
-                          const fb = img.nextElementSibling as HTMLElement | null;
-                          if (fb) fb.style.display = 'flex';
-                        }}
-                      />
-                      <div
-                        style={{
-                          display: 'none',
-                          width: '100%',
-                          height: '100%',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          position: 'absolute',
-                          inset: 0,
-                          opacity: isSelected ? 0.55 : 1,
-                        }}
-                      >
-                        <div style={getShapeFallbackStyle(tile.shape, tile.color)} />
-                      </div>
-                      {isSelected && (
-                        <div className="vsh-tile-selected-overlay" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              {feedback && (
+          
+          <div style={{ display: 'flex', gap: 12, alignItems: 'stretch' }}>
+            <Card style={{ flex: 1, margin: 0 }}>
+              <div style={{ position: 'relative' }}>
                 <div
                   style={{
-                    position: 'absolute',
-                    inset: 0,
-                    pointerEvents: 'none',
+                    display: 'grid',
+                    gridTemplateColumns,
+                    gap: tileGap,
+                    padding: 3,
                     borderRadius: 8,
-                    border: `3px solid ${feedback === 'mark' ? '#22c55e' : '#ef4444'}`,
-                    opacity: 0.5,
-                    transition: 'opacity 120ms',
+                    width: '100%',
+                    maxHeight: '72vh',
+                    aspectRatio: '1 / 1',
+                    overflow: 'hidden',
                   }}
-                />
-              )}
+                >
+                  {tiles.map((tile) => {
+                    const isSelected = tile.selected;
+                    return (
+                      <button
+                        key={tile.id}
+                        onClick={() => handleTileClick(tile)}
+                        style={{
+                          aspectRatio: '1',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: 6,
+                          border: isSelected ? '3px solid #6b7280' : '2px solid #e5e7eb',
+                          background: isSelected ? '#f3f4f6' : '#f9fafb',
+                          cursor: 'pointer',
+                          padding: 0,
+                          transition: 'border-color 80ms, background 80ms, box-shadow 80ms',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          boxShadow: isSelected
+                            ? 'inset 0 0 0 1px #d1d5db, 0 0 0 2px rgba(107,114,128,0.18)'
+                            : 'none',
+                        }}
+                        aria-label={`${tile.shape} ${tile.color}${isSelected ? ' selecionado' : ''}`}
+                      >
+                        <img
+                          src={SHAPE_IMAGE[tile.shape][tile.color]}
+                          alt=""
+                          loading="eager"
+                          decoding="sync"
+                          style={{
+                            width: '62%',
+                            height: '62%',
+                            objectFit: 'contain',
+                            display: 'block',
+                            opacity: isSelected ? 0.55 : 1,
+                            transition: 'opacity 80ms',
+                          }}
+                          onError={(e) => {
+                            const img = e.currentTarget;
+                            img.style.display = 'none';
+                            const fb = img.nextElementSibling as HTMLElement | null;
+                            if (fb) fb.style.display = 'flex';
+                          }}
+                        />
+                        <div
+                          style={{
+                            display: 'none',
+                            width: '100%',
+                            height: '100%',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'absolute',
+                            inset: 0,
+                            opacity: isSelected ? 0.55 : 1,
+                          }}
+                        >
+                          <div style={getShapeFallbackStyle(tile.shape, tile.color)} />
+                        </div>
+                        {isSelected && (
+                          <div className="vsh-tile-selected-overlay" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {feedback && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      pointerEvents: 'none',
+                      borderRadius: 8,
+                      border: `3px solid ${feedback === 'mark' ? '#22c55e' : '#ef4444'}`,
+                      opacity: 0.5,
+                      transition: 'opacity 120ms',
+                    }}
+                  />
+                )}
+              </div>
+            </Card>
+
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <Button onClick={advanceRoundNow} style={{ height: '100%', minWidth: 100, fontSize: '18px', padding: '0 24px' }}>Avançar</Button>
             </div>
-          </Card>
+          </div>
         </div>
       )}
 
