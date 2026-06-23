@@ -102,42 +102,54 @@ export default function AcharOFaltandoEvaluationContainer() {
     setScaleResult(localScale);
 
     (async () => {
-      // 1. Tenta carregar do cache do Firestore
-      const cached = await loadReportFromFirestore(sessionId);
-      if (cached) {
-        setGeminiReport(cached);
-        const sessionSnap = await getDoc(doc(db, 'sessions', sessionId));
-        if (sessionSnap.exists()) {
-          setReportUrl(sessionSnap.data()?.reportUrl || null);
-        }
-        setLoaded(true);
-        return;
-      }
-
-      // 2. Dispara a orquestração do laudo Gemini
-      setLoaded('organizing');
-      let result: any = null;
       try {
-        result = await useAcharOFaltandoEvaluation(sessionId);
+        // 1. Tenta carregar do cache do Firestore
+        const cached = await loadReportFromFirestore(sessionId);
+        if (cached) {
+          setGeminiReport(cached);
+          try {
+            const sessionSnap = await getDoc(doc(db, 'sessions', sessionId));
+            if (sessionSnap.exists()) {
+              setReportUrl(sessionSnap.data()?.reportUrl || null);
+            }
+          } catch (err) {
+            if (import.meta.env.DEV) console.warn('[AcharOFaltandoEvaluationContainer] erro ao carregar reportUrl:', err);
+          }
+          setLoaded(true);
+          return;
+        }
+
+        // 2. Dispara a orquestração do laudo Gemini
+        setLoaded('organizing');
+        let result: any = null;
+        try {
+          result = await useAcharOFaltandoEvaluation(sessionId);
+        } catch (err) {
+          console.error('[AcharOFaltandoEvaluationContainer] erro hook:', err);
+        }
+
+        const uid = auth.currentUser?.uid;
+        if (result?.geminiReport && uid) {
+          await saveReportToFirestore(sessionId, uid, result.geminiReport);
+          setGeminiReport(result.geminiReport);
+        } else if (result?.geminiReport) {
+          setGeminiReport(result.geminiReport);
+        }
+
+        // Carrega o reportUrl após a gravação
+        try {
+          const sessionSnap = await getDoc(doc(db, 'sessions', sessionId));
+          if (sessionSnap.exists()) {
+            setReportUrl(sessionSnap.data()?.reportUrl || null);
+          }
+        } catch (err) {
+          if (import.meta.env.DEV) console.warn('[AcharOFaltandoEvaluationContainer] erro ao obter sessions após gravação:', err);
+        }
       } catch (err) {
-        console.error('[AcharOFaltandoEvaluationContainer] erro hook:', err);
+        console.error('[AcharOFaltandoEvaluationContainer] erro geral na orquestração:', err);
+      } finally {
+        setLoaded(true);
       }
-
-      const uid = auth.currentUser?.uid;
-      if (result?.geminiReport && uid) {
-        await saveReportToFirestore(sessionId, uid, result.geminiReport);
-        setGeminiReport(result.geminiReport);
-      } else if (result?.geminiReport) {
-        setGeminiReport(result.geminiReport);
-      }
-
-      // Carrega o reportUrl após a gravação
-      const sessionSnap = await getDoc(doc(db, 'sessions', sessionId));
-      if (sessionSnap.exists()) {
-        setReportUrl(sessionSnap.data()?.reportUrl || null);
-      }
-
-      setLoaded(true);
     })();
   }, [sessionId]);
 
