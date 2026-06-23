@@ -399,21 +399,75 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
 
   if (state.done) {
     return (
-      <Card>
-        <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
-          <div style={{ fontSize: 36 }}>🎉</div>
-          <h2 style={{ margin: 0 }}>Prática concluída!</h2>
-          <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>
-            Você já sabe como funciona. Agora é para valer!
-          </p>
-          <Button onClick={onFinish}>Iniciar Treino de Verdade →</Button>
+      <div style={{ display: 'grid', gap: 8 }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)',
+          color: '#eab308', padding: '6px 16px', borderRadius: '99px',
+          fontWeight: 'bold', fontSize: '12px', letterSpacing: '0.05em',
+          width: 'fit-content', margin: '0 auto 8px auto'
+        }}>
+          <span style={{ fontSize: '14px' }}>🚧</span> MODO DE PRÁTICA
         </div>
-      </Card>
+        <Card>
+          <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
+            <div style={{ fontSize: 36 }}>🎉</div>
+            <h2 style={{ margin: 0 }}>Prática concluída!</h2>
+            <div style={{ marginTop: '8px', marginBottom: '8px', padding: '16px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+              <p style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '12px' }}>
+                Fim do simulado. Você entendeu como funciona?
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Button onClick={onFinish} style={{ width: '100%' }}>
+                  Ir para o Treino de Atenção →
+                </Button>
+                <button
+                  onClick={() => {
+                    const shape = randomItem(SHAPES);
+                    const color = randomItem(COLORS);
+                    setState({
+                      round: 1,
+                      targetShape: shape,
+                      targetColor: color,
+                      tiles: buildSimTiles(shape, color),
+                      hits: 0,
+                      totalTargets: 3,
+                      done: false,
+                    });
+                  }}
+                  style={{
+                    width: '100%',
+                    fontSize: '13px',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--color-border)',
+                    background: 'transparent',
+                    color: 'var(--color-text)',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  Repetir o Simulado
+                </button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div style={{ display: 'grid', gap: 8 }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+        background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)',
+        color: '#eab308', padding: '6px 16px', borderRadius: '99px',
+        fontWeight: 'bold', fontSize: '12px', letterSpacing: '0.05em',
+        width: 'fit-content', margin: '0 auto 8px auto'
+      }}>
+        <span style={{ fontSize: '14px' }}>🚧</span> MODO DE PRÁTICA
+      </div>
       <Card>
         <div style={{ display: 'grid', gap: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

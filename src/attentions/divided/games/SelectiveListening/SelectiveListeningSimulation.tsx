@@ -192,6 +192,17 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
 
   return (
     <div style={{ maxWidth: '480px', margin: '0 auto', padding: 'var(--space-4)' }}>
+      {/* BADGE DE MODO DE PRÁTICA */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+        background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)',
+        color: '#eab308', padding: '6px 16px', borderRadius: '99px',
+        fontWeight: 'bold', fontSize: '12px', letterSpacing: '0.05em',
+        width: 'fit-content', margin: '0 auto 24px auto'
+      }}>
+        <span style={{ fontSize: '14px' }}>🚧</span> MODO DE PRÁTICA
+      </div>
+
       <AnimatePresence mode="wait">
         {/* ── STEP 1 — Duas vozes concorrentes ── */}
         {step === 1 && (
@@ -496,13 +507,31 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 </div>
               </div>
 
-              <Button
-                variant="primary"
-                onClick={advance}
-                style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
-              >
-                Começar Treino Real!
-              </Button>
+              <div style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-4)', padding: '16px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+                <p style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '12px' }}>
+                  Fim do simulado. Você entendeu como funciona?
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <Button
+                    variant="primary"
+                    onClick={advance}
+                    style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
+                  >
+                    Ir para o Treino de Atenção →
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setStep(1);
+                      setAnswer('');
+                      setRevealed(false);
+                    }}
+                    style={{ width: '100%', fontSize: '13px' }}
+                  >
+                    Repetir o Simulado
+                  </Button>
+                </div>
+              </div>
             </Card>
           </motion.div>
         )}
