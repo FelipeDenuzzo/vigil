@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 import type { MazeAggregatedMetrics } from '../../../../assessment/longMazes/types';
+import { ReportDisclaimer } from '../../../../shared/components/ReportDisclaimer';
 
 type Tab = 'ludic' | 'analysis' | 'phases';
 
@@ -11,8 +12,7 @@ const LEVEL_COLOR: Record<string, string> = {
   'importante':'#f08080',
 };
 
-const DISCLAIMER =
-  '⚠️ Este resultado é baseado em uma tarefa de treino e não substitui avaliação profissional. Em caso de dúvidas, consulte um profissional de saúde mental.';
+
 
 export function LongMazesReportPanel({
   report,
@@ -35,6 +35,8 @@ export function LongMazesReportPanel({
 
   return (
     <div style={s.wrapper}>
+      {/* ── Disclaimer fixo — sempre visível, independente da aba ── */}
+      <ReportDisclaimer />
       <div style={s.header}>
         <p style={s.title}>
           🧠 Avaliação IA
@@ -88,7 +90,6 @@ export function LongMazesReportPanel({
               </>
             )}
             <div style={s.divider} />
-            <p style={s.disclaimerBox}>{DISCLAIMER}</p>
           </>
         )}
 
@@ -211,10 +212,7 @@ const s: Record<string, any> = {
     border: `1px solid ${LEVEL_COLOR[level] ?? '#e8e9f0'}`,
     marginLeft: 8,
   }),
-  disclaimerBox: {
-    fontSize: 12, color: '#8b8fa8', lineHeight: 1.6,
-    padding: '8px 2px', textAlign: 'center',
-  },
+
   phaseCard: {
     background: 'rgba(255,255,255,0.03)',
     border: '1px solid rgba(255,255,255,0.07)',

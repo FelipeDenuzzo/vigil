@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
+import { ReportDisclaimer } from '../../../../shared/components/ReportDisclaimer';
 
 type Tab = 'ludic' | 'analysis';
 
@@ -9,9 +10,6 @@ const LEVEL_COLOR: Record<string, string> = {
   'moderado':  '#f5a060',
   'importante':'#f08080',
 };
-
-const DISCLAIMER =
-  '⚠️ Este resultado é baseado em uma tarefa de treino e não substitui avaliação profissional. Em caso de dúvidas, consulte um profissional de saúde mental.';
 
 const s = {
   wrapper: {
@@ -177,13 +175,6 @@ const s = {
     marginLeft: 8,
   }),
 
-  disclaimerBox: {
-    fontSize: 12,
-    color: '#8b8fa8',
-    lineHeight: 1.6,
-    padding: '8px 2px',
-    textAlign: 'center' as const,
-  } as const,
 };
 
 const LEVEL_EMOJI: Record<string, string> = {
@@ -227,6 +218,8 @@ export function SelectiveListeningReportPanel({ report }: { report: EvaluationRe
 
   return (
     <div style={s.wrapper}>
+      {/* ── Disclaimer fixo — sempre visível, independente da aba ── */}
+      <ReportDisclaimer />
       <div style={s.header}>
         <p style={s.title}>
           🤖 Avaliação IA
@@ -297,7 +290,6 @@ export function SelectiveListeningReportPanel({ report }: { report: EvaluationRe
 
             <div style={s.divider} />
 
-            <p style={s.disclaimerBox}>{DISCLAIMER}</p>
           </>
         )}
       </div>
