@@ -14,3 +14,7 @@ nova-chave.json
 *key.json
 gha-creds-*.json
 
+# VS Code settings
+.vscode/
+
+
