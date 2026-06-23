@@ -264,6 +264,34 @@ Isso é diferente de inventar código aleatório — é mais perigoso porque tem
 
 ---
 
+### 10 — Escapes Unicode em arquivos TSX/JSX devem ser caracteres literais, não sequências de escape
+
+Em arquivos `.tsx` e `.jsx`, strings que contêm sequências de escape Unicode no formato `\uXXXX` (ex: `\u00e7`, `\uD83C\uDFAF`) dentro de literais JSX **não são interpretadas pelo parser** — elas aparecem literalmente na tela para o usuário como texto bruto (`Ca\u00e7a ao Alvo`, `\uD83C\uDFAF`).
+
+Isso ocorre quando o código é gerado ou editado por ferramentas que produzem escapes JavaScript em vez de salvar o caractere UTF-8 diretamente no arquivo.
+
+**Exemplos do problema:**
+
+```tsx
+// ❌ ERRADO — aparece literal na tela
+<h2>Ca\u00e7a ao Alvo</h2>
+<div>\uD83C\uDFAF</div>
+<p>Voc\u00ea ver\u00e1 uma grade...</p>
+```
+
+```tsx
+// ✅ CORRETO — caractere UTF-8 direto no arquivo
+<h2>Caça ao Alvo</h2>
+<div>🎯</div>
+<p>Você verá uma grade...</p>
+```
+
+O problema se manifesta principalmente em emojis e caracteres acentuados do português (ç, ã, é, ê, í, ó, ú) quando o arquivo é gerado ou modificado por agentes de IA ou ferramentas que serializam strings com escapes.
+
+**Regra:** todo arquivo `.tsx` e `.jsx` deve conter **caracteres UTF-8 literais** — nunca sequências `\uXXXX` dentro de JSX. Ao revisar código gerado automaticamente, verificar se os textos visíveis ao usuário estão em UTF-8 direto antes de fazer commit.
+
+---
+
 ### Checklist de conformidade — aplicar antes de criar qualquer novo artefato
 
 - [ ] A métrica tem diretriz científica aprovada pelo responsável do produto?
@@ -274,3 +302,4 @@ Isso é diferente de inventar código aleatório — é mais perigoso porque tem
 - [ ] Os campos opcionais têm dono e condição de preenchimento definidos?
 - [ ] A arquitetura documentada foi consultada antes de começar?
 - [ ] Cada campo novo foi justificado por diretriz científica própria deste treino — não por analogia com outro?
+- [ ] Os textos visíveis ao usuário em arquivos `.tsx`/`.jsx` estão em UTF-8 literal — sem sequências `\uXXXX`?
