@@ -15,6 +15,14 @@ export interface AcharOFaltandoMetrics {
     falsePositives: number;
     responseTimeMs: number;
   }>;
+  speedStyle: 'efficient' | 'impulsive' | 'slow' | 'disorganized';
+  hasFatigue: boolean;
+  spatialAsymmetry: {
+    leftOmissions: number;
+    rightOmissions: number;
+    asymmetryRatio: number;
+    dominant: 'left' | 'right' | 'symmetric' | 'insufficient-data';
+  };
 }
 
 export interface AcharOFaltandoScaleResult {

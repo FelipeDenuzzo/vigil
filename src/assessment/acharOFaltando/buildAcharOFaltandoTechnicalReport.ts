@@ -15,6 +15,12 @@ export interface AcharOFaltandoEvaluatorInput {
   averageResponseMs?: number;
   accuracyNote?: string;
   speedNote?: string;
+  speedStyle?: 'efficient' | 'impulsive' | 'slow' | 'disorganized';
+  hasFatigue?: boolean;
+  leftOmissions?: number;
+  rightOmissions?: number;
+  asymmetryRatio?: number;
+  spatialAsymmetryDominant?: 'left' | 'right' | 'symmetric' | 'insufficient-data';
 }
 
 /**
@@ -46,5 +52,11 @@ export function buildAcharOFaltandoTechnicalReport(
     averageResponseMs: Math.round(metrics.averageResponseMs),
     accuracyNote: scaleResult.accuracyNote,
     speedNote: scaleResult.speedNote,
+    speedStyle: metrics.speedStyle,
+    hasFatigue: metrics.hasFatigue,
+    leftOmissions: metrics.spatialAsymmetry.leftOmissions,
+    rightOmissions: metrics.spatialAsymmetry.rightOmissions,
+    asymmetryRatio: Number(metrics.spatialAsymmetry.asymmetryRatio.toFixed(2)),
+    spatialAsymmetryDominant: metrics.spatialAsymmetry.dominant,
   };
 }
