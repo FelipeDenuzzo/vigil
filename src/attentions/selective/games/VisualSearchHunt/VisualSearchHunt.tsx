@@ -18,7 +18,7 @@ import type {
 type Shape = 'circle' | 'square' | 'triangle';
 type Color = 'red' | 'blue' | 'green' | 'yellow';
 type SearchMode = 'popout' | 'mixed' | 'conjunction' | 'hard-conjunction';
-type RoundStatus = 'instruction' | 'playing' | 'won' | 'lost' | 'finished';
+type RoundStatus = 'intro' | 'simulator' | 'instruction' | 'playing' | 'won' | 'lost' | 'finished';
 type ClickAction = 'mark' | 'unmark';
 
 type Tile = {
@@ -60,11 +60,12 @@ const SHAPES: Shape[] = ['circle', 'square', 'triangle'];
 const COLORS: Color[] = ['red', 'blue', 'green', 'yellow'];
 const FIXED_TIME_SECONDS = 30;
 const MAX_PHASES = 10;
+const SIMULATOR_ROUNDS = 3;
 
 const SHAPE_LABEL: Record<Shape, string> = {
-  circle: 'círculos',
+  circle: 'c\u00edrculos',
   square: 'quadrados',
-  triangle: 'triângulos',
+  triangle: 'tri\u00e2ngulos',
 };
 
 const COLOR_LABEL: Record<Color, string> = {
@@ -113,7 +114,7 @@ if (typeof document !== 'undefined' && !document.getElementById(TARGET_FADE_STYL
       to   { opacity: 1; }
     }
     .vsh-target-fade {
-      animation: vshTargetFadeIn 600ms ease 120ms both;
+      animation: vshTargetFadeIn 800ms ease 350ms both;
     }
     .vsh-tile-selected-overlay {
       position: absolute;
@@ -296,6 +297,251 @@ function analyzeVisualSearchOrganization(clickLog: VisualSearchClickLog[], gridS
   return result;
 }
 
+// ─── Simulator ──────────────────────────────────────────────────────────────
+
+type SimTile = {
+  id: string;
+  shape: Shape;
+  color: Color;
+  isTarget: boolean;
+  feedback: 'correct' | 'wrong' | null;
+};
+
+function buildSimTiles(targetShape: Shape, targetColor: Color): SimTile[] {
+  const gridSize = 4;
+  const totalCells = gridSize * gridSize;
+  const totalTargets = 3;
+  const otherShapes = SHAPES.filter((s) => s !== targetShape);
+  const otherColors = COLORS.filter((c) => c !== targetColor);
+
+  const targets: SimTile[] = Array.from({ length: totalTargets }, (_, i) => ({
+    id: `sim-target-${i}`,
+    shape: targetShape,
+    color: targetColor,
+    isTarget: true,
+    feedback: null,
+  }));
+
+  const distractors: SimTile[] = Array.from({ length: totalCells - totalTargets }, (_, i) => ({
+    id: `sim-dist-${i}`,
+    shape: randomItem(i % 2 === 0 ? otherShapes : SHAPES),
+    color: randomItem(i % 2 === 0 ? COLORS : otherColors),
+    isTarget: false,
+    feedback: null,
+  }));
+
+  return shuffle([...targets, ...distractors]);
+}
+
+type SimState = {
+  round: number;
+  targetShape: Shape;
+  targetColor: Color;
+  tiles: SimTile[];
+  hits: number;
+  totalTargets: number;
+  done: boolean;
+};
+
+function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
+  const [state, setState] = useState<SimState>(() => {
+    const shape = randomItem(SHAPES);
+    const color = randomItem(COLORS);
+    return {
+      round: 1,
+      targetShape: shape,
+      targetColor: color,
+      tiles: buildSimTiles(shape, color),
+      hits: 0,
+      totalTargets: 3,
+      done: false,
+    };
+  });
+
+  const [roundMsg, setRoundMsg] = useState<string | null>(null);
+
+  function handleSimClick(tile: SimTile) {
+    if (state.done) return;
+    if (tile.feedback !== null) return;
+
+    const fb: 'correct' | 'wrong' = tile.isTarget ? 'correct' : 'wrong';
+    const newTiles = state.tiles.map((t) =>
+      t.id === tile.id ? { ...t, feedback: fb } : t,
+    );
+    const newHits = fb === 'correct' ? state.hits + 1 : state.hits;
+    const allFound = newHits >= state.totalTargets;
+
+    setState((prev) => ({ ...prev, tiles: newTiles, hits: newHits }));
+
+    if (allFound) {
+      const isLast = state.round >= SIMULATOR_ROUNDS;
+      setRoundMsg(isLast ? null : `\u2705 Todos encontrados! Pr\u00f3xima rodada...`);
+      setTimeout(() => {
+        setRoundMsg(null);
+        if (isLast) {
+          setState((prev) => ({ ...prev, done: true }));
+        } else {
+          const nextShape = randomItem(SHAPES);
+          const nextColor = randomItem(COLORS);
+          setState({
+            round: state.round + 1,
+            targetShape: nextShape,
+            targetColor: nextColor,
+            tiles: buildSimTiles(nextShape, nextColor),
+            hits: 0,
+            totalTargets: 3,
+            done: false,
+          });
+        }
+      }, 1200);
+    }
+  }
+
+  if (state.done) {
+    return (
+      <Card>
+        <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
+          <div style={{ fontSize: 36 }}>\uD83C\uDF89</div>
+          <h2 style={{ margin: 0 }}>Pr\u00e1tica conclu\u00edda!</h2>
+          <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>
+            Voc\u00ea j\u00e1 sabe como funciona. Agora \u00e9 para valer!
+          </p>
+          <Button onClick={onFinish}>Iniciar Treino de Verdade \u2192</Button>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: 8 }}>
+      <Card>
+        <div style={{ display: 'grid', gap: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+              Pr\u00e1tica {state.round}/{SIMULATOR_ROUNDS}
+            </span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-primary)' }}>
+              Sem timer \u2014 sem press\u00e3o!
+            </span>
+          </div>
+          <div style={{ textAlign: 'center', fontWeight: 700 }}>
+            Encontre os{' '}
+            <span style={{ textTransform: 'uppercase' }}>
+              {SHAPE_LABEL[state.targetShape]} {COLOR_LABEL[state.targetColor]}
+            </span>
+          </div>
+          <div
+            key={`sim-target-${state.round}`}
+            className="vsh-target-fade"
+            style={{ display: 'flex', justifyContent: 'center' }}
+          >
+            <div style={{ width: 70, height: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', borderRadius: 10 }}>
+              <img
+                src={SHAPE_IMAGE[state.targetShape][state.targetColor]}
+                alt={`${state.targetShape} ${state.targetColor}`}
+                loading="eager" decoding="sync"
+                style={{ width: 48, height: 48, objectFit: 'contain' }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              />
+            </div>
+          </div>
+          {roundMsg && (
+            <div style={{ textAlign: 'center', fontSize: 14, color: '#22c55e', fontWeight: 600 }}>{roundMsg}</div>
+          )}
+        </div>
+      </Card>
+      <Card>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+            gap: 6,
+            padding: 3,
+            aspectRatio: '1 / 1',
+          }}
+        >
+          {state.tiles.map((tile) => {
+            const fb = tile.feedback;
+            return (
+              <button
+                key={tile.id}
+                onClick={() => handleSimClick(tile)}
+                style={{
+                  aspectRatio: '1',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 6,
+                  border: fb === 'correct'
+                    ? '3px solid #22c55e'
+                    : fb === 'wrong'
+                    ? '3px solid #ef4444'
+                    : '2px solid #e5e7eb',
+                  background: fb === 'correct'
+                    ? 'rgba(34,197,94,0.1)'
+                    : fb === 'wrong'
+                    ? 'rgba(239,68,68,0.08)'
+                    : '#f9fafb',
+                  cursor: fb !== null ? 'default' : 'pointer',
+                  padding: 0,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'border-color 120ms, background 120ms',
+                }}
+                aria-label={`${tile.shape} ${tile.color}`}
+              >
+                <img
+                  src={SHAPE_IMAGE[tile.shape][tile.color]}
+                  alt=""
+                  loading="eager"
+                  decoding="sync"
+                  style={{ width: '62%', height: '62%', objectFit: 'contain', display: 'block' }}
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+                {fb === 'correct' && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, pointerEvents: 'none' }}>\u2705</div>
+                )}
+                {fb === 'wrong' && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, pointerEvents: 'none' }}>\u274c</div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Intro ───────────────────────────────────────────────────────────────────
+
+function IntroScreen({ onSimulator, onSkip }: { onSimulator: () => void; onSkip: () => void }) {
+  return (
+    <Card>
+      <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
+        <div style={{ fontSize: 40 }}>\uD83C\uDFAF</div>
+        <h2 style={{ margin: 0 }}>Ca\u00e7a ao Alvo</h2>
+        <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.6, margin: 0 }}>
+          Voc\u00ea ver\u00e1 uma grade com figuras coloridas. Encontre e clique em{' '}
+          <strong>todas as figuras que correspondem ao alvo</strong> mostrado no topo.
+          O timer come\u00e7a quando voc\u00ea iniciar cada fase.
+        </p>
+        <div style={{ display: 'grid', gap: 8 }}>
+          <Button onClick={onSimulator}>Praticar antes (recomendado)</Button>
+          <button
+            onClick={onSkip}
+            style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            Pular e come\u00e7ar direto
+          </button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
 export default function VisualSearchHunt({
   onCorrectSound,
   onErrorSound,
@@ -305,7 +551,7 @@ export default function VisualSearchHunt({
 
   const [level, setLevel] = useState(1);
   const [roundIndex, setRoundIndex] = useState(1);
-  const [status, setStatus] = useState<RoundStatus>('instruction');
+  const [status, setStatus] = useState<RoundStatus>('intro');
   const [targetShape, setTargetShape] = useState<Shape>('triangle');
   const [targetColor, setTargetColor] = useState<Color>('red');
   const [tiles, setTiles] = useState<Tile[]>([]);
@@ -324,7 +570,6 @@ export default function VisualSearchHunt({
   const roundGeneratedRef = useRef(false);
   const generateRoundRef = useRef<(() => void) | null>(null);
 
-  // Resolve o uid uma vez e mantém em ref para evitar leituras repetidas
   const uidRef = useRef<string | undefined>(auth.currentUser?.uid);
   useEffect(() => { uidRef.current = auth.currentUser?.uid; }, []);
 
@@ -604,7 +849,7 @@ export default function VisualSearchHunt({
   const restartTraining = useCallback(() => {
     try { markSessionAbandoned(); } catch (e) {}
     clearTimer();
-    setLevel(1); setRoundIndex(1); setStatus('instruction');
+    setLevel(1); setRoundIndex(1); setStatus('intro');
     setTiles([]); setRoundResults([]); setRemainingTime(FIXED_TIME_SECONDS);
     clickLogRef.current = []; roundStartRef.current = 0; sessionLogRef.current = null;
     roundGeneratedRef.current = false;
@@ -633,14 +878,25 @@ export default function VisualSearchHunt({
   return (
     <div style={{ maxWidth: 460, margin: '0 auto', padding: 12 }}>
 
+      {status === 'intro' && (
+        <IntroScreen
+          onSimulator={() => setStatus('simulator')}
+          onSkip={() => setStatus('instruction')}
+        />
+      )}
+
+      {status === 'simulator' && (
+        <SimulatorScreen onFinish={() => setStatus('instruction')} />
+      )}
+
       {status === 'instruction' && (
         <Card>
           <div style={{ display: 'grid', gap: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button onClick={startRound}>{`Começar — Fase ${roundIndex}`}</Button>
+              <Button onClick={startRound}>{`Come\u00e7ar \u2014 Fase ${roundIndex}`}</Button>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
+              <h2 style={{ margin: 0 }}>Ca\u00e7a ao Alvo</h2>
               <p style={{ marginTop: 8, marginBottom: 0 }}>
                 Encontre todos os{' '}
                 <span style={{ textTransform: 'uppercase', fontWeight: 700 }}>
@@ -683,7 +939,7 @@ export default function VisualSearchHunt({
               <div style={{ height: 6, width: '100%', borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${Math.max(0, (remainingTime / FIXED_TIME_SECONDS) * 100)}%`, background: '#111827', transition: 'width 100ms linear' }} />
               </div>
-              <div><Button onClick={advanceRoundNow} style={{ width: '100%' }}>Avançar</Button></div>
+              <div><Button onClick={advanceRoundNow} style={{ width: '100%' }}>Avan\u00e7ar</Button></div>
             </div>
           </Card>
           <Card>
@@ -729,8 +985,8 @@ export default function VisualSearchHunt({
                       <img
                         src={SHAPE_IMAGE[tile.shape][tile.color]}
                         alt=""
-                        loading="lazy"
-                        decoding="async"
+                        loading="eager"
+                        decoding="sync"
                         style={{
                           width: '62%',
                           height: '62%',
@@ -790,18 +1046,18 @@ export default function VisualSearchHunt({
         return (
           <Card>
             <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
-              <div style={{ fontSize: 40 }}>{status === 'won' ? '🎯' : '⏱️'}</div>
-              <h2 style={{ margin: 0 }}>{status === 'won' ? 'Fase concluída!' : 'Tempo esgotado'}</h2>
+              <div style={{ fontSize: 40 }}>{status === 'won' ? '\uD83C\uDFAF' : '\u23F1\uFE0F'}</div>
+              <h2 style={{ margin: 0 }}>{status === 'won' ? 'Fase conclu\u00edda!' : 'Tempo esgotado'}</h2>
               {last && (
                 <div style={{ display: 'grid', gap: 6, fontSize: 14 }}>
-                  <div>✅ Acertos: <strong>{last.hits}</strong> / {last.totalTargets}</div>
-                  <div>❌ Erros: <strong>{last.errors}</strong></div>
-                  {last.missedTargets > 0 && <div>👁️ Perdidos: <strong>{last.missedTargets}</strong></div>}
+                  <div>\u2705 Acertos: <strong>{last.hits}</strong> / {last.totalTargets}</div>
+                  <div>\u274c Erros: <strong>{last.errors}</strong></div>
+                  {last.missedTargets > 0 && <div>\uD83D\uDC41\uFE0F Perdidos: <strong>{last.missedTargets}</strong></div>}
                 </div>
               )}
               {roundIndex < MAX_PHASES ? (
                 <Button onClick={goToNextRound}>
-                  {`Fase ${nextPhaseNumber} →`}
+                  {`Fase ${nextPhaseNumber} \u2192`}
                 </Button>
               ) : (
                 <Button onClick={() => finishSession(roundResults)}>Ver resultado final</Button>
