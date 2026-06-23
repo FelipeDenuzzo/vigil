@@ -68,7 +68,7 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
               <h2 style={{ color: 'var(--color-primary)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                 Como funciona o treino
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#fff', fontSize: '14px', lineHeight: '1.6' }}>
                 Sua tarefa é comparar dois conjuntos de símbolos e encontrar o único elemento que está diferente entre eles.
               </p>
               
@@ -106,7 +106,7 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
                 <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-primary)' }}>
                   Encontre a diferença!
                 </h3>
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '4px' }}>
+                <p style={{ color: '#fff', fontSize: '13px', marginTop: '4px' }}>
                   Compare a Imagem A com a Imagem B. Clique na célula diferente na **Imagem B**.
                 </p>
               </div>
@@ -115,7 +115,7 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 {/* Grade A */}
                 <div>
-                  <p style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-muted)' }}>
+                  <p style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, marginBottom: '6px', color: '#fff' }}>
                     Imagem A (Referência)
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', border: '1px solid var(--color-border)', padding: '6px', borderRadius: '6px', background: '#ffffff' }}>
@@ -216,7 +216,7 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
                 Você entendeu como funciona?
               </h2>
 
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', lineHeight: '1.6', marginBottom: '8px' }}>
+              <p style={{ color: '#fff', fontSize: '14px', lineHeight: '1.6', marginBottom: '8px' }}>
                 O escaner e as respostas rápidas garantirão um melhor resultado!
               </p>
               
