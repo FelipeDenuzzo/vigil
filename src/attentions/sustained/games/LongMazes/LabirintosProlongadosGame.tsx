@@ -239,10 +239,7 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
     <div style={css.screen}>
       <p style={css.title}>🧩 Labirintos</p>
       <p style={css.sub}>Treino de atenção sustentada — Fase {levelIdx + 1} de {LONG_MAZE_LEVELS.length}</p>
-      <div style={css.infoBox}>
-        <span>⏱ {level.timeLimitSec}s</span><span>💹 {level.cols}×{level.rows}</span><span>📈 {level.name}</span>
-      </div>
-      <p style={css.hint}>Use as setas do teclado ou o D-pad abaixo. No celular, deslize na tela.</p>
+      <p style={css.hint}>Use as setas do teclado ou os controles ao lado. No celular, deslize na tela.</p>
       <button style={css.primaryBtn} onClick={startGame}>Iniciar Fase {levelIdx + 1}</button>
       {onClose && <button style={css.ghostBtn} onClick={onClose}>Voltar</button>}
     </div>
@@ -277,22 +274,24 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
         <span style={{ color: '#f08080' }}>↩ {revisits}</span>
         <span style={{ color: '#8b8fa8' }}>Fase {levelIdx + 1}/{LONG_MAZE_LEVELS.length}</span>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}
-        onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        <canvas ref={canvasRef} width={cols * CELL} height={rows * CELL}
-          style={{ display: 'block', touchAction: 'none', maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }} />
-      </div>
-      <div style={css.dpad}>
-        <div style={css.dpadRow}>
-          <button style={dpadStyle('up')} onClick={() => pressDpad('up')}   ><ArrowUp /></button>
+      <div style={{ display: 'flex', gap: 24, alignItems: 'center', justifyContent: 'center', width: '100%', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'center' }}
+          onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+          <canvas ref={canvasRef} width={cols * CELL} height={rows * CELL}
+            style={{ display: 'block', touchAction: 'none', maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }} />
         </div>
-        <div style={css.dpadRow}>
-          <button style={dpadStyle('left')} onClick={() => pressDpad('left')} ><ArrowLeft /></button>
-          <div style={{ width: 52 }} />
-          <button style={dpadStyle('right')} onClick={() => pressDpad('right')}><ArrowRight /></button>
-        </div>
-        <div style={css.dpadRow}>
-          <button style={dpadStyle('down')} onClick={() => pressDpad('down')} ><ArrowDown /></button>
+        <div style={css.dpad}>
+          <div style={css.dpadRow}>
+            <button style={dpadStyle('up')} onClick={() => pressDpad('up')}   ><ArrowUp /></button>
+          </div>
+          <div style={css.dpadRow}>
+            <button style={dpadStyle('left')} onClick={() => pressDpad('left')} ><ArrowLeft /></button>
+            <div style={{ width: 52 }} />
+            <button style={dpadStyle('right')} onClick={() => pressDpad('right')}><ArrowRight /></button>
+          </div>
+          <div style={css.dpadRow}>
+            <button style={dpadStyle('down')} onClick={() => pressDpad('down')} ><ArrowDown /></button>
+          </div>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
