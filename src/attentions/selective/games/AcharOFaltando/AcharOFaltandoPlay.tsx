@@ -232,6 +232,7 @@ export default function AcharOFaltandoPlay() {
             border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-sm)',
             padding: 4,
+            background: '#ffffff',
           }}
         >
           {items.map((item, idx) => {
@@ -253,7 +254,7 @@ export default function AcharOFaltandoPlay() {
                     ? 'var(--color-primary)'
                     : isDiff
                     ? 'rgba(255,100,100,0.2)'
-                    : 'var(--color-surface-2)',
+                    : '#ffffff',
                   border: isMarked || isDiff ? '2px solid black' : '1px solid var(--color-border)',
                   borderRadius: 4,
                   cursor: config.responseMode === 'click-difference' ? 'pointer' : 'default',
