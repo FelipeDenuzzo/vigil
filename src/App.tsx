@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './lib/AuthContext';
 import ProtectedRoute from './lib/ProtectedRoute';
+import { ComingSoon } from './pages/ComingSoon';
 import { Home } from './pages/Home';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
@@ -32,7 +33,8 @@ export default function App() {
       <HashRouter>
         <Routes>
           {/* Públicas */}
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<ComingSoon />} />
+          <Route path="/sobre" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/privacidade" element={<PoliticaPrivacidade />} />
