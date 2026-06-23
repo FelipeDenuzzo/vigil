@@ -23,6 +23,7 @@ import SelectiveListeningResult from './attentions/divided/games/SelectiveListen
 import { AguardandoAcesso } from './pages/AguardandoAcesso';
 import { Admin } from './pages/Admin';
 import { NotFound } from './pages/NotFound';
+import { OnboardingFlow } from './onboarding/OnboardingFlow';
 import './shared/base.css';
 
 export default function App() {
@@ -38,6 +39,16 @@ export default function App() {
 
           {/* Autenticado mas aguardando aprovação */}
           <Route path="/aguardando-acesso" element={<AguardandoAcesso />} />
+
+          {/* Onboarding */}
+          <Route
+            path="/onboarding"
+            element={
+              <ProtectedRoute skipOnboardingGate>
+                <OnboardingFlow />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Requer login + aprovação */}
           <Route path="/treinar" element={<ProtectedRoute><SelectAttention /></ProtectedRoute>} />

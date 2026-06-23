@@ -24,6 +24,12 @@ service cloud.firestore {
 
       // Atualização: apenas admin (aprovar, bloquear, promover)
       allow update: if isAdmin();
+
+      // ← ADICIONADO: usuário grava apenas baseline e onboardingCompleted no próprio doc
+      allow update: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['baseline', 'onboardingCompleted']);
     }
 
     // ── sessions ───────────────────────────────────────────────────────────────

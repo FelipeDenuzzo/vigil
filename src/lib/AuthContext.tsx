@@ -13,7 +13,8 @@ type AuthContextType = {
   loading: boolean;
   accessStatus: AccessStatus | null;
   isAdmin: boolean;
-  displayName: string | null; // ← ADICIONADO
+  displayName: string | null;
+  onboardingCompleted: boolean; // ← ADICIONADO
   logout: () => Promise<void>;
   refreshAccess: () => Promise<void>;
 };
@@ -23,27 +24,32 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   accessStatus: null,
   isAdmin: false,
-  displayName: null, // ← ADICIONADO
+  displayName: null,
+  onboardingCompleted: false, // ← ADICIONADO
   logout: async () => {},
   refreshAccess: async () => {},
 });
 
 async function fetchUserProfile(
   uid: string
-): Promise<{ accessStatus: AccessStatus; isAdmin: boolean }> {
+): Promise<{ accessStatus: AccessStatus; isAdmin: boolean; onboardingCompleted: boolean }> {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
     if (!snap.exists()) {
-      return { accessStatus: 'pending', isAdmin: false };
+      return { accessStatus: 'pending', isAdmin: false, onboardingCompleted: false };
     }
     const data = snap.data();
     const accessStatus: AccessStatus =
       data?.accessStatus === 'approved' ? 'approved'
       : data?.accessStatus === 'blocked' ? 'blocked'
       : 'pending';
-    return { accessStatus, isAdmin: data?.role === 'admin' };
+    return {
+      accessStatus,
+      isAdmin: data?.role === 'admin',
+      onboardingCompleted: data?.onboardingCompleted === true,
+    };
   } catch {
-    return { accessStatus: 'pending', isAdmin: false };
+    return { accessStatus: 'pending', isAdmin: false, onboardingCompleted: false };
   }
 }
 
@@ -63,12 +69,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading,      setLoading]      = useState(true);
   const [accessStatus, setAccessStatus] = useState<AccessStatus | null>(null);
   const [isAdmin,      setIsAdmin]      = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false); // ← ADICIONADO
   const prevUidRef = useRef<string | null>(null);
 
   async function loadProfile(uid: string) {
     const profile = await fetchUserProfile(uid);
     setAccessStatus(profile.accessStatus);
     setIsAdmin(profile.isAdmin);
+    setOnboardingCompleted(profile.onboardingCompleted); // ← ADICIONADO
   }
 
   useEffect(() => {
@@ -109,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const displayName = user ? resolveDisplayName(user) : null;
 
   return (
-    <AuthContext.Provider value={{ user, loading, accessStatus, isAdmin, displayName, logout, refreshAccess }}>
+    <AuthContext.Provider value={{ user, loading, accessStatus, isAdmin, displayName, onboardingCompleted, logout, refreshAccess }}>
       {!loading && children}
     </AuthContext.Provider>
   );
