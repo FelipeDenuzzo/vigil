@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import db from '../../../../lib/firebase';
+import db, { auth } from '../../../../lib/firebase';
 import { useMentalVaultEvaluation } from './useMentalVaultEvaluation';
 import { MentalVaultEvaluationScreen } from './MentalVaultEvaluationScreen';
 import type { EvaluationReport as GeminiReport } from '../../../../lib/evaluatorClient';
@@ -12,10 +12,10 @@ type LoadedState = false | 'organizing' | true;
 
 const RETRYABLE_CODES = new Set(['unavailable', 'permission-denied', 'resource-exhausted']);
 
-async function saveReportToFirestore(sessionId: string, report: GeminiReport): Promise<void> {
+async function saveReportToFirestore(sessionId: string, uid: string, report: GeminiReport): Promise<void> {
   try {
     const ref = doc(db, 'sessionReports', sessionId);
-    await setDoc(ref, { geminiReport: report, sessionId, savedAt: serverTimestamp() }, { merge: true });
+    await setDoc(ref, { uid, geminiReport: report, sessionId, savedAt: serverTimestamp() }, { merge: true });
   } catch (err) {
     console.warn('[MentalVault] Falha ao salvar relatório no Firestore:', err);
   }
@@ -72,6 +72,7 @@ export function MentalVaultEvaluationContainer({ sessionId: propSessionId, start
     setGeminiReport(undefined);
 
     (async () => {
+      const uid = auth.currentUser?.uid;
       // 1️⃣ Cache no Firestore
       const cached = await loadReportFromFirestore(sessionId);
       if (cached) {
@@ -98,8 +99,8 @@ export function MentalVaultEvaluationContainer({ sessionId: propSessionId, start
       // 4️⃣ IA respondeu — organiza + salva
       setLoaded('organizing');
 
-      if (result?.geminiReport) {
-        await saveReportToFirestore(sessionId, result.geminiReport);
+      if (result?.geminiReport && uid) {
+        await saveReportToFirestore(sessionId, uid, result.geminiReport);
         setGeminiReport(result.geminiReport);
       }
 
