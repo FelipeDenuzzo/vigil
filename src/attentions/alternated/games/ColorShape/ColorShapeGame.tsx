@@ -5,7 +5,6 @@ import {
   FIXATION_MS, MAX_RESPONSE_MS, ITI_MS,
 } from './constants';
 import { buildPureTrials, buildMixedTrials, isCorrect } from './logic';
-import { useColorShapeEvaluation } from './useColorShapeEvaluation';
 import { persistColorShapeLog } from './ColorShapeEvaluationContainer';
 import type { TrialConfig, TrialResult, ColorShapeSessionLog, RuleType, ShapeType, ColorName } from './types';
 
@@ -212,9 +211,10 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
     };
     // Persiste no sessionStorage para a rota /resultado funcionar após refresh
     try { persistColorShapeLog(log); } catch { /* silencioso */ }
-    useColorShapeEvaluation(log)
-      .then(() => { setEvaluating(false); onComplete?.(log); })
-      .catch(() => { setEvaluating(false); onComplete?.(log); });
+    
+    // Entrega o log imediatamente; o Container (ColorShapeEvaluationContainer) cuidará de chamar a IA
+    // e de mostrar a tela de carregamento padronizada com a animação.
+    onComplete?.(log);
   }, [sessionId, onComplete]);
 
   const advanceTrial = useCallback((
