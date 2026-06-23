@@ -239,7 +239,7 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
     <div style={css.screen}>
       <p style={css.title}>🧩 Labirintos</p>
       <p style={css.sub}>Treino de atenção sustentada — Fase {levelIdx + 1} de {LONG_MAZE_LEVELS.length}</p>
-      <p style={css.hint}>Use as setas do teclado ou os controles ao lado. No celular, deslize na tela.</p>
+      <p style={css.hint}>Clique com o mouse nas setas ao lado do labirinto para se mover</p>
       <button style={css.primaryBtn} onClick={startGame}>Iniciar Fase {levelIdx + 1}</button>
       {onClose && <button style={css.ghostBtn} onClick={onClose}>Voltar</button>}
     </div>
