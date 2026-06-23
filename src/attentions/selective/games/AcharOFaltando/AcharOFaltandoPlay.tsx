@@ -31,6 +31,8 @@ function formatSec(s: number) {
   return `${m}:${sec.toString().padStart(2, '0')}`;
 }
 
+const isSymbol = (item: string) => /^\d+$/.test(item) && Number(item) >= 18 && Number(item) <= 45;
+
 type Phase = 'instructions' | 'simulation' | 'playing' | 'feedback' | 'finished';
 
 export default function AcharOFaltandoPlay() {
@@ -263,7 +265,7 @@ export default function AcharOFaltandoPlay() {
                 }}
               >
                 {item && (
-                  config.itemType === 'symbols' ? (
+                  isSymbol(item) ? (
                     <img
                       src={`/simbolos/${item}.png`}
                       alt=""
@@ -339,7 +341,7 @@ export default function AcharOFaltandoPlay() {
                     height: 48,
                   }}
                 >
-                  {config.itemType === 'symbols' ? (
+                  {isSymbol(opt) ? (
                     <img
                       src={`/simbolos/${opt}.png`}
                       alt=""
