@@ -79,6 +79,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
   const [answer, setAnswer] = useState('');
   const [revealed, setRevealed] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [replayCount, setReplayCount] = useState(0);
   
   const targetAudiosRef = useRef<HTMLAudioElement[]>([]);
   const distractorAudiosRef = useRef<HTMLAudioElement[]>([]);
@@ -359,23 +360,30 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                     Tocando áudio...
                   </span>
                 </div>
-              ) : (
-                <span style={{ fontSize: '14px', color: '#ffffff', display: 'block', marginBottom: 'var(--space-4)' }}>
-                  * No treino de verdade você só vai <strong>ouvir</strong> os números, sem vê-los na tela.
-                </span>
+                <>
+                  <span style={{ fontSize: '14px', color: '#ffffff', display: 'block', marginBottom: 'var(--space-2)' }}>
+                    * No treino de verdade você só vai <strong>ouvir</strong> os números, sem vê-los na tela.
+                  </span>
+                  <span style={{ fontSize: '13px', color: '#eab308', display: 'block', marginBottom: 'var(--space-4)', fontWeight: 'bold' }}>
+                    Lembrete: Você poderá repetir o áudio apenas 1 vez por rodada.
+                  </span>
+                </>
               )}
 
               <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    warmUpAudios();
-                    playSimAudio();
+                    if (replayCount < 1) {
+                      setReplayCount(prev => prev + 1);
+                      warmUpAudios();
+                      playSimAudio();
+                    }
                   }}
-                  disabled={isPlayingAudio}
-                  style={{ flex: 1, fontSize: '13px', padding: '8px 12px', border: '1px solid rgba(255,255,255,0.1)', opacity: isPlayingAudio ? 0.35 : 1 }}
+                  disabled={isPlayingAudio || replayCount >= 1}
+                  style={{ flex: 1, fontSize: '13px', padding: '8px 12px', border: '1px solid rgba(255,255,255,0.1)', opacity: (isPlayingAudio || replayCount >= 1) ? 0.35 : 1 }}
                 >
-                  Repetir Áudio
+                  Repetir Áudio ({1 - replayCount}/1)
                 </Button>
                 
                 <Button
@@ -500,6 +508,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                     setStep(1);
                     setAnswer('');
                     setRevealed(false);
+                    setReplayCount(0);
                   }}
                   style={{ width: '100%', padding: '12px 16px', fontSize: '15px' }}
                 >
