@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import db from '../../../../lib/firebase';
+import db, { auth } from '../../../../lib/firebase';
 import { useLongMazesEvaluation } from './useLongMazesEvaluation';
 import type { LongMazesEvaluationResult } from './useLongMazesEvaluation';
 import type { MazeFullSessionLog } from './types';
@@ -14,10 +14,10 @@ type LoadedState = false | 'organizing' | true;
 
 const RETRYABLE_CODES = new Set(['unavailable', 'permission-denied', 'resource-exhausted']);
 
-async function saveReportToFirestore(sessionId: string, report: EvaluationReport): Promise<void> {
+async function saveReportToFirestore(sessionId: string, uid: string, report: EvaluationReport): Promise<void> {
   try {
     const ref = doc(db, 'sessionReports', sessionId);
-    await setDoc(ref, { geminiReport: report, sessionId, savedAt: serverTimestamp() }, { merge: true });
+    await setDoc(ref, { uid, geminiReport: report, sessionId, savedAt: serverTimestamp() }, { merge: true });
   } catch (err) {
     console.warn('[LongMazes] Falha ao salvar no Firestore:', err);
   }
@@ -65,6 +65,7 @@ export function LongMazesEvaluationContainer({ log, sessionId, onRepeat, onBack 
     ran.current = true;
 
     (async () => {
+      const uid = auth.currentUser?.uid;
       setLoaded(false);
 
       // 1️⃣ Verifica cache no Firestore
@@ -90,8 +91,8 @@ export function LongMazesEvaluationContainer({ log, sessionId, onRepeat, onBack 
       setResult(res);
       setLoaded('organizing');
 
-      if (res?.geminiReport) {
-        await saveReportToFirestore(sessionId, res.geminiReport);
+      if (res?.geminiReport && uid) {
+        await saveReportToFirestore(sessionId, uid, res.geminiReport);
         setGeminiReport(res.geminiReport);
       }
 

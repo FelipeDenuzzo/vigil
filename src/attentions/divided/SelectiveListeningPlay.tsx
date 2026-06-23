@@ -5,7 +5,7 @@ import { Button } from '../../shared/components/Button';
 import { SelectiveListening } from './games/SelectiveListening/SelectiveListening';
 import { v4 as uuidv4 } from 'uuid';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import db from '../../lib/firebase';
+import db, { auth } from '../../lib/firebase';
 
 const SelectiveListeningPlay: React.FC = () => {
   const navigate = useNavigate();
@@ -15,8 +15,10 @@ const SelectiveListeningPlay: React.FC = () => {
   const handleComplete = async (res: { rodadas: any[]; startedAt: string }) => {
     setSaving(true);
     try {
+      const uid = auth.currentUser?.uid;
       // Grava a sessão com os dados brutos de rodadas no Firestore
       await setDoc(doc(db, 'sessions', sessionId), {
+        uid,
         sessionId,
         game: 'escuta-seletiva',
         attentionType: 'dividida',
