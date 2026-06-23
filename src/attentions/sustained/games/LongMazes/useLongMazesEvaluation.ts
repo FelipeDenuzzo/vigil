@@ -7,6 +7,7 @@ import { buildLongMazesTechnicalReport } from '../../../../assessment/longMazes/
 import type { MazeFullSessionLog } from './types';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 import { saveReport } from '../../../../lib/saveReport';
+import { auth } from '../../../../lib/firebase';
 
 const EVALUATOR_URL    = import.meta.env.VITE_EVALUATOR_URL    as string | undefined;
 const EVALUATOR_SECRET = import.meta.env.VITE_EVALUATOR_SECRET as string | undefined;
@@ -25,7 +26,7 @@ async function callEvaluatorSustained(
         'Content-Type': 'application/json',
         'x-evaluator-secret': EVALUATOR_SECRET,
       },
-      body: JSON.stringify(input),
+      body: JSON.stringify({ ...input, uid: auth.currentUser?.uid }),
       signal: AbortSignal.timeout(45_000),
     });
     if (!res.ok) {

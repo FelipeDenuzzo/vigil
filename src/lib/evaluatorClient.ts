@@ -4,6 +4,7 @@ import type {
   VisualSearchTechnicalReport,
   VisualSearchMetrics,
 } from '../attentions/selective/games/VisualSearchHunt/assessment/visualSearchScale.types';
+import { auth } from './firebase';
 
 // ── Tipos de entrada ───────────────────────────────────────────────────────────────
 export interface EvaluatorInput {
@@ -236,7 +237,7 @@ export async function callEvaluator(
         'Content-Type': 'application/json',
         'x-evaluator-secret': secret,
       },
-      body: JSON.stringify(input),
+      body: JSON.stringify({ ...input, uid: auth.currentUser?.uid }),
       signal: AbortSignal.timeout(45_000),
     });
 

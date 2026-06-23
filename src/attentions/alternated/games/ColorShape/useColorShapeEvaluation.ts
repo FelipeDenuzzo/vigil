@@ -6,6 +6,7 @@ import { adaptSessionToColorShape }        from '../../../../assessment/colorSha
 import { buildColorShapeTechnicalReport }  from '../../../../assessment/colorShape/buildColorShapeTechnicalReport';
 import { calculateColorShapeMetrics }      from '../../../../assessment/colorShape/calculateColorShapeMetrics';
 import { saveReport } from '../../../../lib/saveReport';
+import { auth } from '../../../../lib/firebase';
 
 const EVALUATOR_URL    = import.meta.env.VITE_EVALUATOR_URL    as string | undefined;
 const EVALUATOR_SECRET = import.meta.env.VITE_EVALUATOR_SECRET as string | undefined;
@@ -27,7 +28,7 @@ async function callEvaluator(payload: object): Promise<EvaluationReport | null> 
         'Content-Type': 'application/json',
         'x-evaluator-secret': EVALUATOR_SECRET,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, uid: auth.currentUser?.uid }),
       signal: AbortSignal.timeout(45_000),
     });
     if (!res.ok) { console.error(`[ColorShape] HTTP ${res.status}:`, await res.text()); return null; }
