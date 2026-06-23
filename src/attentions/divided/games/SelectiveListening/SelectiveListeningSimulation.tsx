@@ -218,7 +218,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                 Como Funciona o Treino?
               </h2>
-              <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '18px', lineHeight: '1.6' }}>
                 Você vai ouvir duas vozes falando números diferentes ao mesmo tempo, como se fossem duas conversas paralelas.
               </p>
 
@@ -264,7 +264,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                 Indicação da Voz-Alvo
               </h2>
-              <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '18px', lineHeight: '1.6' }}>
                 Antes do áudio tocar, uma mensagem indicará qual voz você deve seguir. Neste exemplo, a voz-alvo é a <strong style={{ color: 'var(--color-divided)' }}>feminina</strong>.
               </p>
 
@@ -291,7 +291,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 backgroundColor: 'rgba(108, 142, 245, 0.08)',
                 padding: 'var(--space-3) var(--space-4)',
                 color: 'var(--color-divided)',
-                fontSize: '13px',
+                fontSize: '18px',
                 fontWeight: 'bold',
                 marginBottom: 'var(--space-5)'
               }}>
@@ -323,7 +323,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                 Ouvindo a Sequência
               </h2>
-              <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '18px', lineHeight: '1.6' }}>
                 Cada canal reproduzirá 3 números simultaneamente. Lembre-se apenas dos dígitos da voz feminina.
               </p>
 
@@ -360,7 +360,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                   </span>
                 </div>
               ) : (
-                <span style={{ fontSize: '11px', color: 'var(--color-text-faint)', display: 'block', marginBottom: 'var(--space-4)' }}>
+                <span style={{ fontSize: '14px', color: '#ffffff', display: 'block', marginBottom: 'var(--space-4)' }}>
                   * No treino de verdade você só vai <strong>ouvir</strong> os números, sem vê-los na tela.
                 </span>
               )}
@@ -483,35 +483,8 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
                 {answer === SIM_TARGET_DIGITS.join('') ? (
                   <>Você filtrou a voz masculina distratora e gravou a sequência correta da voz feminina: <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>.</>
-                ) : (
-                  <>Os dígitos da voz feminina eram <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>. No treino de verdade, o som concorrente ajudará seu cérebro a separar as frequências. Vamos começar?</>
-                )}
+                ) : null}
               </p>
-
-              <div style={{
-                backgroundColor: 'var(--color-surface-2)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-lg)',
-                padding: 'var(--space-4)',
-                textAlign: 'left',
-                fontSize: '13px',
-                marginBottom: 'var(--space-6)'
-              }}>
-                <div style={{ marginBottom: 'var(--space-2)' }}>
-                  <span style={{ color: '#ffffff' }}>Voz feminina (Alvo):</span>{' '}
-                  <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>
-                </div>
-                <div style={{ marginBottom: 'var(--space-2)' }}>
-                  <span style={{ color: '#ffffff' }}>Voz masculina (Ignorar):</span>{' '}
-                  <strong style={{ color: 'var(--color-text-faint)' }}>{SIM_DISTRACTOR_DIGITS.join(' ')}</strong>
-                </div>
-                <div>
-                  <span style={{ color: '#ffffff' }}>Sua Resposta:</span>{' '}
-                  <strong style={{ color: answer === SIM_TARGET_DIGITS.join('') ? 'var(--color-sustained)' : '#f08080' }}>
-                    {answer.split('').join(' ') || '-'}
-                  </strong>
-                </div>
-              </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <Button
