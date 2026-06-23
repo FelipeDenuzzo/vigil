@@ -64,7 +64,7 @@ function MotorRound({ onDone }: { onDone: (r: MotorRoundResult) => void }) {
           borderRadius: '50%',
           margin: '0 auto var(--space-8)',
           cursor: phase === 'go' ? 'pointer' : 'default',
-          background: phase === 'go' ? 'var(--color-selective)' : 'var(--color-surface)',
+          background: phase === 'go' ? 'var(--color-sustained)' : 'var(--color-surface)',
           border: '3px solid var(--color-border)',
           transition: 'background 0.1s',
         }}

@@ -51,15 +51,21 @@ export const Home: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-6)' }}>
           <Card>
             <h3 style={{ color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>1. Escolha o tipo de atenção</h3>
-            <p style={{ color: 'var(--color-text-muted)' }}>Seletiva, sustentada, alternada ou dividida</p>
+            <p style={{ color: 'var(--color-text-muted)' }}>
+              Selecione o tipo de atenção (seletiva, sustentada, alternada ou dividida) para iniciar o seu treinamento diário.
+            </p>
           </Card>
           <Card>
-            <h3 style={{ color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>2. Faça o exercício</h3>
-            <p style={{ color: 'var(--color-text-muted)' }}>Sessões curtas de 3 a 5 minutos</p>
+            <h3 style={{ color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>2. Pratique no simulador</h3>
+            <p style={{ color: 'var(--color-text-muted)' }}>
+              Antes de cada treino real, use o simulador (modo prático) para aprender a mecânica sem pressão. Em seguida, faça o exercício real de 3 a 5 minutos.
+            </p>
           </Card>
           <Card>
-            <h3 style={{ color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>3. Acompanhe sua evolução</h3>
-            <p style={{ color: 'var(--color-text-muted)' }}>Seu progresso é salvo no dispositivo</p>
+            <h3 style={{ color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>3. Acompanhe a evolução</h3>
+            <p style={{ color: 'var(--color-text-muted)' }}>
+              O Vigil não é um teste de uso único: seu progresso é salvo e avaliado continuamente de forma longitudinal. Use os laudos e gráficos para acompanhar sua evolução real no dia a dia.
+            </p>
           </Card>
         </div>
       </section>
@@ -68,25 +74,33 @@ export const Home: React.FC = () => {
       <section className="container">
         <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-8)', textAlign: 'center' }}>Os 4 tipos de atenção</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
-          <Card accent="var(--color-selective)" interactive onClick={() => navigate('/treinar/seletiva')}>
+          <Card accent="var(--color-selective)">
             <h3 style={{ color: 'var(--color-selective)', marginBottom: 'var(--space-2)' }}>🎯 Seletiva</h3>
-            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>Foco no alvo, ignorando distrações.</p>
-            <span style={{ color: 'var(--color-selective)' }}>Ver exercícios →</span>
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>Foco no alvo, ignorando distrações.</p>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-2)', margin: 0 }}>
+              <strong>No dia a dia:</strong> Concentrar-se na leitura de um livro ou em uma tarefa de trabalho mesmo em locais barulhentos.
+            </p>
           </Card>
-          <Card accent="var(--color-sustained)" interactive onClick={() => navigate('/treinar/sustentada')}>
+          <Card accent="var(--color-sustained)">
             <h3 style={{ color: 'var(--color-sustained)', marginBottom: 'var(--space-2)' }}>⏱ Sustentada</h3>
-            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>Manter a atenção por períodos prolongados.</p>
-            <span style={{ color: 'var(--color-sustained)' }}>Ver exercícios →</span>
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>Manter a atenção por períodos prolongados.</p>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-2)', margin: 0 }}>
+              <strong>No dia a dia:</strong> Manter-se atento durante uma aula de longa duração ou ao dirigir em rodovias por várias horas.
+            </p>
           </Card>
-          <Card accent="var(--color-alternating)" interactive onClick={() => navigate('/treinar/alternada')}>
+          <Card accent="var(--color-alternating)">
             <h3 style={{ color: 'var(--color-alternating)', marginBottom: 'var(--space-2)' }}>🔀 Alternada</h3>
-            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>Mudar de regra sem se perder.</p>
-            <span style={{ color: 'var(--color-alternating)' }}>Ver exercícios →</span>
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>Mudar de regra ou foco sem se perder.</p>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-2)', margin: 0 }}>
+              <strong>No dia a dia:</strong> Alternar rapidamente entre ler e responder a e-mails importantes e digitar um relatório.
+            </p>
           </Card>
-          <Card accent="var(--color-divided)" interactive onClick={() => navigate('/treinar/dividida')}>
+          <Card accent="var(--color-divided)">
             <h3 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-2)' }}>⚖️ Dividida</h3>
-            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>Executar duas tarefas ao mesmo tempo.</p>
-            <span style={{ color: 'var(--color-divided)' }}>Ver exercícios →</span>
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>Executar duas tarefas ao mesmo tempo.</p>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-2)', margin: 0 }}>
+              <strong>No dia a dia:</strong> Anotar pontos cruciais enquanto ouve uma palestra ou conversar prestando atenção no trânsito.
+            </p>
           </Card>
         </div>
       </section>
