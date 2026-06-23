@@ -508,7 +508,7 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
             <div style={{
               textAlign: 'center',
               fontSize: '13px',
-              color: 'var(--color-text-muted)',
+              color: '#fff',
               lineHeight: '1.5',
               padding: '10px 16px',
               background: 'rgba(59, 130, 246, 0.05)',
