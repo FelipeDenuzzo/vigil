@@ -53,7 +53,7 @@ export const OnboardingFlow: React.FC = () => {
 
       {currentStep === 'result' && baseline && (
         <OnboardingResult
-          baseline={baseline}
+          state={state}
           onSave={saveBaseline}
           saving={saving}
           saveError={saveError}

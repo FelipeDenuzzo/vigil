@@ -9,7 +9,7 @@ import { auth } from './firebase';
 // ── Tipos de entrada ───────────────────────────────────────────────────────────────
 export interface EvaluatorInput {
   sessionId: string;
-  attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida';
+  attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida' | 'onboarding';
   severity?: 'minimo' | 'leve' | 'moderado' | 'importante';
   [key: string]: any;
   game?: 'visual-search' | 'color-shape' | 'cofre-mental' | 'long-mazes' | 'escuta-seletiva' | 'achar-o-faltando';
@@ -89,6 +89,21 @@ export interface EvaluationReport {
   ludic: LudicReport;
   general: GeneralReport;
   clinical: ClinicalReport;
+}
+
+export interface OnboardingReport {
+  mensagem_ux: {
+    titulo: string;
+    paragrafo_boas_vindas: string;
+    superpoder: string;
+    foco_de_treino: string;
+  };
+  dados_grafico_teia: {
+    "Agilidade Mental": number;
+    "Foco Contínuo": number;
+    "Controle e Calma": number;
+    "Organização Visual": number;
+  };
 }
 
 interface RawEvaluatorResponse {
@@ -263,6 +278,44 @@ export async function callEvaluator(
       const msg = err instanceof Error ? err.message : String(err);
       console.error('[callEvaluator] erro:', msg);
     }
+    return null;
+  }
+}
+
+export async function callOnboardingEvaluator(
+  input: EvaluatorInput
+): Promise<OnboardingReport | null> {
+  const url    = import.meta.env.VITE_EVALUATOR_URL;
+  const secret = import.meta.env.VITE_EVALUATOR_SECRET;
+
+  if (!url || !secret) {
+    if (import.meta.env.DEV) console.warn('[callOnboardingEvaluator] config ausente');
+    return null;
+  }
+
+  try {
+    const res = await fetch(`${url}/evaluate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-evaluator-secret': secret,
+      },
+      body: JSON.stringify({ ...input, uid: auth.currentUser?.uid }),
+      signal: AbortSignal.timeout(45_000),
+    });
+
+    if (!res.ok) {
+      if (import.meta.env.DEV) {
+        const text = await res.text();
+        console.error(`[callOnboardingEvaluator] HTTP ${res.status}: ${text}`);
+      }
+      return null;
+    }
+
+    // Retorna direto pois o payload bate 1:1 com a interface
+    return await res.json() as OnboardingReport;
+  } catch (err) {
+    if (import.meta.env.DEV) console.error('[callOnboardingEvaluator] erro:', err);
     return null;
   }
 }
