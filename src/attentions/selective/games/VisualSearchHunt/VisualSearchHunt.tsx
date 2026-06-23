@@ -63,9 +63,9 @@ const MAX_PHASES = 10;
 const SIMULATOR_ROUNDS = 3;
 
 const SHAPE_LABEL: Record<Shape, string> = {
-  circle: 'c\u00edrculos',
+  circle: 'círculos',
   square: 'quadrados',
-  triangle: 'tri\u00e2ngulos',
+  triangle: 'triângulos',
 };
 
 const COLOR_LABEL: Record<Color, string> = {
@@ -297,7 +297,7 @@ function analyzeVisualSearchOrganization(clickLog: VisualSearchClickLog[], gridS
   return result;
 }
 
-// ─── Simulator ──────────────────────────────────────────────────────────────
+// ─── Simulator ───────────────────────────────────────────────────────────────
 
 type SimTile = {
   id: string;
@@ -375,7 +375,7 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
 
     if (allFound) {
       const isLast = state.round >= SIMULATOR_ROUNDS;
-      setRoundMsg(isLast ? null : `\u2705 Todos encontrados! Pr\u00f3xima rodada...`);
+      setRoundMsg(isLast ? null : '✅ Todos encontrados! Próxima rodada...');
       setTimeout(() => {
         setRoundMsg(null);
         if (isLast) {
@@ -401,12 +401,12 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
     return (
       <Card>
         <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
-          <div style={{ fontSize: 36 }}>\uD83C\uDF89</div>
-          <h2 style={{ margin: 0 }}>Pr\u00e1tica conclu\u00edda!</h2>
+          <div style={{ fontSize: 36 }}>🎉</div>
+          <h2 style={{ margin: 0 }}>Prática concluída!</h2>
           <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>
-            Voc\u00ea j\u00e1 sabe como funciona. Agora \u00e9 para valer!
+            Você já sabe como funciona. Agora é para valer!
           </p>
-          <Button onClick={onFinish}>Iniciar Treino de Verdade \u2192</Button>
+          <Button onClick={onFinish}>Iniciar Treino de Verdade →</Button>
         </div>
       </Card>
     );
@@ -418,10 +418,10 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
         <div style={{ display: 'grid', gap: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
-              Pr\u00e1tica {state.round}/{SIMULATOR_ROUNDS}
+              Prática {state.round}/{SIMULATOR_ROUNDS}
             </span>
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-primary)' }}>
-              Sem timer \u2014 sem press\u00e3o!
+              Sem timer — sem pressão!
             </span>
           </div>
           <div style={{ textAlign: 'center', fontWeight: 700 }}>
@@ -499,10 +499,10 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                 />
                 {fb === 'correct' && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, pointerEvents: 'none' }}>\u2705</div>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, pointerEvents: 'none' }}>✅</div>
                 )}
                 {fb === 'wrong' && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, pointerEvents: 'none' }}>\u274c</div>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, pointerEvents: 'none' }}>❌</div>
                 )}
               </button>
             );
@@ -513,18 +513,18 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
   );
 }
 
-// ─── Intro ───────────────────────────────────────────────────────────────────
+// ─── Intro ────────────────────────────────────────────────────────────────────
 
 function IntroScreen({ onSimulator, onSkip }: { onSimulator: () => void; onSkip: () => void }) {
   return (
     <Card>
       <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
-        <div style={{ fontSize: 40 }}>\uD83C\uDFAF</div>
-        <h2 style={{ margin: 0 }}>Ca\u00e7a ao Alvo</h2>
+        <div style={{ fontSize: 40 }}>🎯</div>
+        <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
         <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.6, margin: 0 }}>
-          Voc\u00ea ver\u00e1 uma grade com figuras coloridas. Encontre e clique em{' '}
+          Você verá uma grade com figuras coloridas. Encontre e clique em{' '}
           <strong>todas as figuras que correspondem ao alvo</strong> mostrado no topo.
-          O timer come\u00e7a quando voc\u00ea iniciar cada fase.
+          O timer começa quando você iniciar cada fase.
         </p>
         <div style={{ display: 'grid', gap: 8 }}>
           <Button onClick={onSimulator}>Praticar antes (recomendado)</Button>
@@ -532,7 +532,7 @@ function IntroScreen({ onSimulator, onSkip }: { onSimulator: () => void; onSkip:
             onClick={onSkip}
             style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
           >
-            Pular e come\u00e7ar direto
+            Pular e começar direto
           </button>
         </div>
       </div>
@@ -893,10 +893,10 @@ export default function VisualSearchHunt({
         <Card>
           <div style={{ display: 'grid', gap: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button onClick={startRound}>{`Come\u00e7ar \u2014 Fase ${roundIndex}`}</Button>
+              <Button onClick={startRound}>{`Começar — Fase ${roundIndex}`}</Button>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <h2 style={{ margin: 0 }}>Ca\u00e7a ao Alvo</h2>
+              <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
               <p style={{ marginTop: 8, marginBottom: 0 }}>
                 Encontre todos os{' '}
                 <span style={{ textTransform: 'uppercase', fontWeight: 700 }}>
@@ -939,7 +939,7 @@ export default function VisualSearchHunt({
               <div style={{ height: 6, width: '100%', borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${Math.max(0, (remainingTime / FIXED_TIME_SECONDS) * 100)}%`, background: '#111827', transition: 'width 100ms linear' }} />
               </div>
-              <div><Button onClick={advanceRoundNow} style={{ width: '100%' }}>Avan\u00e7ar</Button></div>
+              <div><Button onClick={advanceRoundNow} style={{ width: '100%' }}>Avançar</Button></div>
             </div>
           </Card>
           <Card>
@@ -1046,18 +1046,18 @@ export default function VisualSearchHunt({
         return (
           <Card>
             <div style={{ display: 'grid', gap: 16, textAlign: 'center' }}>
-              <div style={{ fontSize: 40 }}>{status === 'won' ? '\uD83C\uDFAF' : '\u23F1\uFE0F'}</div>
-              <h2 style={{ margin: 0 }}>{status === 'won' ? 'Fase conclu\u00edda!' : 'Tempo esgotado'}</h2>
+              <div style={{ fontSize: 40 }}>{status === 'won' ? '🎯' : '⏱️'}</div>
+              <h2 style={{ margin: 0 }}>{status === 'won' ? 'Fase concluída!' : 'Tempo esgotado'}</h2>
               {last && (
                 <div style={{ display: 'grid', gap: 6, fontSize: 14 }}>
-                  <div>\u2705 Acertos: <strong>{last.hits}</strong> / {last.totalTargets}</div>
-                  <div>\u274c Erros: <strong>{last.errors}</strong></div>
-                  {last.missedTargets > 0 && <div>\uD83D\uDC41\uFE0F Perdidos: <strong>{last.missedTargets}</strong></div>}
+                  <div>✅ Acertos: <strong>{last.hits}</strong> / {last.totalTargets}</div>
+                  <div>❌ Erros: <strong>{last.errors}</strong></div>
+                  {last.missedTargets > 0 && <div>👁️ Perdidos: <strong>{last.missedTargets}</strong></div>}
                 </div>
               )}
               {roundIndex < MAX_PHASES ? (
                 <Button onClick={goToNextRound}>
-                  {`Fase ${nextPhaseNumber} \u2192`}
+                  {`Fase ${nextPhaseNumber} →`}
                 </Button>
               ) : (
                 <Button onClick={() => finishSession(roundResults)}>Ver resultado final</Button>
