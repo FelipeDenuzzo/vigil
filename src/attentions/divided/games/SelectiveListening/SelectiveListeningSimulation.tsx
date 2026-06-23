@@ -196,11 +196,11 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
         background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)',
-        color: '#eab308', padding: '6px 16px', borderRadius: '99px',
-        fontWeight: 'bold', fontSize: '12px', letterSpacing: '0.05em',
-        width: 'fit-content', margin: '0 auto 24px auto'
+        color: '#eab308', padding: '8px 20px', borderRadius: '99px',
+        fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.05em',
+        width: 'fit-content', margin: '0 auto 16px auto'
       }}>
-        <span style={{ fontSize: '14px' }}>🚧</span> MODO DE PRÁTICA
+        <span style={{ fontSize: '18px' }}>🚧</span> MODO DE PRÁTICA
       </div>
 
       <AnimatePresence mode="wait">
@@ -463,24 +463,30 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               {answer === SIM_TARGET_DIGITS.join('') ? (
                 <>
                   <span style={{ fontSize: '3rem', display: 'block', marginBottom: 'var(--space-2)' }}>🎯</span>
-                  <h2 style={{ color: 'var(--color-sustained)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
+                  <h2 style={{ margin: 0, color: 'var(--color-sustained)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                     Excelente! Correto!
                   </h2>
-                  <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
-                    Você filtrou a voz masculina distratora e gravou a sequência correta da voz feminina: <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>.
-                  </p>
                 </>
               ) : (
                 <>
                   <span style={{ fontSize: '3rem', display: 'block', marginBottom: 'var(--space-2)' }}>💡</span>
-                  <h2 style={{ color: '#f08080', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
+                  <h2 style={{ margin: 0, color: '#f08080', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                     Bom Teste!
                   </h2>
-                  <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
-                    Os dígitos da voz feminina eram <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>. No treino de verdade, o som concorrente ajudará seu cérebro a separar as frequências. Vamos começar?
-                  </p>
                 </>
               )}
+
+              <h2 style={{ margin: '8px 0 var(--space-4) 0', textTransform: 'uppercase', fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
+                Você entendeu como funciona?
+              </h2>
+
+              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
+                {answer === SIM_TARGET_DIGITS.join('') ? (
+                  <>Você filtrou a voz masculina distratora e gravou a sequência correta da voz feminina: <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>.</>
+                ) : (
+                  <>Os dígitos da voz feminina eram <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>. No treino de verdade, o som concorrente ajudará seu cérebro a separar as frequências. Vamos começar?</>
+                )}
+              </p>
 
               <div style={{
                 backgroundColor: 'var(--color-surface-2)',
@@ -507,30 +513,25 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 </div>
               </div>
 
-              <div style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-4)', padding: '16px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
-                <p style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '12px' }}>
-                  Fim do simulado. Você entendeu como funciona?
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <Button
-                    variant="primary"
-                    onClick={advance}
-                    style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
-                  >
-                    Ir para o Treino de Atenção →
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setStep(1);
-                      setAnswer('');
-                      setRevealed(false);
-                    }}
-                    style={{ width: '100%', fontSize: '13px' }}
-                  >
-                    Repetir o Simulado
-                  </Button>
-                </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <Button
+                  variant="primary"
+                  onClick={advance}
+                  style={{ backgroundColor: 'var(--color-divided)', width: '100%', padding: '12px 16px', fontSize: '15px' }}
+                >
+                  Ir para o Treino de Atenção →
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setStep(1);
+                    setAnswer('');
+                    setRevealed(false);
+                  }}
+                  style={{ width: '100%', padding: '12px 16px', fontSize: '15px' }}
+                >
+                  Repetir o Simulado
+                </Button>
               </div>
             </Card>
           </motion.div>
