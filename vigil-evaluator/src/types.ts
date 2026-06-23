@@ -46,6 +46,12 @@ export interface SelectiveEvaluatorInput {
   averageResponseMs?: number;
   accuracyNote?: string;
   speedNote?: string;
+  speedStyle?: 'efficient' | 'impulsive' | 'slow' | 'disorganized';
+  hasFatigue?: boolean;
+  leftOmissions?: number;
+  rightOmissions?: number;
+  asymmetryRatio?: number;
+  spatialAsymmetryDominant?: 'left' | 'right' | 'symmetric' | 'insufficient-data';
 }
 
 // ─── Sustentada (LongMazes) ──────────────────────────────────────────────────

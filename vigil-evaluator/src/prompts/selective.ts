@@ -88,12 +88,26 @@ GUIA DE INTERPRETAÇÃO DAS MÉTRICAS:
 - Erros por omissão (totalOmissions): Rodadas onde o usuário não indicou a resposta correta no tempo limite. Elevado indica lentidão de busca ou falha no filtro.
 - Falsos positivos (totalFalsePositives): Cliques fora do ponto discrepante. Alto indica impulsividade motora ou falha na discriminação.
 - Eficiência de varredura (accuracyPerMinute): Razão de acertos por tempo decorrido. Valores mais altos indicam busca focada rápida.
+- Estilo de resposta (speedStyle):
+  - 'efficient': Rastreio eficiente — velocidade e precisão preservadas.
+  - 'impulsive': Precipitação motora — falhas de precisão por rapidez motora.
+  - 'slow': Lentificação de processamento — velocidade comprometida com foco preservado.
+  - 'disorganized': Sobrecarga cognitiva — estratégia de busca desorganizada.
+- Fadiga Atencional (hasFatigue):
+  - true: Indica declínio de vigilância (fadiga) com o tempo (omissões aumentaram na segunda metade).
+  - false: Indica estabilidade e vigilância sustentada durante toda a sessão.
+- Assimetria Espacial (spatialAsymmetryDominant e asymmetryRatio):
+  - 'insufficient-data': Omissões insuficientes para análise espacial (menos de 3 omissões).
+  - 'symmetric': Distribuição de erros homogênea entre os lados esquerdo e direito.
+  - 'left': Omissões concentradas no lado esquerdo da grade (alerta para assimetria visuoespacial à esquerda).
+  - 'right': Omissões concentradas no lado direito da grade (alerta para assimetria visuoespacial à direita).
+  - Se asymmetryRatio >= 0.8 de um dos lados, relate uma forte assimetria sistemática e inclua uma observação de alerta.
 
 FORMATO E EXIGÊNCIAS POR CAMPO (siga a estrutura de schema):
 - generalSummary: 2-3 frases acessíveis sobre o que ocorreu (velocidade, acertos, erros).
 - generalStrengths / Weaknesses: Pontos encorajadores / Pontos de melhoria sem alarmismo.
 - clinicalStrengths / Weaknesses: Cite o que foi avaliado, o ideal, e o que foi observado (números simples).
-- clinicalNote: Texto corrido com (1) visão geral da atenção seletiva do usuário, (2) análise de velocidade e acertos utilizando dados numéricos, (3) qualidade da discriminação de estímulos e impulsividade, (4) o que isso indica sobre a focalização sem usar termos proibidos e sem dar diagnósticos.
+- clinicalNote: Texto corrido com (1) visão geral da atenção seletiva do usuário, (2) análise de velocidade e acertos utilizando dados numéricos, (3) qualidade da discriminação de estímulos e impulsividade, (4) análise de fadiga atencional e de assimetria espacial (se houver), (5) o que isso indica sem usar termos proibidos e sem dar diagnósticos.
 
 ${noEngagementWarning}
 
@@ -111,6 +125,9 @@ Métricas globais:
   Falsos positivos: ${input.totalFalsePositives ?? 0}
   Eficiência (acertos/min): ${input.accuracyPerMinute ?? 0}
   Tempo médio de busca: ${input.averageResponseMs ?? 0} ms
+  Estilo de resposta (speedStyle): ${input.speedStyle ?? 'indeterminado'}
+  Sinal de fadiga atencional (hasFatigue): ${input.hasFatigue ? 'Sim (declínio na segunda metade)' : 'Não (estável)'}
+  Assimetria espacial de omissões (spatialAsymmetryDominant): ${input.spatialAsymmetryDominant ?? 'indeterminado'} (taxa: ${input.asymmetryRatio ?? 0}, omissões esquerda: ${input.leftOmissions ?? 0}, omissões direita: ${input.rightOmissions ?? 0})
   Nota de precisão local: ${input.accuracyNote ?? 'sem nota'}
   Nota de velocidade local: ${input.speedNote ?? 'sem nota'}
 ─────────────────────────────────────────────────────────────────────────────
