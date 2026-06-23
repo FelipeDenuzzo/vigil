@@ -50,77 +50,247 @@ export function getItemPool(itemType: MissingItemType): string[] {
   return DEFAULT_SYMBOLS;
 }
 
-function pickDifferenceKinds(
-  config: MissingItemConfig,
-  rng: () => number,
-): Array<'missing' | 'extra'> {
-  if (config.differenceMode === 'missing')
-    return Array.from({ length: config.differenceCount }, () => 'missing' as const);
-  if (config.differenceMode === 'extra')
-    return Array.from({ length: config.differenceCount }, () => 'extra' as const);
-  return Array.from({ length: config.differenceCount }, () =>
-    rng() > 0.5 ? 'missing' : 'extra',
-  ) as Array<'missing' | 'extra'>;
-}
 
-function getBasePool(pool: string[], itemType: MissingItemType, rng: () => number): string[] {
-  const baseSize = itemType === 'numbers' ? 6 : 8;
-  return sampleMany(pool, baseSize, rng);
-}
-
-function pickExtraItem(
-  fullPool: string[],
-  itemsA: string[],
-  itemsB: string[],
-  rng: () => number,
-): string {
-  const blocked = new Set([...itemsA, ...itemsB].filter(x => x !== ''));
-  const candidates = fullPool.filter(x => !blocked.has(x));
-  return sampleOne(candidates.length > 0 ? candidates : fullPool, rng);
-}
 
 export function generateRound(
   config: MissingItemConfig,
   roundNumber: number,
 ): MissingItemRound {
   const rng = createSeededRng(`${config.seed || 'auto'}-${roundNumber}`);
-  const fullPool = getItemPool(config.itemType);
-  const basePool = getBasePool(fullPool, config.itemType, rng);
   const totalCells = config.gridSize * config.gridSize;
+  const phase = ((roundNumber - 1) % 10) + 1;
 
-  const itemsA = Array.from({ length: totalCells }, () => sampleOne(basePool, rng));
-  const itemsB: string[] = [...itemsA];
+  let itemsA: string[] = [];
+  let itemsB: string[] = [];
+  let differences: MissingItemDifference[] = [];
+  let options: string[] = [];
 
-  const shuffledIndexes = shuffle(
-    Array.from({ length: totalCells }, (_, i) => i),
-    rng,
-  );
+  const symbolsPool = Array.from({ length: 28 }, (_, i) => String(18 + i)); // '18' to '45'
+  const lettersPool = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)); // 'A' to 'Z'
+  const digitsPool = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-  const differenceKinds = pickDifferenceKinds(config, rng).slice(0, 1);
-  const differences: MissingItemDifference[] = [];
+  if (phase === 1 || phase === 2) {
+    // 1 e 2 - usaremos os simbolos como está hoje, mas sem usar o faltando, sempre com um diferente
+    const basePool = sampleMany(symbolsPool, 8, rng);
+    itemsA = Array.from({ length: totalCells }, () => sampleOne(basePool, rng));
+    itemsB = [...itemsA];
 
-  for (let i = 0; i < differenceKinds.length; i++) {
-    const index = shuffledIndexes[i] ?? i;
-    const kind = differenceKinds[i]!;
-    const originalItem = itemsA[index] ?? basePool[0] ?? fullPool[0] ?? '?';
+    const targetIndex = Math.floor(rng() * totalCells);
+    const original = itemsA[targetIndex]!;
+    const remainingSymbols = symbolsPool.filter(s => s !== original);
+    const replacement = sampleOne(remainingSymbols, rng);
 
-    if (kind === 'missing') {
-      itemsB[index] = '';
-      differences.push({ index, kind, expectedItem: originalItem, originalItem });
-      continue;
-    }
-    const replacement = pickExtraItem(fullPool, itemsA, itemsB, rng);
-    itemsB[index] = replacement;
-    differences.push({ index, kind, expectedItem: replacement, originalItem });
+    itemsB[targetIndex] = replacement;
+    differences.push({
+      index: targetIndex,
+      kind: 'extra',
+      expectedItem: replacement,
+      originalItem: original,
+    });
+
+    const filler = shuffle(symbolsPool.filter(s => s !== replacement && s !== original), rng).slice(0, 3);
+    options = shuffle([replacement, ...filler], rng);
+
+  } else if (phase === 3) {
+    // 3 - usaremos triangulo e circulos, os arquivos 29.png e 25.png
+    const pair = ['29', '25'];
+    itemsA = Array.from({ length: totalCells }, () => sampleOne(pair, rng));
+    itemsB = [...itemsA];
+
+    const targetIndex = Math.floor(rng() * totalCells);
+    const original = itemsA[targetIndex]!;
+    const replacement = original === '29' ? '25' : '29';
+
+    itemsB[targetIndex] = replacement;
+    differences.push({
+      index: targetIndex,
+      kind: 'extra',
+      expectedItem: replacement,
+      originalItem: original,
+    });
+
+    options = shuffle([...pair], rng);
+
+  } else if (phase === 4) {
+    // 4 - Varios Q e O - com mais Q que O
+    itemsA = Array.from({ length: totalCells }, () => (rng() < 0.75 ? 'Q' : 'O'));
+    itemsB = [...itemsA];
+
+    const targetIndex = Math.floor(rng() * totalCells);
+    const original = itemsA[targetIndex]!;
+    const replacement = original === 'Q' ? 'O' : 'Q';
+
+    itemsB[targetIndex] = replacement;
+    differences.push({
+      index: targetIndex,
+      kind: 'extra',
+      expectedItem: replacement,
+      originalItem: original,
+    });
+
+    options = shuffle(['Q', 'O'], rng);
+
+  } else if (phase === 5) {
+    // 5 - Varios O e Q com mais O que Q
+    itemsA = Array.from({ length: totalCells }, () => (rng() < 0.75 ? 'O' : 'Q'));
+    itemsB = [...itemsA];
+
+    const targetIndex = Math.floor(rng() * totalCells);
+    const original = itemsA[targetIndex]!;
+    const replacement = original === 'O' ? 'Q' : 'O';
+
+    itemsB[targetIndex] = replacement;
+    differences.push({
+      index: targetIndex,
+      kind: 'extra',
+      expectedItem: replacement,
+      originalItem: original,
+    });
+
+    options = shuffle(['O', 'Q'], rng);
+
+  } else if (phase === 6) {
+    // 6 - Varias letras maiusculas, mas as diferenças sempre emtre O e Q, que tambem devem estar presentes em 50%
+    const distractorLetters = lettersPool.filter(l => l !== 'O' && l !== 'Q');
+    
+    const positions = Array.from({ length: totalCells }, (_, i) => i);
+    const shuffledPositions = shuffle(positions, rng);
+    const oqCount = Math.floor(totalCells / 2);
+    const oqPositions = new Set(shuffledPositions.slice(0, oqCount));
+
+    itemsA = Array.from({ length: totalCells }, (_, idx) => {
+      if (oqPositions.has(idx)) {
+        return rng() < 0.5 ? 'O' : 'Q';
+      } else {
+        return sampleOne(distractorLetters, rng);
+      }
+    });
+    itemsB = [...itemsA];
+
+    const oqList = Array.from(oqPositions);
+    const targetIndex = sampleOne(oqList, rng);
+    const original = itemsA[targetIndex]!;
+    const replacement = original === 'O' ? 'Q' : 'O';
+
+    itemsB[targetIndex] = replacement;
+    differences.push({
+      index: targetIndex,
+      kind: 'extra',
+      expectedItem: replacement,
+      originalItem: original,
+    });
+
+    options = shuffle(['O', 'Q'], rng);
+
+  } else if (phase === 7) {
+    // 7 - mistura de 2 e 7
+    const pair = ['2', '7'];
+    itemsA = Array.from({ length: totalCells }, () => sampleOne(pair, rng));
+    itemsB = [...itemsA];
+
+    const targetIndex = Math.floor(rng() * totalCells);
+    const original = itemsA[targetIndex]!;
+    const replacement = original === '2' ? '7' : '2';
+
+    itemsB[targetIndex] = replacement;
+    differences.push({
+      index: targetIndex,
+      kind: 'extra',
+      expectedItem: replacement,
+      originalItem: original,
+    });
+
+    options = shuffle([...pair], rng);
+
+  } else if (phase === 8) {
+    // 8 - mistura outros numeros de unidade e 2 e 7, sendo que a diferença sempre está ou em um 2 ou em um 7
+    const otherDigits = digitsPool.filter(d => d !== '2' && d !== '7');
+    
+    const positions = Array.from({ length: totalCells }, (_, i) => i);
+    const shuffledPositions = shuffle(positions, rng);
+    const targetCount = Math.floor(totalCells / 2);
+    const targetPositions = new Set(shuffledPositions.slice(0, targetCount));
+
+    itemsA = Array.from({ length: totalCells }, (_, idx) => {
+      if (targetPositions.has(idx)) {
+        return rng() < 0.5 ? '2' : '7';
+      } else {
+        return sampleOne(otherDigits, rng);
+      }
+    });
+    itemsB = [...itemsA];
+
+    const targetList = Array.from(targetPositions);
+    const targetIndex = sampleOne(targetList, rng);
+    const original = itemsA[targetIndex]!;
+    const replacement = original === '2' ? '7' : '2';
+
+    itemsB[targetIndex] = replacement;
+    differences.push({
+      index: targetIndex,
+      kind: 'extra',
+      expectedItem: replacement,
+      originalItem: original,
+    });
+
+    options = shuffle(['2', '7'], rng);
+
+  } else if (phase === 9) {
+    // 9 - misturar somente d e p minusculos
+    const pair = ['d', 'p'];
+    itemsA = Array.from({ length: totalCells }, () => sampleOne(pair, rng));
+    itemsB = [...itemsA];
+
+    const targetIndex = Math.floor(rng() * totalCells);
+    const original = itemsA[targetIndex]!;
+    const replacement = original === 'd' ? 'p' : 'd';
+
+    itemsB[targetIndex] = replacement;
+    differences.push({
+      index: targetIndex,
+      kind: 'extra',
+      expectedItem: replacement,
+      originalItem: original,
+    });
+
+    options = shuffle([...pair], rng);
+
+  } else if (phase === 10) {
+    // 10 - misturar um pouco de todos
+    const lowercasePool = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
+    
+    itemsA = Array.from({ length: totalCells }, () => {
+      const rand = rng();
+      if (rand < 0.25) {
+        return sampleOne(symbolsPool, rng);
+      } else if (rand < 0.5) {
+        return sampleOne(lettersPool, rng);
+      } else if (rand < 0.75) {
+        return sampleOne(lowercasePool, rng);
+      } else {
+        return sampleOne(digitsPool, rng);
+      }
+    });
+    itemsB = [...itemsA];
+
+    const targetIndex = Math.floor(rng() * totalCells);
+    const original = itemsA[targetIndex]!;
+    
+    const allCombined = [...symbolsPool, ...lettersPool, ...lowercasePool, ...digitsPool];
+    const remainingCombined = allCombined.filter(x => x !== original);
+    const replacement = sampleOne(remainingCombined, rng);
+
+    itemsB[targetIndex] = replacement;
+    differences.push({
+      index: targetIndex,
+      kind: 'extra',
+      expectedItem: replacement,
+      originalItem: original,
+    });
+
+    const filler = shuffle(allCombined.filter(x => x !== replacement && x !== original), rng).slice(0, 3);
+    options = shuffle([replacement, ...filler], rng);
   }
-
-  const targetItems = differences.map(d => d.expectedItem);
-  const fillerOptions = shuffle(
-    fullPool.filter(x => !targetItems.includes(x)),
-    rng,
-  ).slice(0, 3);
-
-  const options = shuffle(Array.from(new Set([...targetItems, ...fillerOptions])), rng);
 
   return {
     roundNumber,
@@ -178,6 +348,16 @@ export function evaluateRound(
   };
 }
 
+function detectItemType(items: string[]): MissingItemType {
+  const isSymbol = (x: string) => /^\d+$/.test(x) && Number(x) >= 18 && Number(x) <= 45;
+  const isNumber = (x: string) => /^\d+$/.test(x) && !isSymbol(x);
+
+  const nonOpt = items.filter(x => x !== '');
+  if (nonOpt.every(isSymbol)) return 'symbols';
+  if (nonOpt.every(isNumber)) return 'numbers';
+  return 'letters';
+}
+
 export function buildRoundResult(params: {
   config: MissingItemConfig;
   round: MissingItemRound;
@@ -192,8 +372,8 @@ export function buildRoundResult(params: {
     gridSize: round.gridSize,
     presentationMode: config.presentationMode,
     layoutMode: config.layoutMode,
-    itemType: config.itemType,
-    differenceMode: config.differenceMode,
+    itemType: detectItemType(round.itemsA),
+    differenceMode: (round.differences[0]?.kind as any) || config.differenceMode,
     responseMode: config.responseMode,
     differenceCount: config.differenceCount,
     targetItems: round.differences.map(d => d.expectedItem),
