@@ -8,6 +8,8 @@ import { callEvaluator } from "../../../../lib/evaluatorClient";
 import type { EvaluationReport as GeminiReport } from "../../../../lib/evaluatorClient";
 import { saveReport } from "../../../../lib/saveReport";
 import type { AcharOFaltandoMetrics, AcharOFaltandoScaleResult } from "../../../../assessment/acharOFaltando/types";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import db, { auth } from "../../../../lib/firebase";
 
 export interface AcharOFaltandoEvaluationReport {
   sessionId: string;
@@ -46,6 +48,24 @@ export async function useAcharOFaltandoEvaluation(
   const metrics = calculateAcharOFaltandoMetrics(results, elapsed);
   const scaleResult = buildAcharOFaltandoScaleResult(metrics);
   const evaluatorInput = buildAcharOFaltandoTechnicalReport(currentSessionId, metrics, scaleResult);
+
+  // Salva score e level localmente antes do Gemini, garantindo que o Histórico funcione mesmo em caso de falha de IA
+  try {
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      await setDoc(doc(db, 'sessions', currentSessionId), {
+        uid,
+        sessionId: currentSessionId,
+        game: evaluatorInput.game,
+        attentionType: evaluatorInput.attentionType,
+        score: scaleResult.score,
+        level: scaleResult.level,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+    }
+  } catch (err) {
+    console.warn('[useAcharOFaltandoEvaluation] erro ao salvar score local:', err);
+  }
 
   let geminiReport: GeminiReport | undefined;
   try {

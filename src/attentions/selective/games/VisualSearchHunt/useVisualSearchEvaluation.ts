@@ -16,6 +16,8 @@ import type { VisualSearchV2AssessmentResult } from "./assessment-v2";
 import { callEvaluator, buildEvaluatorInput } from "../../../../lib/evaluatorClient";
 import type { EvaluationReport as GeminiReport, EvaluatorInput } from "../../../../lib/evaluatorClient";
 import { saveReport } from "../../../../lib/saveReport";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import db, { auth } from "../../../../lib/firebase";
 
 export interface RoundEvaluation {
   roundIndex: number;
@@ -359,6 +361,24 @@ export async function useVisualSearchEvaluation(
     currentLog.rounds.length,
     totalClicks
   );
+
+  // Salva score e level localmente antes do Gemini, garantindo que o Histórico funcione mesmo em caso de falha de IA
+  try {
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      await setDoc(doc(db, 'sessions', currentSessionId), {
+        uid,
+        sessionId: currentSessionId,
+        game: GAME_ID,
+        attentionType: 'seletiva',
+        score: current.score,
+        level: scaleResult.level,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+    }
+  } catch (err) {
+    console.warn('[useVisualSearchEvaluation] erro ao salvar score local:', err);
+  }
 
   const [, geminiResult] = await Promise.allSettled([
     Promise.resolve(technicalReport),
