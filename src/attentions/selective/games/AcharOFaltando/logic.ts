@@ -154,7 +154,8 @@ export function evaluateRound(
     expected.forEach(i => { if (selected.has(`A:${i}`) || selected.has(`B:${i}`)) hits++; });
     let falsePositives = 0;
     selected.forEach(key => {
-      const parsed = Number(key.split(':')[1]);
+      const parts = key.split(':');
+      const parsed = Number(parts[1]);
       if (!Number.isFinite(parsed) || !expected.has(parsed)) falsePositives++;
     });
     const omissions = expected.size - hits;
@@ -243,7 +244,7 @@ export function computeMetrics(
 }
 
 export function exportCSV(results: MissingItemRoundResult[]): string {
-  const escape = (v: string) => `"${v.replaceAll('"', '""')}"`;
+  const escape = (v: string) => `"${v.split('"').join('""')}"`;
   const header = [
     'timestamp','round','size','presentationMode','layoutMode','itemType',
     'differenceType','responseMode','targetItem','differencePositions',

@@ -6,7 +6,6 @@ import type {
   MissingItemConfig,
   MissingItemRound,
   MissingItemRoundResult,
-  MissingItemSessionMetrics,
 } from './types';
 import { saveSession } from '../../../../shared/storage';
 import { auth } from '../../../../lib/firebase';
@@ -41,7 +40,6 @@ export default function AcharOFaltandoPlay() {
   const [currentRound, setCurrentRound] = useState<MissingItemRound | null>(null);
   const [roundNumber, setRoundNumber] = useState(1);
   const [results, setResults] = useState<MissingItemRoundResult[]>([]);
-  const [metrics, setMetrics] = useState<MissingItemSessionMetrics | null>(null);
   const [markedCells, setMarkedCells] = useState<Array<{ board: 'A' | 'B'; index: number }>>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [remainingSec, setRemainingSec] = useState(config.durationSec);
@@ -134,16 +132,19 @@ export default function AcharOFaltandoPlay() {
     if (timerRef.current) clearInterval(timerRef.current);
     const res = finalResults ?? results;
     const m = computeMetrics(res, elapsedSec);
-    setMetrics(m);
 
     const uid = auth.currentUser?.uid ?? 'anonymous';
     const sessionId = `achar-o-faltando-${Date.now()}`;
     saveSession({
       sessionId,
       gameId: 'achar-o-faltando',
+      attentionType: 'selective',
+      sessionStatus: 'completed',
+      schemaVersion: 1,
       uid,
       startedAt: Date.now() - elapsedSec * 1000,
       completedAt: Date.now(),
+      metrics: m,
       rounds: res.map(r => ({
         roundNumber: r.roundNumber,
         hits: r.hits,
@@ -247,7 +248,6 @@ export default function AcharOFaltandoPlay() {
 
     return (
       <div style={{ maxWidth: 920, margin: '0 auto', padding: '16px 16px 80px' }}>
-        {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <button
             onClick={() => navigate('/treinar/seletiva')}
@@ -262,7 +262,6 @@ export default function AcharOFaltandoPlay() {
           </div>
         </div>
 
-        {/* Grades */}
         {isSideBySide && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             {renderGrid(currentRound.itemsA, 'A', 'Grade A')}
@@ -277,7 +276,6 @@ export default function AcharOFaltandoPlay() {
           </div>
         )}
 
-        {/* Select item mode */}
         {config.responseMode === 'select-item' && (
           <div style={{ marginBottom: 16 }}>
             <p style={{ fontSize: 'var(--text-sm)', marginBottom: 8 }}>Qual item está faltando ou a mais?</p>
@@ -304,7 +302,6 @@ export default function AcharOFaltandoPlay() {
           </div>
         )}
 
-        {/* Feedback overlay */}
         {phase === 'feedback' && feedbackResult && (
           <div style={{
             textAlign: 'center', padding: 12, borderRadius: 'var(--radius-md)',
@@ -316,7 +313,6 @@ export default function AcharOFaltandoPlay() {
           </div>
         )}
 
-        {/* Submit */}
         {phase === 'playing' && (
           <div style={{ textAlign: 'center', marginTop: 16 }}>
             <button
