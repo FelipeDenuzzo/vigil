@@ -904,6 +904,22 @@ export default function VisualSearchHunt({
                 </span>.
               </p>
             </div>
+            {roundIndex === 1 && (
+              <div style={{
+                textAlign: 'center',
+                fontSize: '13px',
+                color: 'var(--color-text-muted)',
+                lineHeight: '1.5',
+                padding: '10px 16px',
+                background: 'rgba(59, 130, 246, 0.05)',
+                border: '1px dashed rgba(59, 130, 246, 0.25)',
+                borderRadius: '12px',
+                margin: '0 auto',
+                maxWidth: '360px',
+              }}>
+                A figura que você precisa localizar vai aparecer aqui, só vou te avisar dessa vez, nas outras fases só vai aparecer a figura
+              </div>
+            )}
             <div
               key={`target-${roundIndex}`}
               className="vsh-target-fade"
