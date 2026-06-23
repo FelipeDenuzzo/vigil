@@ -12,7 +12,12 @@ O pipeline de avaliação do Vigil passou por uma migração para **Monorepo**. 
 
 O pipeline é composto por **4 artefatos com responsabilidades independentes**. Nenhum artefato conhece os detalhes internos do outro. Modificações em um não devem afetar os demais.
 
-O treino de referência ativo é o **VisualSearchHunt** (Caça ao Alvo), único treino em produção no momento. Toda nova avaliação deve seguir o mesmo padrão estabelecido por ele.
+Os treinos de referência ativos em produção e desenvolvimento são:
+- **VisualSearchHunt** (Caça ao Alvo — Atenção Seletiva)
+- **AcharOFaltando** (Achar o Faltando — Atenção Seletiva)
+- **SelectiveListening** (Escuta Seletiva — Atenção Dividida)
+
+Toda nova avaliação ou treino deve seguir os mesmos padrões arquiteturais estabelecidos por eles.
 
 ---
 
@@ -42,11 +47,13 @@ O treino de referência ativo é o **VisualSearchHunt** (Caça ao Alvo), único 
 
 **Responsabilidade:** executar o jogo e registrar o que aconteceu. Não sabe nada sobre avaliação.
 
-**Treino de referência ativo:**
+**Treinos ativos no repositório:**
 
-| Nome do arquivo | Localização |
-|---|---|
-| `VisualSearchHunt.tsx` | `src/attentions/selective/games/VisualSearchHunt/` |
+| Jogo / Treino | Tipo de Atenção | Localização do Componente Principal |
+|---|---|---|
+| **VisualSearchHunt** (Caça ao Alvo) | Seletiva | `src/attentions/selective/games/VisualSearchHunt/VisualSearchHunt.tsx` |
+| **AcharOFaltando** (Achar o Faltando) | Seletiva | `src/attentions/selective/games/AcharOFaltando/AcharOFaltandoPlay.tsx` |
+| **SelectiveListening** (Escuta Seletiva) | Dividida | `src/attentions/divided/games/SelectiveListening/SelectiveListening.tsx` |
 
 **Estrutura de pastas por tipo de atenção (já existem no repositório):**
 
@@ -57,7 +64,9 @@ O treino de referência ativo é o **VisualSearchHunt** (Caça ao Alvo), único 
 | Alternada | `src/attentions/alternating/` |
 | Dividida | `src/attentions/divided/` |
 
-**Regra:** cada novo treino criado fica dentro da pasta `games/` do seu tipo de atenção, seguindo o mesmo padrão de `VisualSearchHunt`.
+**Regra:** cada novo treino criado fica dentro da pasta `games/` do seu tipo de atenção, seguindo os padrões de separação de fases (instruções, simulação, jogo ativo, e carregamento de resultado).
+
+*(Nota de Estímulo Visual - AcharOFaltando: Os estímulos visuais deste treino utilizarão os arquivos de imagem PNG locais localizados no diretório `public/simbolos/` (de `18.png` a `45.png`), em vez de caracteres Unicode simples, para proporcionar uma interface lúdica e visualmente rica).*
 
 ---
 
@@ -71,8 +80,9 @@ O treino de referência ativo é o **VisualSearchHunt** (Caça ao Alvo), único 
 ```
 src/assessment/{nomeDotreino}/
 ```
+*(Nota: Para treinos locais simplificados ou em fase de prototipagem, a lógica de cálculo de métricas e estrutura de dados pode residir no arquivo `logic.ts` dentro da própria pasta do treino, como ocorre em `AcharOFaltando`).*
 
-### Arquivos obrigatórios por treino
+### Arquivos obrigatórios por treino integrado ao Gemini
 
 Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arquivos, com os nomes adaptados ao treino:
 
@@ -85,7 +95,9 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 | `build{NomeDoTreino}TechnicalReport.ts` | Monta o log estruturado (`EvaluatorInput`) pronto para enviar ao Gemini |
 | `types.ts` | Tipos e interfaces específicos do treino |
 
-### Referência existente — VisualSearchHunt
+### Referências existentes — VisualSearch & SelectiveListening
+
+**Atenção Seletiva (VisualSearch):**
 
 | Arquivo | Link |
 |---|---|
@@ -95,6 +107,17 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 | `buildVisualSearchScaleResult.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/visualSearch/buildVisualSearchScaleResult.ts) |
 | `buildVisualSearchTechnicalReport.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/visualSearch/buildVisualSearchTechnicalReport.ts) |
 | `types.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/visualSearch/types.ts) |
+
+**Atenção Dividida (SelectiveListening):**
+
+| Arquivo | Link |
+|---|---|
+| `adaptSessionToSelectiveListening.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/selectiveListening/adaptSessionToSelectiveListening.ts) |
+| `calculateSelectiveListeningMetrics.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/selectiveListening/calculateSelectiveListeningMetrics.ts) |
+| `selectiveListeningScaleDefinitions.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/selectiveListening/selectiveListeningScaleDefinitions.ts) |
+| `buildSelectiveListeningScaleResult.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/selectiveListening/buildSelectiveListeningScaleResult.ts) |
+| `buildSelectiveListeningTechnicalReport.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/selectiveListening/buildSelectiveListeningTechnicalReport.ts) |
+| `types.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/selectiveListening/types.ts) |
 
 ---
 
@@ -133,19 +156,107 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 
 ## Artefato 4 — Componente de Apresentação
 
-**Responsabilidade:** receber o JSON do laudo retornado pelo Gemini e exibi-lo ao usuário de forma visual. Não faz nenhum cálculo.
+**Responsabilidade:** receber o JSON do laudo retornado pelo Gemini ou calculado localmente e exibi-lo de forma visual e intuitiva para o usuário ou profissional.
 
-**Arquivos de referência existentes (VisualSearchHunt):**
+**Componentes de Apresentação por Treino:**
 
-| Arquivo | Responsabilidade | Link |
-|---|---|---|
-| `EvaluationReportPanel.tsx` | Painel principal de exibição do laudo | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/VisualSearchHunt/EvaluationReportPanel.tsx) |
-| `VisualSearchEvaluationScreen.tsx` | Tela completa de avaliação | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationScreen.tsx) |
-| `VisualSearchEvaluationContainer.tsx` | Container que gerencia estado e navegação da tela de avaliação | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationContainer.tsx) |
-| `EagleScale.tsx` | Componente visual de escala/score | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/VisualSearchHunt/EagleScale.tsx) |
-| `EvaluationLoadingAnimation.tsx` | Animação de carregamento enquanto aguarda o Gemini | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/VisualSearchHunt/EvaluationLoadingAnimation.tsx) |
+**Caça ao Alvo (VisualSearchHunt):**
+- [EvaluationReportPanel.tsx](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/VisualSearchHunt/EvaluationReportPanel.tsx): Painel principal de exibição do laudo Gemini.
+- [VisualSearchEvaluationScreen.tsx](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationScreen.tsx): Tela completa de avaliação.
+- [VisualSearchEvaluationContainer.tsx](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationContainer.tsx): Orquestrador de estado e navegação.
 
-**Nota:** o `EvaluationReportPanel.tsx` precisará ser atualizado quando o schema do laudo for expandido para incluir as duas camadas (geral + clínica) e o feedback lúdico.
+**Escuta Seletiva (SelectiveListening):**
+- [SelectiveListeningReportPanel.tsx](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/divided/games/SelectiveListening/SelectiveListeningReportPanel.tsx): Painel de exibição do laudo.
+- [SelectiveListeningResult.tsx](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/divided/games/SelectiveListening/SelectiveListeningResult.tsx): Gerenciador da tela final de resultados.
+
+**Achar o Faltando (AcharOFaltando):**
+- [AcharOFaltandoReportPanel.tsx](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/AcharOFaltando/AcharOFaltandoReportPanel.tsx): Exibição local das métricas calculadas (rodadas, acertos, omissões, falsos positivos e curva por rodada).
+- [AcharOFaltandoEvaluationContainer.tsx](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/AcharOFaltando/AcharOFaltandoEvaluationContainer.tsx): Orquestrador local integrado ao Firestore (`sessionReports`).
+
+---
+
+## Fluxo de Persistência e Download de Laudos
+
+Para garantir que os laudos gerados pelo Gemini e as métricas de treino possam ser consultados retroativamente ou exportados pelo usuário/profissional, o Vigil implementa um fluxo estruturado de persistência:
+
+```
+[Treino Finalizado] ──> [Geração de Métricas / Laudo Gemini]
+                             │
+                             ▼
+              [reportToMarkdown(report, input)] (Formatação .md)
+                             │
+                             ▼
+     [saveReport] ──> [Upload String p/ Firebase Storage]
+                             │  (laudos/${uid}/${sessionId}.md)
+                             ▼
+              [Obtenção de Download URL (reportUrl)]
+                             │
+                             ▼
+        [Salvar no Firestore (sessions/{sessionId})]
+```
+
+### Arquitetura de Downloads
+1. **Conversão para Markdown**: Após o recebimento do laudo da API do Gemini, a função [reportToMarkdown.ts](file:///Users/felipedenuzzo/VIGIL/vigil/src/lib/reportToMarkdown.ts) é executada, organizando a resposta em seções formatadas (Resultado Lúdico, Relatório Geral, Nota Clínica, Recomendações).
+2. **Armazenamento Seguro (Firebase Storage)**: O arquivo Markdown (.md) é enviado via `uploadString` para o bucket do Firebase Storage sob o caminho `/laudos/{uid}/{sessionId}.md` para garantir o isolamento de privacidade por UID do usuário autenticado.
+3. **Persistência de Metadados (Firestore)**: O URL de download retornado pelo Storage (`reportUrl`) é acoplado aos metadados gerais da sessão (como `score`, `level`, `game`, `attentionType`) e salvo no documento correspondente da coleção `sessions` no Firestore.
+4. **Disponibilização para Download**:
+   - **ReportViewer**: O componente [ReportViewer.tsx](file:///Users/felipedenuzzo/VIGIL/vigil/src/shared/components/ReportViewer.tsx), quando em modo de exibição clínica, disponibiliza o link de download direto do arquivo Markdown ("Baixar laudo (.md)") através da propriedade `reportUrl`.
+   - **Histórico**: A tela de [Historico.tsx](file:///Users/felipedenuzzo/VIGIL/vigil/src/pages/Historico.tsx) exibe um botão "Ver laudo" para qualquer sessão que possua o campo `reportUrl` salvo.
+   - **Utilitários de Exportação Local**: Para treinos locais simplificados que não enviam dados ao Gemini (como `AcharOFaltando`), existem funções auxiliares de exportação como `exportCSV` e `exportJSON` para gerar arquivos baixáveis diretamente na memória do cliente.
+
+---
+
+## Diretrizes de Avaliação — Camadas Lúdica e Clínica
+
+O laudo emitido pela inteligência artificial segue uma estrutura de **Camada Dupla** que atende simultaneamente às necessidades motivacionais do paciente e às demandas técnicas do terapeuta:
+
+### 🎮 Camada Lúdica (Gamificada / Leigo)
+* **Público-Alvo**: O próprio usuário/jogador do Vigil.
+* **Objetivo**: Reforçar o engajamento, incentivar a continuidade das sessões e evitar sentimentos de frustração.
+* **Linguagem**: Extremamente simples, encorajadora, amigável e desprovida de jargões técnicos de saúde.
+* **Elementos**: Classificação por score gamificado (0 a 100), medalhas ou emojis (ex: 🦊, 🦅), indicação de nível de jogo e mensagens de progresso motivacionais.
+
+### 🏥 Camada Clínica (Técnica / Profissional)
+* **Público-Alvo**: O neuropsicólogo, psicólogo ou profissional de reabilitação responsável pelo acompanhamento.
+* **Objetivo**: Oferecer insumos objetivos detalhando o funcionamento de subcomponentes da atenção.
+* **Linguagem**: Formal, científica, baseada em evidências numéricas coletadas durante a execução.
+* **Métricas Detalhadas**:
+  - *Precisão Serial (Ordem Exata)* e *Precisão de Itens*.
+  - *Custo de Carga Cognitiva (Load Cost)*: Comparação de performance conforme a tarefa exige maior memória operacional ou intercalação de atividades secundárias (ex: Paradigma TBRS no Cofre Mental).
+  - *Filtragem de Distratores / Taxa de Intrusão*: Capacidade de ignorar estímulos concorrentes (ex: escuta dicótica na Escuta Seletiva).
+  - *Latência de Resposta*: Tempo médio de reação (ms) e flutuações de velocidade.
+
+---
+
+## Conformidade com as Normas do CFP (Conselho Federal de Psicologia)
+
+Como a regulamentação do CFP (ex: Resoluções sobre Avaliação Psicológica) reserva o uso de **testes psicológicos clínicos diagnósticos** exclusivamente a psicólogos habilitados utilizando instrumentos aprovados pelo SATEPSI, o Vigil incorpora salvaguardas arquiteturais críticas:
+
+1. **Definição de Escopo**: A plataforma Vigil é arquitetada e declarada estritamente como um **instrumento de treinamento, reabilitação e estimulação cognitiva**, não possuindo o status de teste psicológico ou diagnóstico neuropsicológico.
+2. **Restrições de Prompting no Gemini**:
+   - **Proibição Absoluta de Diagnósticos**: As instruções nos prompts enviados ao Gemini (ex: [divided.ts](file:///Users/felipedenuzzo/VIGIL/vigil/vigil-evaluator/src/prompts/divided.ts)) proíbem explicitamente o modelo de concluir, sugerir ou fechar diagnósticos específicos de transtornos clínicos ou de aprendizagem (ex: TDAH, DPAC, TEA).
+   - **Aviso Legal e Recomendação**: O campo `clinicalRecommendation` deve incluir obrigatoriamente um alerta afirmando que as informações contidas no laudo são resultantes de um treino cognitivo virtual e não substituem exames especializados ou avaliações clínicas formais, direcionando o profissional a prosseguir com avaliações padronizadas e profissionais credenciados caso note discrepâncias importantes.
+   - **Foco Funcional**: As notas clínicas emitidas focam no desempenho da tarefa e na descrição de subfunções cognitivas específicas (ex: "dificuldade de inibição de estímulo sonoro lateral"), sem rotular o paciente.
+3. **Privacidade e Isolamento (LGPD)**: Todo o armazenamento de sessões e laudos é protegido com regras de segurança rígidas isoladas pelo `uid` do usuário autenticado no Firestore e no Firebase Storage, impedindo o acesso não autorizado a dados sensíveis de desempenho cognitivo.
+
+---
+
+## Fluxo de Simulação de Jogo Pré-Treino (Onboarding)
+
+Para neutralizar variáveis que possam distorcer as métricas cognitivas reais do usuário — como ansiedade, desconforto com a interface ou dúvidas na mecânica do jogo —, todos os treinos do Vigil devem implementar um fluxo de onboarding em fases:
+
+```
+[Telas de Instruções] ──> [Fase de Simulação] ──> [Checagem Técnica] ──> [Treino Oficial]
+(Explicação do Jogo)       (Jogo Simplificado)     (Fones de Ouvido)        (Métricas Gravadas)
+```
+
+1. **Fase de Instruções**: Explicação inicial com ilustrações visuais simples demonstrando o objetivo do treino (ex: [SelectiveListeningInstructions.tsx](file:///Users/felipedenuzzo/VIGIL/vigil/src/attentions/divided/games/SelectiveListening/SelectiveListeningInstructions.tsx)).
+2. **Fase de Simulação (Tutorial Interativo)**:
+   - Apresentação de uma partida reduzida de exemplo (ex: [SelectiveListeningSimulation.tsx](file:///Users/felipedenuzzo/VIGIL/vigil/src/attentions/divided/games/SelectiveListening/SelectiveListeningSimulation.tsx)).
+   - O usuário joga uma versão simplificada sem limite de tempo punitivo, recebendo feedback imediato na tela após responder (ex: indicando se ouviu o canal correto e exibindo quais eras as respostas esperadas).
+   - **Isolamento de Dados**: Os dados e erros cometidos durante a simulação **não são computados** nas estatísticas clínicas finais e **não são enviados** ao Firestore/Gemini.
+3. **Checagem Técnica (On-Demand)**: Verificação e calibração de hardware necessária antes de começar (ex: confirmação visual e auditiva do uso de fones de ouvido estéreo).
+4. **Treino Real**: O jogo entra na fase oficial de processamento de dados (`playing`), iniciando os logs brutos que posteriormente passarão pelo cálculo do avaliador interno.
 
 ---
 

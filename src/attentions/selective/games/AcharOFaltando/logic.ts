@@ -8,10 +8,7 @@ import {
   MissingItemType,
 } from './types';
 
-const DEFAULT_SYMBOLS = [
-  '☆', '★', '○', '●', '△', '▲', '□', '■', '◇', '◆',
-  '☀', '☂', '✕', '+', '◯', '◉', 'I', '1', 'O', '0',
-];
+const DEFAULT_SYMBOLS = Array.from({ length: 28 }, (_, i) => String(18 + i));
 
 export function createSeededRng(seed: string): () => number {
   if (!seed.trim()) return Math.random;

@@ -1,7 +1,7 @@
 // src/attentions/selective/games/AcharOFaltando/AcharOFaltandoPlay.tsx
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { generateRound, buildRoundResult, computeMetrics } from './logic';
+import { generateRound, buildRoundResult } from './logic';
 import type {
   MissingItemConfig,
   MissingItemRound,
@@ -9,6 +9,7 @@ import type {
 } from './types';
 import { saveSession } from '../../../../shared/storage';
 import { auth } from '../../../../lib/firebase';
+import AcharOFaltandoSimulation from './AcharOFaltandoSimulation';
 
 const DEFAULT_CONFIG: MissingItemConfig = {
   presentationMode: 'side-by-side',
@@ -30,7 +31,7 @@ function formatSec(s: number) {
   return `${m}:${sec.toString().padStart(2, '0')}`;
 }
 
-type Phase = 'instructions' | 'playing' | 'feedback' | 'finished';
+type Phase = 'instructions' | 'simulation' | 'playing' | 'feedback' | 'finished';
 
 export default function AcharOFaltandoPlay() {
   const navigate = useNavigate();
@@ -131,35 +132,36 @@ export default function AcharOFaltandoPlay() {
   function finishGame(finalResults?: MissingItemRoundResult[]) {
     if (timerRef.current) clearInterval(timerRef.current);
     const res = finalResults ?? results;
-    const m = computeMetrics(res, elapsedSec);
-
+    
     const uid = auth.currentUser?.uid ?? 'anonymous';
     const sessionId = `achar-o-faltando-${Date.now()}`;
-    saveSession({
-      sessionId,
-      gameId: 'achar-o-faltando',
-      attentionType: 'selective',
-      sessionStatus: 'completed',
-      schemaVersion: 1,
-      uid,
-      startedAt: Date.now() - elapsedSec * 1000,
-      completedAt: Date.now(),
-      metrics: m,
-      rounds: res.map(r => ({
-        roundNumber: r.roundNumber,
-        hits: r.hits,
-        omissions: r.omissions,
-        falsePositives: r.falsePositives,
-        responseTimeMs: r.responseTimeMs,
-        correct: r.correct,
-        gridSize: r.gridSize,
-        itemType: r.itemType,
-        differenceMode: r.differenceMode,
-        targetItems: r.targetItems,
-        differencePositions: r.differencePositions,
-        response: r.response,
-      })),
-    });
+    saveSession(
+      {
+        sessionId,
+        gameId: 'achar-o-faltando',
+        attentionType: 'seletiva',
+        sessionStatus: 'completed',
+        schemaVersion: 1,
+        uid,
+        startedAt: Date.now() - elapsedSec * 1000,
+        completedAt: Date.now(),
+        rounds: res.map(r => ({
+          roundNumber: r.roundNumber,
+          hits: r.hits,
+          omissions: r.omissions,
+          falsePositives: r.falsePositives,
+          responseTimeMs: r.responseTimeMs,
+          correct: r.correct,
+          gridSize: r.gridSize,
+          itemType: r.itemType,
+          differenceMode: r.differenceMode,
+          targetItems: r.targetItems,
+          differencePositions: r.differencePositions,
+          response: r.response,
+        })),
+      },
+      uid
+    );
 
     setPhase('finished');
     navigate(`/treinar/seletiva/achar-o-faltando/resultado?sessionId=${sessionId}`);
@@ -191,7 +193,7 @@ export default function AcharOFaltandoPlay() {
             Encontre e marque essa diferença clicando na célula ou selecionando o item.
           </p>
           <button
-            onClick={startGame}
+            onClick={() => setPhase('simulation')}
             style={{
               padding: '12px 32px',
               background: 'var(--color-primary)',
@@ -208,6 +210,10 @@ export default function AcharOFaltandoPlay() {
         </div>
       </div>
     );
+  }
+
+  if (phase === 'simulation') {
+    return <AcharOFaltandoSimulation onDone={startGame} />;
   }
 
   if ((phase === 'playing' || phase === 'feedback') && currentRound) {
@@ -255,7 +261,22 @@ export default function AcharOFaltandoPlay() {
                   userSelect: 'none',
                 }}
               >
-                {item}
+                {item && (
+                  config.itemType === 'symbols' ? (
+                    <img
+                      src={`/simbolos/${item}.png`}
+                      alt=""
+                      style={{
+                        width: '75%',
+                        height: '75%',
+                        objectFit: 'contain',
+                        filter: isMarked ? 'brightness(0) invert(1)' : 'none',
+                      }}
+                    />
+                  ) : (
+                    item
+                  )
+                )}
               </div>
             );
           })}
@@ -310,9 +331,27 @@ export default function AcharOFaltandoPlay() {
                     cursor: 'pointer',
                     fontSize: 18,
                     fontFamily: 'monospace',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: 48,
+                    height: 48,
                   }}
                 >
-                  {opt}
+                  {config.itemType === 'symbols' ? (
+                    <img
+                      src={`/simbolos/${opt}.png`}
+                      alt=""
+                      style={{
+                        width: 24,
+                        height: 24,
+                        objectFit: 'contain',
+                        filter: selectedItems.includes(opt) ? 'brightness(0) invert(1)' : 'none',
+                      }}
+                    />
+                  ) : (
+                    opt
+                  )}
                 </button>
               ))}
             </div>

@@ -3,10 +3,11 @@
 // Cada membro carrega APENAS os campos do seu tipo de atenção.
 // Adicionar novo tipo = nova interface + novo membro na union. Sem tocar nos outros.
 
-// ─── Seletiva (VisualSearchHunt) ────────────────────────────────────────────────
+// ─── Seletiva (VisualSearchHunt ou Achar o Faltando) ─────────────────────────────
 export interface SelectiveEvaluatorInput {
   attentionType: 'seletiva';
   sessionId:     string;
+  game?:         'visual-search' | 'achar-o-faltando';
   roundCount?:   number;
   totalClicks?:  number;
   commissionRate?: number;
@@ -34,6 +35,17 @@ export interface SelectiveEvaluatorInput {
     leftMisses:  number;
     rightMisses: number;
   };
+
+  // Campos específicos do Achar o Faltando (escanear grade e achar diferença)
+  totalRounds?: number;
+  totalHits?: number;
+  totalOmissions?: number;
+  totalFalsePositives?: number;
+  totalCorrectRounds?: number;
+  accuracyPerMinute?: number;
+  averageResponseMs?: number;
+  accuracyNote?: string;
+  speedNote?: string;
 }
 
 // ─── Sustentada (LongMazes) ──────────────────────────────────────────────────

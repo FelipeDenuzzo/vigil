@@ -11,7 +11,7 @@ export interface EvaluatorInput {
   attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida';
   severity?: 'minimo' | 'leve' | 'moderado' | 'importante';
   [key: string]: any;
-  game?: 'visual-search' | 'color-shape' | 'cofre-mental' | 'long-mazes' | 'escuta-seletiva';
+  game?: 'visual-search' | 'color-shape' | 'cofre-mental' | 'long-mazes' | 'escuta-seletiva' | 'achar-o-faltando';
   roundCount?: number;
   totalClicks?: number;
   totalHits?: number;
