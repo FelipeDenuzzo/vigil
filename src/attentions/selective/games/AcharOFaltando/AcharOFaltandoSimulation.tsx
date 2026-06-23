@@ -40,6 +40,17 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
 
   return (
     <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-4)' }}>
+      {/* BADGE DE MODO DE PRÁTICA */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+        background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)',
+        color: '#eab308', padding: '8px 20px', borderRadius: '99px',
+        fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.05em',
+        width: 'fit-content', margin: '0 auto 16px auto'
+      }}>
+        <span style={{ fontSize: '18px' }}>🚧</span> MODO DE PRÁTICA
+      </div>
+
       <AnimatePresence mode="wait">
         
         {/* ── STEP 1: Introdução do Objetivo ── */}
@@ -225,22 +236,40 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
             transition={{ duration: 0.25 }}
           >
             <Card style={{ padding: 'var(--space-6)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <span style={{ fontSize: '3rem' }}>🚀</span>
-              <h2 style={{ color: 'var(--color-primary)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
-                Tudo Pronto!
+              <span style={{ fontSize: '3rem', margin: '0 auto' }}>🚀</span>
+              <h2 style={{ margin: 0, color: 'var(--color-primary)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
+                Prática concluída!
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
+
+              <h2 style={{ margin: '8px 0 0 0', textTransform: 'uppercase', fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
+                Você entendeu como funciona?
+              </h2>
+
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', lineHeight: '1.6', marginBottom: '8px' }}>
                 Você aprendeu a mecânica. O treino real terá **10 rodadas** com tempo limite de **20 segundos por fase**. 
                 O escaner e as respostas rápidas garantirão um melhor resultado!
               </p>
               
-              <Button
-                variant="primary"
-                onClick={advance}
-                style={{ width: '100%', backgroundColor: 'var(--color-primary)' }}
-              >
-                Iniciar Treino Real!
-              </Button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                <Button
+                  variant="primary"
+                  onClick={advance}
+                  style={{ width: '100%', backgroundColor: 'var(--color-primary)', padding: '12px 16px', fontSize: '15px' }}
+                >
+                  Ir para o Treino de Atenção →
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setStep(1);
+                    setHasClickedCorrect(false);
+                    setShowFeedback(false);
+                  }}
+                  style={{ width: '100%', padding: '12px 16px', fontSize: '15px' }}
+                >
+                  Repetir o Simulado
+                </Button>
+              </div>
             </Card>
           </motion.div>
         )}

@@ -311,7 +311,7 @@ const css: Record<string, React.CSSProperties> = {
   },
   title: { fontSize: 22, fontWeight: 800, margin: 0 },
   sub: { fontSize: 13, color: '#8b8fa8', margin: 0 },
-  hint: { fontSize: 12, color: '#6b6f88', textAlign: 'center', maxWidth: 260 },
+  hint: { fontSize: 16, color: '#ffffff', textAlign: 'center', maxWidth: 320, fontWeight: 700, padding: '12px 16px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)' },
   infoBox: {
     display: 'flex', gap: 16, fontSize: 13, color: '#8b8fa8',
     background: 'rgba(255,255,255,0.04)', padding: '6px 16px', borderRadius: 8,
