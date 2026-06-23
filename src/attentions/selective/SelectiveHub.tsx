@@ -65,7 +65,6 @@ export const SelectiveHub: React.FC = () => {
                 >
                   🔍 Caça ao Alvo
                 </p>
-
                 <p
                   style={{
                     fontSize: 'var(--text-sm)',
@@ -76,13 +75,32 @@ export const SelectiveHub: React.FC = () => {
                   Cuidado com as distrações.
                 </p>
               </Card>
-            </div>
 
-            <Card style={{ textAlign: 'center', padding: 'var(--space-12) var(--space-6)' }}>
-              <p style={{ color: 'var(--color-text-muted)' }}>
-                Novos exercícios de atenção seletiva serão adicionados aqui.
-              </p>
-            </Card>
+              <Card
+                interactive
+                accent="var(--color-selective)"
+                onClick={() => navigate('/treinar/seletiva/achar-o-faltando')}
+              >
+                <p
+                  style={{
+                    fontSize: 'var(--text-lg)',
+                    fontWeight: 600,
+                    marginBottom: 'var(--space-2)',
+                  }}
+                >
+                  🔎 Achar o Faltando
+                </p>
+                <p
+                  style={{
+                    fontSize: 'var(--text-sm)',
+                    color: 'var(--color-text-muted)',
+                  }}
+                >
+                  Compare duas grades quase idênticas e encontre o item que está faltando
+                  ou a mais antes que o tempo acabe.
+                </p>
+              </Card>
+            </div>
           </div>
         )}
       </section>
