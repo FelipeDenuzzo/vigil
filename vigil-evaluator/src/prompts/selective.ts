@@ -62,7 +62,64 @@ export const SELECTIVE_EVALUATION_SCHEMA = {
 };
 
 // ─── Prompt clínico — Atenção Seletiva ──────────────────────────────────────
+// ─── Prompt clínico — Atenção Seletiva ──────────────────────────────────────
 export function buildSelectivePrompt(input: SelectiveEvaluatorInput): string {
+  const game = input.game || 'visual-search';
+  const displaySeverity = input.severity === 'minimo' ? 'mínimo' : (input.severity ?? 'indeterminado');
+
+  if (game === 'achar-o-faltando') {
+    const totalRounds = input.totalRounds ?? 0;
+    const noEngagementWarning = totalRounds === 0
+      ? `ATENÇÃO — SESSÃO SEM ENGAJAMENTO: totalRounds é 0. O usuário não completou nenhuma rodada. Resuma que os dados são insuficientes em todos os campos.`
+      : '';
+
+    return `
+Você é um avaliador técnico-clínico de uma tarefa de atenção seletiva chamada "Achar o Faltando".
+Neste treino, o usuário deve escanear duas grades de símbolos lado a lado ou de forma alternada e encontrar o elemento discrepante (que está faltando ou sobrando).
+Deve gerar um laudo em DUAS camadas distintas baseando-se RIGOROSAMENTE nas regras abaixo.
+
+REGRAS ABSOLUTAS DE LINGUAGEM — LEIA ANTES DE TUDO:
+- PROIBIÇÃO TOTAL de usar as palavras: "comprometimento", "déficit", "patologia", "diagnóstico", "negligência", "hemi-negligência", "negligência lateral", "negligência espacial", "negligência hemiespacial", "controle inibitório", "lentificação", "lentificação cognitiva", "rastreio visual", "sensibilidade atencional", "flutuação da vigilância", "impulsividade", "varredura caótica", "imaturidade executiva", "atenção lateralizada", "hemicampo", "perfil atencional difuso".
+- TOM OBRIGATÓRIO: explique como se fosse para alguém sem formação em saúde. Encorajador e descritivo, nunca alarmista ou clínico. Baseado apenas nesta sessão específica. Use frases como: "o ideal seria...", "nesta sessão foi observado...", "isso pode indicar...".
+- NÃO feche diagnóstico.
+
+GUIA DE INTERPRETAÇÃO DAS MÉTRICAS:
+- Tempo de resposta (averageResponseMs): Média de tempo por rodada. <5000ms: muito rápido. 5000ms-10000ms: adequado. >10000ms: lento/cauteloso.
+- Erros por omissão (totalOmissions): Rodadas onde o usuário não indicou a resposta correta no tempo limite. Elevado indica lentidão de busca ou falha no filtro.
+- Falsos positivos (totalFalsePositives): Cliques fora do ponto discrepante. Alto indica impulsividade motora ou falha na discriminação.
+- Eficiência de varredura (accuracyPerMinute): Razão de acertos por tempo decorrido. Valores mais altos indicam busca focada rápida.
+
+FORMATO E EXIGÊNCIAS POR CAMPO (siga a estrutura de schema):
+- generalSummary: 2-3 frases acessíveis sobre o que ocorreu (velocidade, acertos, erros).
+- generalStrengths / Weaknesses: Pontos encorajadores / Pontos de melhoria sem alarmismo.
+- clinicalStrengths / Weaknesses: Cite o que foi avaliado, o ideal, e o que foi observado (números simples).
+- clinicalNote: Texto corrido com (1) visão geral da atenção seletiva do usuário, (2) análise de velocidade e acertos utilizando dados numéricos, (3) qualidade da discriminação de estímulos e impulsividade, (4) o que isso indica sobre a focalização sem usar termos proibidos e sem dar diagnósticos.
+
+${noEngagementWarning}
+
+─── DADOS DA SESSÃO ──────────────────────────────────────────────────────────
+sessionId: ${input.sessionId}
+jogo: achar-o-faltando
+attentionType: seletiva
+severity (calculada localmente): ${displaySeverity}
+
+Métricas globais:
+  Total de rodadas: ${totalRounds}
+  Rodadas corretas: ${input.totalCorrectRounds ?? 0}
+  Acertos (hits): ${input.totalHits ?? 0}
+  Omissões (omissions): ${input.totalOmissions ?? 0}
+  Falsos positivos: ${input.totalFalsePositives ?? 0}
+  Eficiência (acertos/min): ${input.accuracyPerMinute ?? 0}
+  Tempo médio de busca: ${input.averageResponseMs ?? 0} ms
+  Nota de precisão local: ${input.accuracyNote ?? 'sem nota'}
+  Nota de velocidade local: ${input.speedNote ?? 'sem nota'}
+─────────────────────────────────────────────────────────────────────────────
+
+Gere o laudo nos 3 níveis do schema (pontuação, geral e clínica) rigorosamente seguindo as instruções e proibições de palavras.
+`.trim();
+  }
+
+  // Jogo default: Visual Search (Caça ao Alvo)
   const spatialProfile  = input.spatialProfile;
   const errorProfile    = input.errorProfile;
   const commissionRate  = input.commissionRate ?? 0;
@@ -79,8 +136,6 @@ export function buildSelectivePrompt(input: SelectiveEvaluatorInput): string {
         `  ${q}: ${v.hits} acertos, ${v.errors} erros (taxa ${(v.errorRate * 100).toFixed(1)}%)`
     )
     .join('\n');
-
-  const displaySeverity = input.severity === 'minimo' ? 'mínimo' : (input.severity ?? 'indeterminado');
 
   const noEngagementWarning = totalClicks === 0
     ? `ATENÇÃO — SESSÃO SEM ENGAJAMENTO MOTOR: totalClicks é 0. O usuário não emitiu respostas. Resuma que os dados são insuficientes em todos os campos.`

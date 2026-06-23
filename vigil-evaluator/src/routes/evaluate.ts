@@ -16,15 +16,21 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   const game          = body.game          as string | undefined;
   const attentionType = body.attentionType as string | undefined;
 
-  // ── Atenção Seletiva — Visual Search ───────────────────────────────────────────
-  if (game === 'visual-search' || attentionType === 'seletiva') {
-    const input = body as VisualSearchInput;
-    if (!input.severity || input.commissionRate === undefined) {
-      res.status(400).json({ error: 'Invalid payload for visual-search: missing severity or commissionRate' });
+  // ── Atenção Seletiva — Visual Search ou Achar o Faltando ─────────────────────
+  if (game === 'visual-search' || game === 'achar-o-faltando' || attentionType === 'seletiva') {
+    const input = body as any;
+    if (!input.severity) {
+      res.status(400).json({ error: 'Invalid payload for selective attention: missing severity' });
+      return;
+    }
+    if (game === 'visual-search' && input.commissionRate === undefined) {
+      res.status(400).json({ error: 'Invalid payload for visual-search: missing commissionRate' });
       return;
     }
 
-    const result = evaluateVisualSearch(input);
+    if (game === 'visual-search') {
+      evaluateVisualSearch(input);
+    }
 
     try {
       const aiReport = await evaluateWithGemini(input as unknown as EvaluatorInput) as any;
