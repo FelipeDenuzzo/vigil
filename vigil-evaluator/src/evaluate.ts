@@ -4,6 +4,8 @@ import { buildSelectivePrompt,   SELECTIVE_EVALUATION_SCHEMA   } from './prompts
 import { buildSustainedPrompt,   SUSTAINED_EVALUATION_SCHEMA   } from './prompts/sustained';
 import { buildAlternatingPrompt, ALTERNATING_EVALUATION_SCHEMA } from './prompts/alternating';
 import { buildDividedPrompt,     DIVIDED_EVALUATION_SCHEMA     } from './prompts/divided';
+import { buildProgressContext } from './assessment/buildProgressContext';
+import { buildLongitudinalBlock } from './prompts/_longitudinalBlock';
 
 // ── Cliente Vertex AI ───────────────────────────────────────────────────────────────────────────
 const ai = new GoogleGenAI({
@@ -60,13 +62,28 @@ function resolvePromptAndSchema(input: EvaluatorInput) {
 
 // ── Função principal ───────────────────────────────────────────────────────────────────────────
 export async function evaluateWithGemini(
-  input: EvaluatorInput
+  input: EvaluatorInput,
+  uid?: string
 ): Promise<EvaluationReport> {
-  const { prompt, schema } = resolvePromptAndSchema(input);
+  const { prompt: basePrompt, schema } = resolvePromptAndSchema(input);
+
+  let finalPrompt = basePrompt;
+  if (uid) {
+    try {
+      const severityScoreMap: Record<string, number> = {
+        minimo: 85, leve: 65, moderado: 45, importante: 25,
+      };
+      const estimatedScore = severityScoreMap[(input as any).severity ?? 'moderado'] ?? 55;
+      const ctx = await buildProgressContext(uid, input.attentionType, estimatedScore);
+      if (ctx) finalPrompt = buildLongitudinalBlock(ctx) + '\n\n' + basePrompt;
+    } catch (err) {
+      console.warn('[vigil-evaluator] contexto longitudinal indisponível:', err);
+    }
+  }
 
   const response = await ai.models.generateContent({
     model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-    contents: prompt,
+    contents: finalPrompt,
     config: {
       responseMimeType: 'application/json',
       responseSchema: schema,

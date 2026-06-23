@@ -187,3 +187,29 @@ export interface EvaluationReport {
   clinicalRecommendation:  string;
   clinicalNote:            string;
 }
+
+// ─── Contexto longitudinal (Fase 3) ──────────────────────────────────────────
+
+export type PerformanceTrend = 'improving' | 'stable' | 'oscillating' | 'declining';
+
+export interface BaselineRef {
+  score: number;
+  level: 'minimo' | 'leve' | 'moderado' | 'importante';
+  doneAt: string;
+}
+
+export interface RecentSession {
+  sessionId: string;
+  score: number;
+  level: string;
+  createdAt: string;
+}
+
+export interface ProgressContext {
+  baseline: BaselineRef;
+  sessionCount: number;
+  recentSessions: RecentSession[];
+  trend: PerformanceTrend;
+  deltaFromBaseline: number;
+  firstSessionAfterBaseline: boolean;
+}

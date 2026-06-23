@@ -33,7 +33,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     }
 
     try {
-      const aiReport = await evaluateWithGemini(input as unknown as EvaluatorInput) as any;
+      const uid: string | undefined = typeof body.uid === 'string' ? body.uid : undefined;
+      const aiReport = await evaluateWithGemini(input as unknown as EvaluatorInput, uid) as any;
       const level = (aiReport.level as string) === 'minimo' ? 'mínimo' : aiReport.level;
 
       res.json({
@@ -75,7 +76,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     }
 
     try {
-      const aiReport = await evaluateWithGemini(input) as any;
+      const uid: string | undefined = typeof body.uid === 'string' ? body.uid : undefined;
+      const aiReport = await evaluateWithGemini(input, uid) as any;
       const level = (aiReport.level as string) === 'minimo' ? 'mínimo' : aiReport.level;
 
       res.json({
@@ -117,7 +119,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     }
 
     try {
-      const aiReport = await evaluateWithGemini(input) as any;
+      const uid: string | undefined = typeof body.uid === 'string' ? body.uid : undefined;
+      const aiReport = await evaluateWithGemini(input, uid) as any;
       const level = (aiReport.level as string) === 'minimo' ? 'mínimo' : aiReport.level;
 
       res.json({
@@ -160,7 +163,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     }
 
     try {
-      const aiReport = await evaluateWithGemini(input) as any;
+      const uid: string | undefined = typeof body.uid === 'string' ? body.uid : undefined;
+      const aiReport = await evaluateWithGemini(input, uid) as any;
       const level = (aiReport.level as string) === 'minimo' ? 'mínimo' : aiReport.level;
 
       res.json({
