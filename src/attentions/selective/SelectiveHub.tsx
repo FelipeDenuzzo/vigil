@@ -68,7 +68,7 @@ export const SelectiveHub: React.FC = () => {
                 <p
                   style={{
                     fontSize: 'var(--text-sm)',
-                    color: 'var(--color-text-muted)',
+                    color: '#ffffff',
                   }}
                 >
                   Encontre todas as figuras que correspondem ao alvo antes que o tempo acabe.
@@ -93,7 +93,7 @@ export const SelectiveHub: React.FC = () => {
                 <p
                   style={{
                     fontSize: 'var(--text-sm)',
-                    color: 'var(--color-text-muted)',
+                    color: '#ffffff',
                   }}
                 >
                   Compare duas imagens quase idênticas e encontre o elemento que está diferente antes que o tempo acabe.

@@ -214,7 +214,7 @@ export const ProcessingPhase: React.FC<Props> = ({
     ruleBanner: {
       fontSize: 'var(--text-base)',
       fontWeight: 700,
-      color: 'var(--color-text-muted)',
+      color: '#ffffff',
       textAlign: 'center' as const,
       height: '30px',
       display: 'flex',

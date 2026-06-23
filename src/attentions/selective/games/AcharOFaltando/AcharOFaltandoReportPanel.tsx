@@ -83,7 +83,7 @@ const s = {
     textAlign: 'center',
     fontSize: 13,
     fontWeight: active ? 700 : 400,
-    color: active ? '#6c8ef5' : '#8b8fa8',
+    color: active ? '#6c8ef5' : '#ffffff',
     border: 'none',
     borderBottom: active ? '2px solid #6c8ef5' : '2px solid transparent',
     cursor: 'pointer',
@@ -148,7 +148,7 @@ const s = {
     justifyContent: 'space-between',
     marginTop: 6,
     fontSize: 10,
-    color: '#8b8fa8',
+    color: '#ffffff',
   } as const,
   levelBadge: (level: string): React.CSSProperties => ({
     display: 'inline-block',
@@ -182,7 +182,7 @@ const s = {
   },
   statLabel: {
     fontSize: 11,
-    color: '#8b8fa8',
+    color: '#ffffff',
     marginTop: 4,
     margin: 0,
   },
@@ -297,7 +297,7 @@ const s = {
     gap: 8,
     padding: '10px 16px',
     background: 'rgba(255,255,255,0.04)',
-    color: '#8b8fa8',
+    color: '#ffffff',
     borderRadius: 8,
     fontWeight: 600,
     fontSize: 13,
@@ -322,7 +322,7 @@ export default function AcharOFaltandoReportPanel({
   if (!metrics) {
     return (
       <div style={{ textAlign: 'center', padding: 64 }}>
-        <p style={{ color: 'var(--color-text-muted)' }}>Nenhum resultado disponível.</p>
+        <p style={{ color: '#ffffff' }}>Nenhum resultado disponível.</p>
         <button onClick={onBack} style={{ marginTop: 16, cursor: 'pointer' }}>Voltar</button>
       </div>
     );
@@ -376,7 +376,7 @@ export default function AcharOFaltandoReportPanel({
               style={{
                 padding: '8px 16px', background: 'transparent',
                 border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
-                color: '#8b8fa8', cursor: 'pointer', fontSize: 13,
+                color: '#ffffff', cursor: 'pointer', fontSize: 13,
               }}
             >
               ← Voltar
@@ -445,7 +445,7 @@ export default function AcharOFaltandoReportPanel({
             <div style={s.curveSection}>
               <h2 style={s.sectionTitle}>Curva por Rodada</h2>
               {metrics.roundCurve.length === 0 ? (
-                <p style={{ color: '#8b8fa8', fontSize: 13 }}>Nenhuma rodada concluída.</p>
+                <p style={{ color: '#ffffff', fontSize: 13 }}>Nenhuma rodada concluída.</p>
               ) : (
                 <div style={s.curveGrid}>
                   {metrics.roundCurve.map(entry => {
@@ -454,9 +454,9 @@ export default function AcharOFaltandoReportPanel({
                       <div key={entry.roundNumber} style={s.curveRow(isPerfect)}>
                         <span style={{ fontWeight: 600, color: '#e8e9f0' }}>Rodada {entry.roundNumber}</span>
                         <span>Acertos: <strong style={{ color: '#6dbf87' }}>{entry.hits}</strong></span>
-                        <span>Omissões: <strong style={{ color: entry.omissions > 0 ? '#f5c070' : '#8b8fa8' }}>{entry.omissions}</strong></span>
-                        <span>Falsos: <strong style={{ color: entry.falsePositives > 0 ? '#f08080' : '#8b8fa8' }}>{entry.falsePositives}</strong></span>
-                        <span style={{ color: '#8b8fa8' }}>{(entry.responseTimeMs / 1000).toFixed(1)} s</span>
+                        <span>Omissões: <strong style={{ color: entry.omissions > 0 ? '#f5c070' : '#ffffff' }}>{entry.omissions}</strong></span>
+                        <span>Falsos: <strong style={{ color: entry.falsePositives > 0 ? '#f08080' : '#ffffff' }}>{entry.falsePositives}</strong></span>
+                        <span style={{ color: '#ffffff' }}>{(entry.responseTimeMs / 1000).toFixed(1)} s</span>
                       </div>
                     );
                   })}
@@ -471,13 +471,13 @@ export default function AcharOFaltandoReportPanel({
             {!loaded ? (
               <div style={s.loadingContainer}>
                 <div className="report-panel-spinner" style={s.spinner} />
-                <p style={{ color: '#8b8fa8', fontSize: 13 }}>
+                <p style={{ color: '#ffffff', fontSize: 13 }}>
                   Gerando relatório clínico completo com Inteligência Artificial...
                 </p>
               </div>
             ) : !geminiReport ? (
               <div style={{ textAlign: 'center', padding: 24 }}>
-                <p style={{ color: '#8b8fa8', fontSize: 13 }}>
+                <p style={{ color: '#ffffff', fontSize: 13 }}>
                   Não foi possível obter a análise detalhada da IA no momento. Por favor, verifique sua conexão ou tente novamente.
                 </p>
               </div>
@@ -493,7 +493,7 @@ export default function AcharOFaltandoReportPanel({
                   <div>
                     <h3 style={s.sectionTitle}>✅ O que foi bem</h3>
                     {allStrengths.length === 0 ? (
-                      <p style={{ fontSize: 13, color: '#8b8fa8' }}>Nenhum ponto mapeado.</p>
+                      <p style={{ fontSize: 13, color: '#ffffff' }}>Nenhum ponto mapeado.</p>
                     ) : (
                       <div style={s.bulletList}>
                         {allStrengths.map((item, i) => (
@@ -509,7 +509,7 @@ export default function AcharOFaltandoReportPanel({
                   <div>
                     <h3 style={s.sectionTitle}>⚠️ Pontos de atenção</h3>
                     {allWeaknesses.length === 0 ? (
-                      <p style={{ fontSize: 13, color: '#8b8fa8' }}>Nenhum ponto mapeado.</p>
+                      <p style={{ fontSize: 13, color: '#ffffff' }}>Nenhum ponto mapeado.</p>
                     ) : (
                       <div style={s.bulletList}>
                         {allWeaknesses.map((item, i) => (

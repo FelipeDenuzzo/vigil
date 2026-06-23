@@ -60,7 +60,7 @@ export default function MentalVaultSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)' }}>
                 Passo 1: Memorizar Letras
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
                 Algumas consoantes aparecerão na tela uma por uma. Seu objetivo é guardar a sequência exata na memória.
               </p>
 
@@ -116,7 +116,7 @@ export default function MentalVaultSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)' }}>
                 Passo 2: Atenção Dividida
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-4)', fontSize: '14px', lineHeight: '1.6' }}>
                 Enquanto segura as letras na memória, números aparecerão rapidamente. Classifique-os usando as regras abaixo:
               </p>
 
@@ -157,7 +157,7 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 }}>
                   7
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                <div style={{ fontSize: '12px', color: '#ffffff' }}>
                   Exemplo: <span style={{ color: '#f08080', fontWeight: 'bold' }}>7 Vermelho</span> é maior que 5. Você deve clicar em:
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
@@ -199,7 +199,7 @@ export default function MentalVaultSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)' }}>
                 Passo 3: Abrir o Cofre
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
                 Após responder a todos os números, você deve digitar as letras memorizadas no Passo 1 na mesma ordem para abrir o cofre.
               </p>
 
@@ -251,7 +251,7 @@ export default function MentalVaultSimulation({ onDone }: Props) {
               <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-lg)' }}>
                 Passo 4: Tente Responder!
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
                 Quais eram as 3 letras que mostramos no **Passo 1**? Digite-as na ordem correta:
               </p>
 
@@ -328,7 +328,7 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 Você entendeu como funciona?
               </h2>
 
-              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
                 {answer === SIM_TARGET_LETTERS.join('') ? (
                   <>Você memorizou com precisão a sequência de letras <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_LETTERS.join(' ')}</strong>. No treino real, o desafio será fazer isso enquanto classifica 8 números rapidamente!</>
                 ) : (
@@ -346,11 +346,11 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 marginBottom: 'var(--space-6)'
               }}>
                 <div style={{ marginBottom: 'var(--space-2)' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Letras do Teste:</span>{' '}
+                  <span style={{ color: '#ffffff' }}>Letras do Teste:</span>{' '}
                   <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_LETTERS.join(' ')}</strong>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Sua Resposta:</span>{' '}
+                  <span style={{ color: '#ffffff' }}>Sua Resposta:</span>{' '}
                   <strong style={{ color: answer === SIM_TARGET_LETTERS.join('') ? 'var(--color-sustained)' : '#f08080' }}>
                     {answer.split('').join(' ') || '-'}
                   </strong>

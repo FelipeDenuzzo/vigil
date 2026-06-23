@@ -23,7 +23,7 @@ export const AlternatingHub: React.FC = () => {
         <h1 style={{ fontSize: 'var(--text-2xl)', color: 'var(--color-alternating)' }}>
           Atenção Alternada
         </h1>
-        <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+        <p style={{ color: '#ffffff', marginTop: 'var(--space-2)' }}>
           Esta modalidade fortalece sua capacidade de alternar o foco entre diferentes tipos de tarefas de forma rápida e fluida.
         </p>
       </header>
@@ -53,7 +53,7 @@ export const AlternatingHub: React.FC = () => {
             <p
               style={{
                 fontSize: 'var(--text-sm)',
-                color: 'var(--color-text-muted)',
+                color: '#ffffff',
               }}
             >
               Você verá uma figura na tela e precisa responder pela cor ou pela

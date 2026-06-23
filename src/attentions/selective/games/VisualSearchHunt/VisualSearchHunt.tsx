@@ -459,7 +459,7 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
       <Card>
         <div style={{ display: 'grid', gap: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
-            <span style={{ fontSize: 13, color: 'var(--color-text-muted)', position: 'relative' }}>
+            <span style={{ fontSize: 13, color: '#ffffff', position: 'relative' }}>
               Prática {state.round}/{SIMULATOR_ROUNDS}
               {state.round === 1 && (
                 <span style={{
@@ -621,7 +621,7 @@ function IntroScreen({ onSimulator, onSkip }: { onSimulator: () => void; onSkip:
           <Button onClick={onSimulator}>Veja como o treino funciona</Button>
           <button
             onClick={onSkip}
-            style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
+            style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
           >
             Pular e começar direto
           </button>

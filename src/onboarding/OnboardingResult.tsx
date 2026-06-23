@@ -61,7 +61,7 @@ export const OnboardingResult: React.FC<Props> = ({ baseline, onSave, saving, sa
       <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-2)' }}>
         Seu ponto de partida
       </h1>
-      <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-8)' }}>
+      <p style={{ color: '#ffffff', marginBottom: 'var(--space-8)' }}>
         Este é o seu baseline — a referência que a IA vai usar para medir sua evolução em cada sessão.
       </p>
 
@@ -77,7 +77,7 @@ export const OnboardingResult: React.FC<Props> = ({ baseline, onSave, saving, sa
             <p style={{ fontWeight: 600, marginBottom: 'var(--space-1)' }}>{LABELS[key]}</p>
             <p style={{ fontSize: 'var(--text-2xl)', fontWeight: 700, marginBottom: 'var(--space-1)' }}>
               {entry.score}
-              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', fontWeight: 400 }}> /100</span>
+              <span style={{ fontSize: 'var(--text-sm)', color: '#ffffff', fontWeight: 400 }}> /100</span>
             </p>
             <p style={{ fontSize: 'var(--text-sm)', color: LEVEL_COLOR[entry.level] }}>
               {LEVEL_LABEL[entry.level]}
@@ -95,7 +95,7 @@ export const OnboardingResult: React.FC<Props> = ({ baseline, onSave, saving, sa
         borderTop: '3px solid var(--color-selective)',
       }}>
         <p style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Por onde começar</p>
-        <p style={{ color: 'var(--color-text-muted)' }}>
+        <p style={{ color: '#ffffff' }}>
           Seu maior potencial de melhora agora está na atenção{' '}
           <strong style={{ color: 'var(--color-text)' }}>{priority}</strong>.
           Comece por ela para sentir progressos mais rápidos.

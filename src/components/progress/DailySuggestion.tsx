@@ -58,9 +58,9 @@ export const DailySuggestion: React.FC<Props> = ({ byType }) => {
       marginBottom: 'var(--space-6)',
     }}>
       <div>
-        <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>💡 Sugestão de hoje</p>
+        <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: '#ffffff' }}>💡 Sugestão de hoje</p>
         <p style={{ margin: '2px 0 0', fontWeight: 700 }}>{LABELS[suggestion.type]}</p>
-        <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>{suggestion.reason}</p>
+        <p style={{ margin: 0, fontSize: 'var(--text-xs)', color: '#ffffff' }}>{suggestion.reason}</p>
       </div>
       <Button variant="secondary" onClick={() => navigate(ROUTES[suggestion.type])}>
         Treinar agora

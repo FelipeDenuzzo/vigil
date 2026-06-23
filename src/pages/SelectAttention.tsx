@@ -14,7 +14,7 @@ import { DailySuggestion } from '../components/progress/DailySuggestion';
 function AttentionBadge({ status, accentColor }: { status: AttentionStatus; accentColor: string }) {
   if (status.state === 'loading') {
     return (
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-4)' }}>
         …
       </p>
     );
@@ -22,7 +22,7 @@ function AttentionBadge({ status, accentColor }: { status: AttentionStatus; acce
 
   if (status.state === 'never') {
     return (
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-4)' }}>
         Nunca treinado · <span style={{ color: accentColor }}>Começar agora</span>
       </p>
     );
@@ -30,7 +30,7 @@ function AttentionBadge({ status, accentColor }: { status: AttentionStatus; acce
 
   return (
     <div style={{ marginBottom: 'var(--space-4)' }}>
-      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', margin: 0 }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', margin: 0 }}>
         Última sessão: <strong style={{ color: 'var(--color-text)' }}>{status.lastDate}</strong>
       </p>
       {status.bestScore !== null && (
@@ -96,7 +96,7 @@ function Greeting({ name }: { name: string | null }) {
   return (
     <p style={{
       fontSize: 'var(--text-lg)',
-      color: 'var(--color-text-muted)',
+      color: '#ffffff',
       marginBottom: 'var(--space-2)',
       marginTop: 0,
     }}>
@@ -155,7 +155,7 @@ export const SelectAttention: React.FC = () => {
             <div style={{ fontSize: '2rem', marginBottom: 'var(--space-2)' }}>{emoji}</div>
             <h2 style={{ color: 'var(--color-text)', marginBottom: 'var(--space-1)' }}>{label}</h2>
             <AttentionBadge status={statusMap[type]} accentColor={accentVar} />
-            <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>{description}</p>
+            <p style={{ color: '#ffffff', margin: 0 }}>{description}</p>
           </Card>
         ))}
       </div>

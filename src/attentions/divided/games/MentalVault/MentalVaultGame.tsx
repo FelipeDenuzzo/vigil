@@ -158,7 +158,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
             <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)' }}>
               🔐 Cofre Mental
             </h2>
-            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', textAlign: 'center', fontSize: '15px', lineHeight: '1.7' }}>
+            <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', textAlign: 'center', fontSize: '15px', lineHeight: '1.7' }}>
               Guarde uma sequência de letras e classifique os números que aparecem na tela. No final, digite as letras na mesma ordem para abrir o cofre.
             </p>
             <Button
@@ -213,7 +213,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
             <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-4)', textAlign: 'center' }}>
               🏁 Resultados do Treino
             </h2>
-            <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', textAlign: 'center', fontSize: '14px' }}>
+            <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', textAlign: 'center', fontSize: '14px' }}>
               Treino do Cofre Mental concluído! Confira o laudo consolidado e o desempenho detalhado por rodada abaixo.
             </p>
 
@@ -282,7 +282,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
                         {isCorrect ? '🔓 Cofre Aberto' : '🔒 Cofre Trancado'}
                       </span>
                     </div>
-                    <div style={{ color: 'var(--color-text-muted)', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+                    <div style={{ color: '#ffffff', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
                       <span>Alvo: <strong>{r.sequenciaAlvo.join(' ')}</strong></span>
                       <span>Resposta: <strong>{r.sequenciaDigitada.join(' ') || '-'}</strong></span>
                       <span>Precisão Dígitos: {(r.digitAccuracy * 100).toFixed(0)}%</span>
@@ -316,7 +316,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
     },
     metricLabel: {
       fontSize: '11px',
-      color: 'var(--color-text-muted)',
+      color: '#ffffff',
       textTransform: 'uppercase' as const,
       letterSpacing: '0.04em',
       marginBottom: '4px',
@@ -331,7 +331,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
   return (
     <div style={{ width: '100%', maxWidth: '640px', margin: '0 auto', padding: 'var(--space-4)' }}>
       {phase !== 'instrucoes' && phase !== 'simulacao' && phase !== 'resumo' && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)', color: '#ffffff' }}>
           <span>Rodada {currentRoundIndex + 1} de 6 (Nível {level})</span>
           <span>Fase: {
             phase === 'codificacao' ? 'Codificação' :

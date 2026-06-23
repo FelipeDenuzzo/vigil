@@ -7,7 +7,7 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
     <h2 style={{ fontSize: 'var(--text-lg)', color: 'var(--color-primary)', marginBottom: 'var(--space-4)' }}>
       {title}
     </h2>
-    <div style={{ color: 'var(--color-text-muted)', lineHeight: 1.7, fontSize: 'var(--text-base)' }}>
+    <div style={{ color: '#ffffff', lineHeight: 1.7, fontSize: 'var(--text-base)' }}>
       {children}
     </div>
   </section>
@@ -41,7 +41,7 @@ export const PoliticaPrivacidade: React.FC = () => {
       </Button>
 
       <h1 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-2)' }}>Política de Privacidade</h1>
-      <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-10)', fontSize: 'var(--text-sm)' }}>
+      <p style={{ color: '#ffffff', marginBottom: 'var(--space-10)', fontSize: 'var(--text-sm)' }}>
         Versão 1.0 — última atualização: junho de 2026
       </p>
 

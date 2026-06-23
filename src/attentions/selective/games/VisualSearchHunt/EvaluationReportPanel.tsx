@@ -43,7 +43,7 @@ const s = {
     textAlign: 'center',
     fontSize: 13,
     fontWeight: active ? 700 : 400,
-    color: active ? '#6c8ef5' : '#8b8fa8',
+    color: active ? '#6c8ef5' : '#ffffff',
     borderBottom: active ? '2px solid #6c8ef5' : '2px solid transparent',
     cursor: 'pointer',
     background: 'none',
@@ -87,7 +87,7 @@ const s = {
     justifyContent: 'space-between',
     marginTop: 6,
     fontSize: 11,
-    color: '#8b8fa8',
+    color: '#ffffff',
   } as const,
 
   ludicScore: {
@@ -120,7 +120,7 @@ const s = {
   sectionTitle: {
     fontSize: 11,
     fontWeight: 700,
-    color: '#8b8fa8',
+    color: '#ffffff',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.07em',
     marginBottom: 8,
@@ -252,7 +252,7 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
 
             <div style={s.divider} />
 
-            <p style={{ fontSize: 12, color: '#8b8fa8', lineHeight: 1.6, padding: '8px 2px', textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: '#ffffff', lineHeight: 1.6, padding: '8px 2px', textAlign: 'center' }}>
               {report.clinical.recommendation || report.general.recommendation}
             </p>
           </>

@@ -32,7 +32,7 @@ export const Button: React.FC<ButtonProps> = ({
       ? { background: 'var(--color-primary)', color: 'var(--color-bg)', padding: 'var(--space-3) var(--space-6)' }
       : variant === 'secondary'
       ? { background: 'var(--color-surface-offset)', color: 'var(--color-text)', padding: 'var(--space-3) var(--space-6)', border: '1px solid var(--color-border)' }
-      : { background: 'transparent', color: 'var(--color-text-muted)', padding: 'var(--space-3) var(--space-6)' };
+      : { background: 'transparent', color: '#ffffff', padding: 'var(--space-3) var(--space-6)' };
 
   const sizeStyle: React.CSSProperties =
     size === 'sm'

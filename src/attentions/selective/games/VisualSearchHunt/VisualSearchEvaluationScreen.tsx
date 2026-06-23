@@ -83,7 +83,7 @@ const s = {
   helperText: {
     marginTop: 6,
     fontSize: 13,
-    color: "#8b8fa8",
+    color: "#ffffff",
   } as const,
 };
 

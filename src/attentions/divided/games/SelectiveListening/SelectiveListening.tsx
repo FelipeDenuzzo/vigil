@@ -324,7 +324,7 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
               <h2 style={{ fontSize: '20px', color: 'var(--color-divided)', fontWeight: 700 }}>
                 Aparelho de Som
               </h2>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '15px', lineHeight: '1.6' }}>
+              <p style={{ color: '#ffffff', fontSize: '15px', lineHeight: '1.6' }}>
                 Este treino utiliza áudios concorrentes simultâneos tocando em estéreo.
                 Para obter a melhor eficácia de filtragem atencional, recomendamos fortemente o uso de <strong>fones de ouvido</strong>.
               </p>
@@ -382,7 +382,7 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
                   <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-divided)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Ouça a voz {activeConfig.targetVoice}
                   </h3>
-                  <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', textAlign: 'center', maxWidth: '320px' }}>
+                  <p style={{ color: '#ffffff', fontSize: '13px', textAlign: 'center', maxWidth: '320px' }}>
                     Prepare-se para ignorar a outra voz e guardar a sequência desta voz.
                   </p>
                 </div>
@@ -403,7 +403,7 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
                     ))}
                   </div>
                   
-                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#ffffff' }}>
                     Ouvindo vozes concorrentes...
                   </span>
                   
@@ -419,7 +419,7 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
                   
                   {/* Target reminder & visor de resposta */}
                   <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '12px', color: '#ffffff', display: 'block', marginBottom: '6px' }}>
                       Voz-alvo: <strong>{activeConfig.targetVoice === 'feminina' ? '👩 Feminina' : '🧔 Masculina'}</strong>
                     </span>
 
@@ -514,7 +514,7 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
                         borderRadius: '8px',
                         border: '1px solid rgba(255,255,255,0.06)',
                         background: 'rgba(255,255,255,0.03)',
-                        color: 'var(--color-text-muted)',
+                        color: '#ffffff',
                         fontSize: '13px',
                         fontWeight: 'bold',
                         cursor: 'pointer'
@@ -565,7 +565,7 @@ export const SelectiveListening: React.FC<Props> = ({ sessionId: _sessionId, onC
             animate={{ opacity: 1 }}
             style={{ textAlign: 'center', padding: 'var(--space-8)' }}
           >
-            <h3 style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>
+            <h3 style={{ color: '#ffffff', marginBottom: 'var(--space-4)' }}>
               Finalizando treino...
             </h3>
             <div style={{ width: '40px', height: '40px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--color-divided)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }} />

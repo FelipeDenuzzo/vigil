@@ -129,7 +129,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   return (
     <div style={{ padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ color: '#8b8fa8', fontSize: 12 }}>{label}</span>
+        <span style={{ color: '#ffffff', fontSize: 12 }}>{label}</span>
         <span style={{ color: '#e8e9f0', fontWeight: 700, fontSize: 12 }}>{value}</span>
       </div>
       {hint && <p style={{ fontSize: 11, color: '#5a5e75', margin: '2px 0 0', lineHeight: 1.4 }}>{hint}</p>}
@@ -152,7 +152,7 @@ const s: Record<string, any> = {
   tab: (active: boolean): React.CSSProperties => ({
     padding: '10px 4px', textAlign: 'center', fontSize: 12,
     fontWeight: active ? 700 : 400,
-    color: active ? '#6c8ef5' : '#8b8fa8',
+    color: active ? '#6c8ef5' : '#ffffff',
     borderBottom: active ? '2px solid #6c8ef5' : '2px solid transparent',
     cursor: 'pointer', background: 'none', transition: 'color 0.18s',
   }),
@@ -172,7 +172,7 @@ const s: Record<string, any> = {
   }),
   gaugeLegend: {
     display: 'flex', justifyContent: 'space-between',
-    marginTop: 6, fontSize: 11, color: '#8b8fa8',
+    marginTop: 6, fontSize: 11, color: '#ffffff',
   },
   ludicScore: {
     textAlign: 'center', fontSize: 48, fontWeight: 800,
@@ -192,7 +192,7 @@ const s: Record<string, any> = {
     padding: '12px 14px', background: 'rgba(255,255,255,0.04)', borderRadius: 10,
   },
   sectionTitle: {
-    fontSize: 11, fontWeight: 700, color: '#8b8fa8',
+    fontSize: 11, fontWeight: 700, color: '#ffffff',
     textTransform: 'uppercase', letterSpacing: '0.07em',
     marginBottom: 8, marginTop: 2,
   },

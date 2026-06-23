@@ -24,7 +24,7 @@ export const SelectiveListeningInstructions: React.FC<Props> = ({ onStart, onClo
         <h2 style={{ color: 'var(--color-divided)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
           Escuta Seletiva
         </h2>
-        <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-6)', fontSize: '15px', lineHeight: '1.7', textAlign: 'center' }}>
+        <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '15px', lineHeight: '1.7', textAlign: 'center' }}>
           Este treino desafia sua capacidade de filtrar distrações sonoras concorrentes. 
           Você ouvirá duas vozes simultâneas (uma masculina e outra feminina) ditando números diferentes. 
           Preste atenção apenas à voz solicitada no início de cada rodada e digite a sequência correspondente.

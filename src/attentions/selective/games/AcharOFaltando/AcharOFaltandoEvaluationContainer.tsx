@@ -156,7 +156,7 @@ export default function AcharOFaltandoEvaluationContainer() {
   if (!sessionLog) {
     return (
       <div style={{ maxWidth: 920, margin: '0 auto', padding: 16, textAlign: 'center' }}>
-        <p style={{ color: 'var(--color-text-muted)' }}>Sessão não encontrada.</p>
+        <p style={{ color: '#ffffff' }}>Sessão não encontrada.</p>
         <button onClick={() => navigate('/treinar/seletiva')} style={{ marginTop: 16, cursor: 'pointer' }}>Voltar</button>
       </div>
     );

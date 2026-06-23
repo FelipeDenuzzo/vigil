@@ -53,7 +53,7 @@ export const EncodingPhase: React.FC<Props> = ({
     instruction: {
       fontSize: 'var(--text-lg)',
       fontWeight: 600,
-      color: 'var(--color-text-muted)',
+      color: '#ffffff',
       letterSpacing: '0.05em',
       textTransform: 'uppercase' as const,
       textAlign: 'center' as const,

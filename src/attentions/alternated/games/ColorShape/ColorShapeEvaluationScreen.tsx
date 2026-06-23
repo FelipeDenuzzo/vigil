@@ -34,7 +34,7 @@ const s = {
     padding: '12px 16px', background: '#1c1f2a', color: '#e8e9f0',
     fontSize: 16, fontWeight: 700, cursor: 'pointer',
   } as const,
-  helperText: { marginTop: 6, fontSize: 13, color: '#8b8fa8' } as const,
+  helperText: { marginTop: 6, fontSize: 13, color: '#ffffff' } as const,
 };
 
 function EvaluationBlock({ geminiReport, loaded }: { geminiReport?: GeminiReport; loaded?: boolean | 'organizing' }) {

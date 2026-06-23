@@ -124,7 +124,7 @@ export function EvaluationLoadingAnimation({ organizing = false }: Props) {
         key={phase.id + '-sub'}
         style={{
           fontSize: 13,
-          color: '#8b8fa8',
+          color: '#ffffff',
           marginBottom: 24,
           animation: 'vigilSlideUp 0.4s ease',
         }}
