@@ -152,6 +152,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
   // ── Atenção Dividida — Cofre Mental ou Escuta Seletiva ───────────────────────
   if (game === 'cofre-mental' || game === 'escuta-seletiva' || attentionType === 'dividida') {
+    console.log(`[evaluateRouter] Recebida avaliação de Atenção Dividida. game=${game}, sessionId=${body.sessionId}`);
     const input = body as EvaluatorInput;
     if (!input.severity) {
       res.status(400).json({ error: 'Invalid payload for divided attention: missing severity' });
