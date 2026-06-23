@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../../../shared/components/Button';
 import { Card } from '../../../../shared/components/Card';
+import { useScaleToFit } from '../../../../hooks/useScaleToFit';
 
 interface Props {
   onDone: () => void;
@@ -18,6 +19,7 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
   const [step, setStep] = useState<SimStep>(1);
   const [hasClickedCorrect, setHasClickedCorrect] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const scale = useScaleToFit(920, 750, 24);
 
   const advance = () => {
     if (step === 1) setStep(3);
@@ -40,7 +42,15 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
   };
 
   return (
-    <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-4)' }}>
+    <div style={{ 
+      maxWidth: 920, 
+      margin: '0 auto', 
+      padding: '24px 16px',
+      transform: `scale(${scale})`,
+      transformOrigin: 'top center',
+      transition: 'transform 0.2s ease-out',
+      width: '100%',
+    }}>
       {/* BADGE DE MODO DE PRÁTICA */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',

@@ -10,6 +10,7 @@ import type {
 import { saveSession } from '../../../../shared/storage';
 import { auth } from '../../../../lib/firebase';
 import AcharOFaltandoSimulation from './AcharOFaltandoSimulation';
+import { useScaleToFit } from '../../../../hooks/useScaleToFit';
 
 const DEFAULT_CONFIG: MissingItemConfig = {
   presentationMode: 'side-by-side',
@@ -55,6 +56,7 @@ export default function AcharOFaltandoPlay() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const sessionSeedRef = useRef(Math.random().toString(36).substring(7));
+  const scale = useScaleToFit(920, 750, 24); // 920px largura, 750px altura ideal, 24px margem
 
   function startRound(rNum: number) {
     const round = generateRound({ ...config, seed: sessionSeedRef.current }, rNum);
@@ -303,7 +305,15 @@ export default function AcharOFaltandoPlay() {
     );
 
     return (
-      <div style={{ maxWidth: 920, margin: '0 auto', padding: '16px 16px 80px' }}>
+      <div style={{ 
+        maxWidth: 920, 
+        margin: '0 auto', 
+        padding: '16px',
+        transform: `scale(${scale})`,
+        transformOrigin: 'top center',
+        transition: 'transform 0.2s ease-out',
+        width: '100%',
+      }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <button
             onClick={() => navigate('/treinar/seletiva')}
