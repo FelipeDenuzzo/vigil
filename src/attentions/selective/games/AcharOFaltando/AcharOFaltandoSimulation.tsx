@@ -136,9 +136,9 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
                   <p style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-muted)' }}>
                     Grade A (Referência)
                   </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', border: '1px solid var(--color-border)', padding: '6px', borderRadius: '6px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', border: '1px solid var(--color-border)', padding: '6px', borderRadius: '6px', background: '#ffffff' }}>
                     {SIM_GRID_A.map((sym, i) => (
-                      <div key={i} style={{ height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-surface-2)', borderRadius: '4px', padding: 4 }}>
+                      <div key={i} style={{ height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', borderRadius: '4px', padding: 4 }}>
                         {sym && (
                           <img
                             src={`/simbolos/${sym}.png`}
@@ -156,7 +156,7 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
                   <p style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-primary)' }}>
                     Grade B (Achar a Diferença)
                   </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', border: '1px solid var(--color-border)', padding: '6px', borderRadius: '6px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', border: '1px solid var(--color-border)', padding: '6px', borderRadius: '6px', background: '#ffffff' }}>
                     {SIM_GRID_B.map((sym, i) => {
                       const isCorrectTarget = i === 5;
                       return (
@@ -168,7 +168,7 @@ export default function AcharOFaltandoSimulation({ onDone }: Props) {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            background: isCorrectTarget && hasClickedCorrect ? 'var(--color-primary)' : 'var(--color-surface-3)',
+                            background: isCorrectTarget && hasClickedCorrect ? 'var(--color-primary)' : '#ffffff',
                             border: '1px solid var(--color-border)',
                             borderRadius: '4px',
                             cursor: 'pointer',
