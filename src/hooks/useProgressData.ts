@@ -148,7 +148,7 @@ export function useProgressData(): ProgressData {
         const streak = calcStreak(allDates);
         setData({ byType, streak, loading: false, error: null });
       } catch (err) {
-        if (import.meta.env.DEV) console.error('[useProgressData]', err);
+        console.error('[useProgressData]', err);
         setData((prev) => ({ ...prev, loading: false, error: 'Não foi possível carregar o progresso.' }));
       }
     })();
