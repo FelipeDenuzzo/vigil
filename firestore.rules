@@ -25,6 +25,9 @@ service cloud.firestore {
       // Atualização: apenas admin (aprovar, bloquear, promover)
       allow update: if isAdmin();
 
+      // Exclusão: apenas admin
+      allow delete: if isAdmin();
+
       // ← ADICIONADO: usuário grava apenas baseline e onboardingCompleted no próprio doc
       allow update: if request.auth != null
                     && request.auth.uid == uid
