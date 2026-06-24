@@ -365,7 +365,7 @@ export default function AcharOFaltandoReportPanel({
       <div style={s.header}>
         <div style={s.headerTop}>
           <h1 style={s.title}>
-            🔎 Achar o Diferente — Laudo Técnico
+            🔎 Achar o Diferente — Resultado Técnico
             <span style={s.levelBadge(level)}>{level}</span>
           </h1>
           <div style={s.buttonGroup}>

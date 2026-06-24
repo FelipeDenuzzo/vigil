@@ -109,7 +109,7 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
         }}>
           ♠<strong style={{ color: 'var(--color-text)' }}>Aviso importante:</strong> O VIGIL é um
           programa de treino cognitivo e <strong>não é um instrumento de diagnóstico clínico</strong>.
-          Os laudos gerados por IA têm caráter informativo e não substituem avaliação por
+          Os relatórios gerados por IA têm caráter informativo e não substituem avaliação por
           profissional de saúde habilitado.
         </div>
 
@@ -152,7 +152,7 @@ function LgpdModal({ onAccept, onCancel }: LgpdModalProps) {
               <span style={{ color: '#f08080' }}>*</span>{' '}
               <strong>Consinto</strong> que o VIGIL colete e processe meus{' '}
               <strong>dados de desempenho cognitivo</strong> (tempo de reação, acurácia,
-              padrões de erro) para gerar laudos informativos por inteligência artificial.
+              padrões de erro) para gerar relatórios informativos por inteligência artificial.
               Esses dados são tratados como <strong>dados de saúde</strong> conforme a LGPD
               (Art. 5º, II) e serão processados pelo modelo Gemini (Google). Posso
               revogar este consentimento a qualquer momento pelo e-mail privacidade@vigil.app.

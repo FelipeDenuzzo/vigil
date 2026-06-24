@@ -489,7 +489,7 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
       )}
 
       {phase === 'done' && (
-        <p style={{ color: '#ffffff' }}>Gerando Laudo do Onboarding...</p>
+        <p style={{ color: '#ffffff' }}>Gerando Resultados do Onboarding...</p>
       )}
     </div>
   );

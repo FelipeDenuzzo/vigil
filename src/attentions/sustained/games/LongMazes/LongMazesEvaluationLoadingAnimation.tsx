@@ -5,7 +5,7 @@ const MESSAGES = [
   { icon: '🔍', text: 'Analisando estratégia de navegação...' },
   { icon: '🧠', text: 'Avaliando padrões de atenção...' },
   { icon: '📊', text: 'Calculando eficiência por fase...' },
-  { icon: '✨', text: 'Preparando seu laudo...' },
+  { icon: '✨', text: 'Preparando seu relatório...' },
 ];
 
 const ORGANIZING_MESSAGES = [

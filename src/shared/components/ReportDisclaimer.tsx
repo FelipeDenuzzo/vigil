@@ -23,7 +23,7 @@ const iconStyle: React.CSSProperties = {
 
 export function ReportDisclaimer() {
   return (
-    <div style={style} role="note" aria-label="Aviso sobre natureza do laudo">
+    <div style={style} role="note" aria-label="Aviso sobre natureza do resultado">
       <span style={iconStyle}>⚠️</span>
       <span>
         <strong style={{ color: '#e8e9f0' }}>Este resultado é informativo e educativo.</strong>{' '}

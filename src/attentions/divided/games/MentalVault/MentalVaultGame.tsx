@@ -214,7 +214,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
               🏁 Resultados do Treino
             </h2>
             <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', textAlign: 'center', fontSize: '14px' }}>
-              Treino do Cofre Mental concluído! Confira o laudo consolidado e o desempenho detalhado por rodada abaixo.
+              Treino do Cofre Mental concluído! Confira o resultado consolidado e o desempenho detalhado por rodada abaixo.
             </p>
 
             {/* Resultado Consolidado da Sessão */}
@@ -233,7 +233,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
               </div>
               <div style={styles.metricItem}>
                 <span style={styles.metricLabel}>Tempo de Reação Médio</span>
-                <span style={styles.metricValue}>{Math.round(metrics.avgDigitMeanRtMs)} ms</span>
+                <span style={styles.metricValue}>{(metrics.avgDigitMeanRtMs / 1000).toFixed(3)} s</span>
               </div>
               <div style={styles.metricItem}>
                 <span style={styles.metricLabel}>Erros de Comissão</span>
@@ -286,7 +286,7 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
                       <span>Alvo: <strong>{r.sequenciaAlvo.join(' ')}</strong></span>
                       <span>Resposta: <strong>{r.sequenciaDigitada.join(' ') || '-'}</strong></span>
                       <span>Precisão Dígitos: {(r.digitAccuracy * 100).toFixed(0)}%</span>
-                      <span>TR Médio: {r.digitMeanRtMs} ms</span>
+                      <span>TR Médio: {(r.digitMeanRtMs / 1000).toFixed(3)} s</span>
                       <span>Erros: C: {r.digitCommissionErrors} | O: {r.digitOmissions}</span>
                       <span>IES da Rodada: {r.digitIes}</span>
                     </div>

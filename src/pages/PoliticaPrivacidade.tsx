@@ -59,7 +59,7 @@ export const PoliticaPrivacidade: React.FC = () => {
         <ul style={{ paddingLeft: 'var(--space-6)' }}>
           <Li><strong>Dados de identificação:</strong> endereço de e-mail, usado exclusivamente para autenticação via Firebase Authentication.</Li>
           <Li><strong>Dados de desempenho cognitivo:</strong> métricas geradas durante os treinos (tempo de reação, acurácia, número de tentativas, padrões de erro). Esses dados são classificados como <strong>dados de saúde</strong> nos termos do Art. 5º, II da LGPD e exigem consentimento explícito.</Li>
-          <Li><strong>Laudos gerados por IA:</strong> relatórios de avaliação produzidos pelo modelo Gemini (Google) com base nos dados de desempenho, armazenados no Firebase Storage.</Li>
+          <Li><strong>Resultados gerados por IA:</strong> relatórios de avaliação produzidos pelo modelo Gemini (Google) com base nos dados de desempenho, armazenados no Firebase Storage.</Li>
           <Li><strong>Dados técnicos:</strong> logs de acesso e erros, retidos automaticamente pelo Google Cloud Run por até 30 dias.</Li>
         </ul>
       </Section>
@@ -67,7 +67,7 @@ export const PoliticaPrivacidade: React.FC = () => {
       <Section title="3. Como usamos seus dados">
         <ul style={{ paddingLeft: 'var(--space-6)' }}>
           <Li>Autenticação e acesso seguro à plataforma.</Li>
-          <Li>Geração de laudos cognitivos personalizados via IA.</Li>
+          <Li>Geração de resultados cognitivos personalizados via IA.</Li>
           <Li>Exibição do seu histórico de treinos.</Li>
           <Li>Melhoria contínua do produto (dados agregados e anonimizados).</Li>
           <Li>Envio de comunicações sobre novidades — <strong>apenas com seu consentimento opcional</strong>.</Li>
@@ -77,7 +77,7 @@ export const PoliticaPrivacidade: React.FC = () => {
       <Section title="4. Base legal">
         <P>Tratamos seus dados com base nas seguintes hipóteses legais previstas na LGPD:</P>
         <ul style={{ paddingLeft: 'var(--space-6)' }}>
-          <Li><strong>Consentimento (Art. 7º, I):</strong> para dados de desempenho cognitivo e laudos.</Li>
+          <Li><strong>Consentimento (Art. 7º, I):</strong> para dados de desempenho cognitivo e resultados.</Li>
           <Li><strong>Execução de contrato (Art. 7º, V):</strong> para dados de autenticação.</Li>
           <Li><strong>Legítimo interesse (Art. 7º, IX):</strong> para logs técnicos de segurança.</Li>
         </ul>
@@ -87,7 +87,7 @@ export const PoliticaPrivacidade: React.FC = () => {
         <P>Seus dados são processados pelos seguintes suboperadores:</P>
         <ul style={{ paddingLeft: 'var(--space-6)' }}>
           <Li><strong>Google Firebase</strong> (Authentication, Firestore, Storage) — armazenamento seguro na infraestrutura Google Cloud.</Li>
-          <Li><strong>Google Gemini / Vertex AI</strong> — processamento dos dados de desempenho para geração dos laudos. Os dados são enviados ao modelo de IA para produção do relatório e não são usados para treinamento do modelo conforme os termos da API do Google.</Li>
+          <Li><strong>Google Gemini / Vertex AI</strong> — processamento dos dados de desempenho para geração dos resultados. Os dados são enviados ao modelo de IA para produção do relatório e não são usados para treinamento do modelo conforme os termos da API do Google.</Li>
           <Li><strong>Google Cloud Run</strong> — execução do serviço de avaliação (vigil-evaluator) na região southamerica-east1 (São Paulo).</Li>
         </ul>
         <P>Não vendemos, alugamos ou compartilhamos seus dados com terceiros para fins publicitários.</P>
@@ -96,7 +96,7 @@ export const PoliticaPrivacidade: React.FC = () => {
       <Section title="6. Retenção dos dados">
         <ul style={{ paddingLeft: 'var(--space-6)' }}>
           <Li>Dados de autenticação: mantidos enquanto a conta estiver ativa.</Li>
-          <Li>Histórico de sessões e laudos: mantidos por até 2 anos ou até a exclusão da conta.</Li>
+          <Li>Histórico de sessões e resultados: mantidos por até 2 anos ou até a exclusão da conta.</Li>
           <Li>Logs técnicos: até 30 dias (política padrão do Google Cloud).</Li>
         </ul>
       </Section>
@@ -120,7 +120,7 @@ export const PoliticaPrivacidade: React.FC = () => {
       <Section title="8. Aviso sobre saúde">
         <P>
           <strong>O VIGIL é um programa de treino cognitivo e NÃO é um instrumento de diagnóstico clínico.</strong>
-          Os laudos gerados por inteligência artificial têm caráter informativo e educativo.
+          Os resultados gerados por inteligência artificial têm caráter informativo e educativo.
           Eles não substituem avaliação neuropsicológica, psicológica ou médica realizada
           por profissional habilitado. Em caso de dúvidas sobre sua saúde cognitiva,
           consulte um profissional de saúde certificado.

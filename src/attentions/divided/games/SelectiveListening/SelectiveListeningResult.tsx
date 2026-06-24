@@ -227,7 +227,7 @@ export function SelectiveListeningResult() {
 
             <div style={s.metricCard}>
               <span style={s.metricLabel}>Tempo de Resposta</span>
-              <span style={s.metricValue}>{Math.round(metrics.meanResponseTimeMs)} ms</span>
+              <span style={s.metricValue}>{(metrics.meanResponseTimeMs / 1000).toFixed(3)} s</span>
               <span style={s.metricSub}>Latência média para começar a digitar a resposta.</span>
             </div>
 
@@ -260,7 +260,7 @@ export function SelectiveListeningResult() {
               <p style={{ fontSize: 28, marginBottom: 8 }}>⚠️</p>
               <p style={{ fontWeight: 700, marginBottom: 4 }}>Não foi possível gerar a avaliação.</p>
               <p style={{ fontSize: 12, color: '#a0a4be' }}>
-                O serviço de IA não respondeu a tempo. O laudo será exibido na próxima consulta a esta sessão.
+                O serviço de IA não respondeu a tempo. O resultado será exibido na próxima consulta a esta sessão.
               </p>
             </div>
           </section>
