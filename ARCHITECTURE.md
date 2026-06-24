@@ -175,34 +175,38 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 
 ---
 
-## Fluxo de Persistência e Download de Laudos
+## Fluxo de Persistência de Laudos
 
-Para garantir que os laudos gerados pelo Gemini e as métricas de treino possam ser consultados retroativamente ou exportados pelo usuário/profissional, o Vigil implementa um fluxo estruturado de persistência:
+Para garantir que os laudos gerados pelo Gemini e as métricas de treino possam ser consultados retroativamente pelo profissional responsável, o Vigil implementa um fluxo estruturado de persistência em duas camadas:
+
+### Camada 1 — Gravação Instantânea (Fallback)
+
+Imediatamente após o cálculo das métricas locais e **antes** de chamar a IA, cada hook de avaliação (`use{Treino}Evaluation`) grava `score`, `level`, `game`, `attentionType` e `createdAt` diretamente no Firestore (coleção `sessions/{sessionId}`) com `{ merge: true }`. Isso garante que o histórico do paciente seja atualizado instantaneamente, mesmo que a IA falhe ou demore.
+
+### Camada 2 — Persistência do Laudo Completo
+
+Se o Gemini responde com sucesso, a função `saveReport()` executa:
 
 ```
-[Treino Finalizado] ──> [Geração de Métricas / Laudo Gemini]
-                             │
-                             ▼
-              [reportToMarkdown(report, input)] (Formatação .md)
-                             │
-                             ▼
-     [saveReport] ──> [Upload String p/ Firebase Storage]
-                             │  (laudos/${uid}/${sessionId}.md)
-                             ▼
-              [Obtenção de Download URL (reportUrl)]
-                             │
-                             ▼
-        [Salvar no Firestore (sessions/{sessionId})]
+[Laudo Gemini recebido]
+        │
+        ▼
+[reportToMarkdown(report, input)] (Formatação .md)
+        │
+        ▼
+[Upload p/ Firebase Storage]
+│  (laudos/${uid}/${sessionId}.md)
+        ▼
+[Obtenção de Download URL (reportUrl)]
+        │
+        ▼
+[Merge no Firestore (sessions/{sessionId})]
+│  (score, level, reportUrl, createdAt)
 ```
 
-### Arquitetura de Downloads
-1. **Conversão para Markdown**: Após o recebimento do laudo da API do Gemini, a função [reportToMarkdown.ts](file:///Users/felipedenuzzo/VIGIL/vigil/src/lib/reportToMarkdown.ts) é executada, organizando a resposta em seções formatadas (Resultado Lúdico, Relatório Geral, Nota Clínica, Recomendações).
-2. **Armazenamento Seguro (Firebase Storage)**: O arquivo Markdown (.md) é enviado via `uploadString` para o bucket do Firebase Storage sob o caminho `/laudos/{uid}/{sessionId}.md` para garantir o isolamento de privacidade por UID do usuário autenticado.
-3. **Persistência de Metadados (Firestore)**: O URL de download retornado pelo Storage (`reportUrl`) é acoplado aos metadados gerais da sessão (como `score`, `level`, `game`, `attentionType`) e salvo no documento correspondente da coleção `sessions` no Firestore.
-4. **Disponibilização para Download**:
-   - **ReportViewer**: O componente [ReportViewer.tsx](file:///Users/felipedenuzzo/VIGIL/vigil/src/shared/components/ReportViewer.tsx), quando em modo de exibição clínica, disponibiliza o link de download direto do arquivo Markdown ("Baixar laudo (.md)") através da propriedade `reportUrl`.
-   - **Histórico**: A tela de [Historico.tsx](file:///Users/felipedenuzzo/VIGIL/vigil/src/pages/Historico.tsx) exibe um botão "Ver laudo" para qualquer sessão que possua o campo `reportUrl` salvo.
-   - **Utilitários de Exportação Local**: Para treinos locais simplificados que não enviam dados ao Gemini (como `AcharOFaltando`), existem funções auxiliares de exportação como `exportCSV` e `exportJSON` para gerar arquivos baixáveis diretamente na memória do cliente.
+O laudo em Markdown fica armazenado no Firebase Storage sob o caminho `/laudos/{uid}/{sessionId}.md`, isolado por UID para conformidade com LGPD. O URL de download (`reportUrl`) é salvo no documento da sessão no Firestore.
+
+> **Nota de privacidade:** O laudo armazenado no Firebase Storage é destinado exclusivamente ao acesso pelo profissional responsável (via Firebase Console ou painel administrativo futuro). O paciente/UX **não possui** botão de download nem acesso direto ao arquivo — ele visualiza apenas o laudo renderizado na interface do Artefato 4.
 
 ---
 
