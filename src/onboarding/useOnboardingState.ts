@@ -20,8 +20,8 @@ import {
 
 function calcMotorScore(result: MotorRoundResult): BaselineEntry {
   const rts = result.reactionTimes;
-  const mean = rts.reduce((a, b) => a + b, 0) / rts.length;
-  const sdrt = Math.sqrt(rts.reduce((sum, rt) => sum + (rt - mean) ** 2, 0) / rts.length);
+  const mean = rts.length > 0 ? rts.reduce((a, b) => a + b, 0) / rts.length : 999;
+  const sdrt = rts.length > 0 ? Math.sqrt(rts.reduce((sum, rt) => sum + (rt - mean) ** 2, 0) / rts.length) : 999;
 
   // Faixas provisórias (adultos, ms): revisar com literatura
   // TR médio: <250=ótimo, 250–350=normal, 350–500=leve, >500=importante
@@ -30,6 +30,12 @@ function calcMotorScore(result: MotorRoundResult): BaselineEntry {
   if (mean > 500 || sdrt > 150) score = 40;
   else if (mean > 350 || sdrt > 100) score = 60;
   else if (mean > 250 || sdrt > 60) score = 80;
+
+  // Penalidade se houver omissões de alerta
+  const omissions = result.omissions ?? 0;
+  if (omissions > 0) {
+    score = Math.max(0, score - (omissions * 10));
+  }
 
   const level: BaselineLevel =
     score >= 80 ? 'minimo' : score >= 60 ? 'leve' : score >= 40 ? 'moderado' : 'importante';
@@ -146,7 +152,7 @@ export function useOnboardingState(uid: string) {
 
   const submitDivided = useCallback((result: DividedRoundResult) => {
     setState((prevState) => {
-      const motor = prevState.motorResult || { type: 'motor', reactionTimes: [300], totalStimuli: 10 };
+      const motor = prevState.motorResult || { type: 'motor', reactionTimes: [300], totalStimuli: 10, omissions: 0 };
       const inhibitory = prevState.inhibitoryResult || { type: 'inhibitory', commissionErrors: 0, omissionErrors: 0, reactionTimes: [400], totalGoStimuli: 10, totalNoGoStimuli: 10 };
       const flexible = prevState.flexibleResult || { type: 'flexible', totalTimeMs: 60000, sequenceErrors: 0, intervalsBetweenClicks: [], totalTargets: 10 };
       
