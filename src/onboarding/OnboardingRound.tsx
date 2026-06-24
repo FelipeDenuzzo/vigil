@@ -332,7 +332,7 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
       const newBubble = {
         id: bubbleIdRef.current++,
         left: 10 + Math.random() * 80,
-        type: isTarget ? 'target' : 'distractor' as const,
+        type: isTarget ? ('target' as const) : ('distractor' as const),
         clicked: false,
       };
 
@@ -461,7 +461,7 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
                   onClick={() => handleBubbleClick(b.id, b.type)}
                   style={{
                     position: 'absolute',
-                    left: \`\${b.left}%\`,
+                    left: `${b.left}%`,
                     bottom: '-10%', // começa de baixo
                     width: 48, height: 48, borderRadius: '50%',
                     background: b.type === 'target' ? 'var(--color-selective)' : 'var(--color-error)',
@@ -472,12 +472,12 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
               )
             ))}
             
-            <style>{\`
+            <style>{`
               @keyframes bubbleUp {
                 from { transform: translateY(0); }
                 to { transform: translateY(-400px); }
               }
-            \`}</style>
+            `}</style>
           </div>
 
           {phase === 'dual' && (
