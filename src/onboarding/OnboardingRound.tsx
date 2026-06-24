@@ -358,7 +358,6 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
   const [dualTargets, setDualTargets] = useState(0);
 
   // Controle de Áudio
-  const audioContextRef = useRef<AudioContext | null>(null);
   const [audioTargetActive, setAudioTargetActive] = useState(false);
   const audioIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
