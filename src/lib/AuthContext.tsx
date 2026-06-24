@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (u) => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
       const prevUid = prevUidRef.current;
 
       if (!u && prevUid) {
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (prevUid && prevUid !== u.uid) clearUserData(prevUid);
           hydrateForUser(u.uid);
         }
-        await loadProfile(u.uid);
+        loadProfile(u.uid);
       }
 
       prevUidRef.current = u?.uid ?? null;
