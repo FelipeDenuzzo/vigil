@@ -61,10 +61,7 @@ export const OnboardingResult: React.FC<Props> = ({ state, onSave, saving, saveE
 
   if (evaluating) {
     return (
-      <EvaluationLoadingAnimation 
-        label="Avaliando seu perfil cognitivo..." 
-        isLongAnalysis={false}
-      />
+      <EvaluationLoadingAnimation />
     );
   }
 
