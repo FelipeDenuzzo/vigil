@@ -34,7 +34,7 @@ export const OnboardingResult: React.FC<Props> = ({ state, onSave, saving, saveE
           sessionId: 'onboarding-' + Date.now(),
           attentionType: 'onboarding',
           exercicio_1_calibragem: {
-            tempo_de_reacao_medio_ms: state.motorResult?.reactionTimes.reduce((a, b) => a + b, 0) / (state.motorResult?.reactionTimes.length || 1),
+            tempo_de_reacao_medio_ms: (state.motorResult?.reactionTimes || []).reduce((a, b) => a + b, 0) / (state.motorResult?.reactionTimes?.length || 1),
           },
           exercicio_2_gonogo: {
             erros_omissao: state.inhibitoryResult?.omissionErrors,
