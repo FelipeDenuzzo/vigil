@@ -65,7 +65,7 @@ export async function useSelectiveListeningEvaluation(
         game: 'escuta-seletiva',
         attentionType: 'dividida',
         score: scaleResult.score,
-        level: scaleResult.severity,
+        level: scaleResult.level,
         createdAt: serverTimestamp(),
       }, { merge: true });
     }
