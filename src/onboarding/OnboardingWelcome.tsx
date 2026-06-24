@@ -24,7 +24,7 @@ export const OnboardingWelcome: React.FC<Props> = ({ onStart }) => {
       <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', padding: 'var(--space-6)', marginBottom: 'var(--space-8)' }}>
         <p style={{ fontWeight: 600, marginBottom: 'var(--space-3)' }}>O que vai acontecer:</p>
         <ol style={{ paddingLeft: 'var(--space-5)', color: '#ffffff', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          <li><strong style={{ color: 'var(--color-text)' }}>Etapa 1 — Calibragem (~1 min)</strong><br />Reaja o mais rápido possível quando ver o sinal.</li>
+          <li><strong style={{ color: 'var(--color-text)' }}>Etapa 1 — Calibragem (~1 min)</strong><br />Clique no círculo verde o mais rápido possível.</li>
           <li><strong style={{ color: 'var(--color-text)' }}>Etapa 2 — Controle (~2 min)</strong><br />Responda apenas para certos estímulos, ignore os outros.</li>
           <li><strong style={{ color: 'var(--color-text)' }}>Etapa 3 — Flexibilidade (~2 min)</strong><br />Alterne entre sequências seguindo a ordem correta.</li>
         </ol>
