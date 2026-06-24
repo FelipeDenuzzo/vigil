@@ -8,7 +8,6 @@ interface Props {
   metrics: AcharOFaltandoMetrics | null;
   scaleResult: AcharOFaltandoScaleResult | null;
   geminiReport: EvaluationReport | undefined;
-  reportUrl: string | null;
   loaded: boolean;
   onRepeat: () => void;
   onBack: () => void;
@@ -312,7 +311,6 @@ export default function AcharOFaltandoReportPanel({
   metrics,
   scaleResult,
   geminiReport,
-  reportUrl,
   loaded,
   onRepeat,
   onBack,

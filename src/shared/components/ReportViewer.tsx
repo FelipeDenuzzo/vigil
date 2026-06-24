@@ -6,10 +6,9 @@ type Level = 'ludic' | 'general' | 'clinical';
 interface Props {
   report: EvaluationReport;
   level: Level;
-  reportUrl?: string | null;
 }
 
-export const ReportViewer: React.FC<Props> = ({ report, level, reportUrl }) => {
+export const ReportViewer: React.FC<Props> = ({ report, level }) => {
   return (
     <div>
       {level === 'ludic' && (
