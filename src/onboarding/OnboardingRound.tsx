@@ -13,39 +13,97 @@ function MotorRound({ onDone }: { onDone: (r: MotorRoundResult) => void }) {
   const [phase, setPhase] = useState<'waiting' | 'ready' | 'go' | 'done'>('waiting');
   const [count, setCount] = useState(0);
   const [rts, setRts] = useState<number[]>([]);
+  const [omissions, setOmissions] = useState(0);
   const stimulusStartRef = useRef<number>(0);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const delayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const goTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const showStimulus = useCallback(() => {
+  // Efeito para a fase de espera (ready) -> mostra o estímulo após um delay
+  useEffect(() => {
+    if (phase !== 'ready' || count >= TOTAL_STIMULI) return;
+
     const delay = 800 + Math.random() * 1200; // 0.8–2s de espera variável
-    timeoutRef.current = setTimeout(() => {
+    delayTimeoutRef.current = setTimeout(() => {
       stimulusStartRef.current = performance.now();
       setPhase('go');
     }, delay);
-  }, []);
 
+    return () => {
+      if (delayTimeoutRef.current) {
+        clearTimeout(delayTimeoutRef.current);
+        delayTimeoutRef.current = null;
+      }
+    };
+  }, [phase, count]);
+
+  // Efeito para a fase ativo (go) -> gerencia o timeout de 2 segundos (omissão)
   useEffect(() => {
-    if (phase === 'ready') showStimulus();
-    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
-  }, [phase, showStimulus]);
+    if (phase !== 'go') return;
 
-  function handleStart() { setPhase('ready'); }
+    goTimeoutRef.current = setTimeout(() => {
+      setOmissions(o => o + 1);
+      const next = count + 1;
+      setCount(next);
+      if (next >= TOTAL_STIMULI) {
+        setPhase('done');
+      } else {
+        setPhase('ready');
+      }
+    }, 2000);
+
+    return () => {
+      if (goTimeoutRef.current) {
+        clearTimeout(goTimeoutRef.current);
+        goTimeoutRef.current = null;
+      }
+    };
+  }, [phase, count]);
+
+  function handleStart() {
+    setPhase('ready');
+  }
 
   function handleResponse() {
     if (phase !== 'go') return;
-    const rt = performance.now() - stimulusStartRef.current;
-    const newRts = [...rts, rt];
-    const newCount = count + 1;
 
-    if (newCount >= TOTAL_STIMULI) {
-      setPhase('done');
-      onDone({ type: 'motor', reactionTimes: newRts, totalStimuli: TOTAL_STIMULI });
-      return;
+    // Cancela o timeout de 2 segundos de omissão
+    if (goTimeoutRef.current) {
+      clearTimeout(goTimeoutRef.current);
+      goTimeoutRef.current = null;
     }
-    setRts(newRts);
-    setCount(newCount);
-    setPhase('ready');
+
+    const rt = performance.now() - stimulusStartRef.current;
+    setRts(prev => [...prev, rt]);
+
+    const next = count + 1;
+    setCount(next);
+    
+    if (next >= TOTAL_STIMULI) {
+      setPhase('done');
+    } else {
+      setPhase('ready');
+    }
   }
+
+  // Dispara o callback onDone quando atinge a quantidade total de estímulos
+  useEffect(() => {
+    if (count >= TOTAL_STIMULI && phase === 'done') {
+      onDone({
+        type: 'motor',
+        reactionTimes: rts,
+        totalStimuli: TOTAL_STIMULI,
+        omissions: omissions
+      });
+    }
+  }, [count, phase, rts, omissions, onDone]);
+
+  // Cleanup no unmount
+  useEffect(() => {
+    return () => {
+      if (delayTimeoutRef.current) clearTimeout(delayTimeoutRef.current);
+      if (goTimeoutRef.current) clearTimeout(goTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>

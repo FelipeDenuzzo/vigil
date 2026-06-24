@@ -56,15 +56,24 @@ function calculateOnboardingScores(input: any) {
   // 1. Agilidade Mental: Baseado no tempo de reação médio (250ms-400ms = alto, >600 = baixo)
   let agilidadeMental = 100;
   const rt = input.exercicio_1_calibragem?.tempo_de_reacao_medio_ms ?? 500;
-  if (rt <= 250) agilidadeMental = 100;
+  if (rt === 0) agilidadeMental = 0;
+  else if (rt <= 250) agilidadeMental = 100;
   else if (rt <= 400) agilidadeMental = 100 - ((rt - 250) / 150) * 20; // 80 a 100
   else if (rt <= 600) agilidadeMental = 80 - ((rt - 400) / 200) * 30; // 50 a 80
   else agilidadeMental = Math.max(0, 50 - ((rt - 600) / 400) * 50); // cai para 0
 
-  // 2 e 3. Foco Contínuo e Controle e Calma: Subtrai 10 pontos por erro de omissão/comissão
-  const omissoes = input.exercicio_2_gonogo?.erros_omissao ?? 0;
+  // Pênalti se houver omissões de alerta
+  const omissoesAlerta = input.exercicio_1_calibragem?.omissoes_alerta ?? 0;
+  if (omissoesAlerta > 0) {
+    agilidadeMental = Math.max(0, agilidadeMental - (omissoesAlerta * 10));
+  }
+
+  // 2 e 3. Foco Contínuo e Controle e Calma
+  const omissoesGoNoGo = input.exercicio_2_gonogo?.erros_omissao ?? 0;
+  const totalOmissoes = omissoesAlerta + omissoesGoNoGo;
+  const focoContinuo = Math.max(0, 100 - (totalOmissoes * 10));
+
   const comissoes = input.exercicio_2_gonogo?.erros_comissao_impulsividade ?? 0;
-  const focoContinuo = Math.max(0, 100 - (omissoes * 10));
   const controleCalma = Math.max(0, 100 - (comissoes * 10));
 
   // 4. Flexibilidade Mental: Custo de alternância

@@ -11,6 +11,7 @@ export interface MotorRoundResult {
   type: 'motor';
   reactionTimes: number[];   // ms por estímulo
   totalStimuli: number;
+  omissions: number;
 }
 
 export interface InhibitoryRoundResult {
