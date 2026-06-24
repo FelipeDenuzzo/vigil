@@ -1,6 +1,7 @@
 // src/attentions/selective/games/VisualSearchHunt/EvaluationReportPanel.tsx
 
 import { useState } from 'react';
+import { useAuth } from '../../../../lib/AuthContext';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 import { ReportDisclaimer } from '../../../../shared/components/ReportDisclaimer';
 
@@ -165,6 +166,7 @@ const s = {
 };
 
 export function EvaluationReportPanel({ report }: { report: EvaluationReport }) {
+  const { displayName } = useAuth();
   const [tab, setTab] = useState<Tab>('ludic');
 
   const allStrengths = [
@@ -189,7 +191,7 @@ export function EvaluationReportPanel({ report }: { report: EvaluationReport }) 
 
       <div style={s.header}>
         <p style={s.title}>
-          🤖 Avaliação IA
+          🤖 Avaliação de {displayName ? displayName.split(' ')[0] : 'Sessão'}
           <span style={s.levelBadge(report.level)}>{report.level}</span>
         </p>
         <div style={s.tabRow}>

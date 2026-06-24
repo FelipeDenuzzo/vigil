@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../../../../lib/AuthContext';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 import { ReportDisclaimer } from '../../../../shared/components/ReportDisclaimer';
 
@@ -192,6 +193,7 @@ const LEVEL_LABEL: Record<string, string> = {
 };
 
 export function SelectiveListeningReportPanel({ report }: { report: EvaluationReport }) {
+  const { displayName } = useAuth();
   const [tab, setTab] = useState<Tab>('ludic');
 
   const level = report.level ?? '';
@@ -222,7 +224,7 @@ export function SelectiveListeningReportPanel({ report }: { report: EvaluationRe
       <ReportDisclaimer />
       <div style={s.header}>
         <p style={s.title}>
-          🤖 Avaliação IA
+          🤖 Avaliação de {displayName ? displayName.split(' ')[0] : 'Sessão'}
           <span style={s.levelBadge(level)}>{level}</span>
         </p>
         <div style={s.tabRow}>

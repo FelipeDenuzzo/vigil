@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../lib/AuthContext';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ReferenceLine, ResponsiveContainer, CartesianGrid,
@@ -27,6 +28,7 @@ function formatShortDate(iso: string): string {
 
 export const Historico: React.FC = () => {
   const navigate = useNavigate();
+  const { displayName } = useAuth();
   const { byType, streak, loading, error } = useProgressData();
   const [activeTab, setActiveTab] = useState<AttentionType>('seletiva');
 
@@ -39,7 +41,7 @@ export const Historico: React.FC = () => {
       </Button>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-        <h1 style={{ fontSize: 'var(--text-2xl)', margin: 0 }}>📊 Histórico de treinos</h1>
+        <h1 style={{ fontSize: 'var(--text-2xl)', margin: 0 }}>📊 Histórico de {displayName ? displayName.split(' ')[0] : 'treinos'}</h1>
 
         {/* Streak */}
         {!loading && streak.current > 0 && (

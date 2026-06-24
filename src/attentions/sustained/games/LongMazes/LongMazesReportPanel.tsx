@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../../../../lib/AuthContext';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 import type { MazeAggregatedMetrics } from '../../../../assessment/longMazes/types';
 import { ReportDisclaimer } from '../../../../shared/components/ReportDisclaimer';
@@ -14,18 +15,22 @@ const LEVEL_COLOR: Record<string, string> = {
 
 
 
+interface Props {
+  report: EvaluationReport;
+  metrics: MazeAggregatedMetrics;
+}
+
 export function LongMazesReportPanel({
   report,
   metrics,
-}: {
-  report: EvaluationReport;
-  metrics: MazeAggregatedMetrics;
-}) {
+}: Props) {
+  const { displayName } = useAuth();
   const [tab, setTab] = useState<Tab>('ludic');
 
   const score       = report.ludic?.score ?? report.score;
   const emoji       = report.ludic?.emoji ?? '🧩';
   const label       = report.ludic?.label ?? '';
+  const level       = report.level;
   const strengths   = [...(report.general?.strengths  ?? []), ...(report.clinical?.strengths  ?? [])].filter((v, i, a) => a.indexOf(v) === i);
   const weaknesses  = [...(report.general?.weaknesses ?? []), ...(report.clinical?.weaknesses ?? [])].filter((v, i, a) => a.indexOf(v) === i);
   const clinicalNote    = report.clinical?.clinicalNote ?? '';
@@ -39,8 +44,8 @@ export function LongMazesReportPanel({
       <ReportDisclaimer />
       <div style={s.header}>
         <p style={s.title}>
-          🧠 Avaliação IA
-          <span style={s.levelBadge(report.level)}>{report.level}</span>
+          🧠 Avaliação de {displayName ? displayName.split(' ')[0] : 'Sessão'}
+          {level && <span style={s.levelBadge(level)}>{level}</span>}
         </p>
         <div style={s.tabRow}>
           {(['ludic', 'analysis', 'phases'] as Tab[]).map((t) => (

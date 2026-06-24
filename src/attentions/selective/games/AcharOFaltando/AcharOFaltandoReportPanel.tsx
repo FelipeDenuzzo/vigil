@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { AcharOFaltandoMetrics, AcharOFaltandoScaleResult } from '../../../../assessment/acharOFaltando/types';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 import { ReportDisclaimer } from '../../../../shared/components/ReportDisclaimer';
+import { useAuth } from '../../../../lib/AuthContext';
 
 interface Props {
   metrics: AcharOFaltandoMetrics | null;
@@ -315,6 +316,7 @@ export default function AcharOFaltandoReportPanel({
   onRepeat,
   onBack,
 }: Props) {
+  const { displayName } = useAuth();
   const [tab, setTab] = useState<Tab>('ludic');
 
   if (!metrics) {
@@ -365,7 +367,7 @@ export default function AcharOFaltandoReportPanel({
       <div style={s.header}>
         <div style={s.headerTop}>
           <h1 style={s.title}>
-            🔎 Achar o Diferente — Resultado Técnico
+            🔎 Achar o Diferente — Resultado de {displayName ? displayName.split(' ')[0] : 'Sessão'}
             <span style={s.levelBadge(level)}>{level}</span>
           </h1>
           <div style={s.buttonGroup}>
