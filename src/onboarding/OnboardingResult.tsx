@@ -5,7 +5,7 @@ import { UserBaseline, OnboardingState } from './types';
 import { useAuth } from '../lib/AuthContext';
 import { callOnboardingEvaluator, OnboardingReport, EvaluatorInput } from '../lib/evaluatorClient';
 import { EvaluationLoadingAnimation } from '../shared/EvaluationLoadingAnimation';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import { OnboardingRadar } from './OnboardingRadar';
 
 interface Props {
   state: OnboardingState;
@@ -99,44 +99,37 @@ export const OnboardingResult: React.FC<Props> = ({ state, onSave, saving, saveE
     );
   }
 
-  // Prepara dados para o RadarChart
-  const radarData = [
-    { subject: 'Agilidade Mental', A: report.dados_grafico_teia['Agilidade Mental'] || 0, fullMark: 100 },
-    { subject: 'Foco Contínuo', A: report.dados_grafico_teia['Foco Contínuo'] || 0, fullMark: 100 },
-    { subject: 'Controle e Calma', A: report.dados_grafico_teia['Controle e Calma'] || 0, fullMark: 100 },
-    { subject: 'Flexibilidade Mental', A: report.dados_grafico_teia['Flexibilidade Mental'] || 0, fullMark: 100 },
-    { subject: 'Foco Multitarefa', A: report.dados_grafico_teia['Foco Multitarefa'] || 0, fullMark: 100 },
-  ];
+  const [radarComplete, setRadarComplete] = useState(false);
+
+  if (saved && !saving && radarComplete) {
+    // If it's already completely saved and they passed the radar, just show the final button state
+  }
 
   const { mensagem_ux } = report;
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-12)', maxWidth: '600px', paddingBottom: 'var(--space-8)' }}>
-      <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-2)', textAlign: 'center' }}>
-        {mensagem_ux.titulo}
-      </h1>
-      <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-8)', textAlign: 'center' }}>
-        {mensagem_ux.paragrafo_boas_vindas}
-      </p>
+      {!radarComplete ? (
+        <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+          <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-2)', textAlign: 'center' }}>
+            {mensagem_ux.titulo}
+          </h1>
+          <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-8)', textAlign: 'center' }}>
+            {mensagem_ux.paragrafo_boas_vindas}
+          </p>
+          <OnboardingRadar 
+            scores={report.dados_grafico_teia} 
+            onComplete={() => setRadarComplete(true)} 
+          />
+        </div>
+      ) : (
+        <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+          <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-8)', textAlign: 'center' }}>
+            A sua Análise Clínica
+          </h1>
+          
+          {/* Gráfico Estático (apenas ilustrativo) - removido, vamos direto para os textos agora que ele já viu o Radar animado */}
 
-      {/* Gráfico de Teia */}
-      <div style={{ 
-        width: '100%', 
-        height: 300, 
-        background: 'var(--color-surface)', 
-        borderRadius: 'var(--radius-lg)',
-        padding: 'var(--space-4)',
-        marginBottom: 'var(--space-6)'
-      }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-            <PolarGrid stroke="var(--color-border)" />
-            <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--color-text-muted)', fontSize: 12 }} />
-            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-            <Radar name="Habilidades" dataKey="A" stroke="var(--color-selective)" fill="var(--color-selective)" fillOpacity={0.5} />
-          </RadarChart>
-        </ResponsiveContainer>
-      </div>
 
       {/* Superpoder */}
       <div style={{
@@ -184,6 +177,8 @@ export const OnboardingResult: React.FC<Props> = ({ state, onSave, saving, saveE
       >
         {saving ? 'Finalizando...' : 'Começar a Treinar!'}
       </Button>
+      </div>
+      )}
     </div>
   );
 };
