@@ -149,6 +149,7 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 | `sustained.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/sustained.ts) |
 | `alternating.ts` | ✅ Implementado | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/alternating.ts) |
 | `divided.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/divided.ts) |
+| `onboarding.ts`| ✅ Implementado (Backend processa 0-100) | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/onboarding.ts) |
 
 **Regra de expansão:** ao criar o prompt de um novo tipo de atenção, adicionar o `case` correspondente na função `resolvePromptAndSchema()` dentro de `src/evaluate.ts`.
 
@@ -268,7 +269,7 @@ Para neutralizar variáveis que possam distorcer as métricas cognitivas reais d
 
 1. **O treino não sabe que existe avaliação** — ele só registra eventos.
 2. **O avaliador interno não sabe que existe Gemini** — ele só calcula e monta o log.
-3. **O Gemini não calcula nada** — ele só redige o texto psicológico/clínico.
+3. **O Gemini não calcula nada** — ele só redige o texto psicológico/clínico e gamificado. Cálculos matemáticos pesados (como Custos de Dupla-Tarefa, Custos de Alternância ou interpolações de 0 a 100) devem ser processados no Backend (`vigil-evaluator`) antes de injetar os números no Payload do prompt.
 4. **O componente de apresentação não interpreta nada** — ele só exibe o JSON recebido.
 5. **Cada treino tem seu próprio avaliador interno** — as métricas são específicas de cada treino.
 6. **Cada tipo de atenção tem um único prompt do Gemini** — compartilhado por todos os treinos daquele tipo.
