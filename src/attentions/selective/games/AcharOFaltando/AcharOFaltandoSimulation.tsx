@@ -78,7 +78,7 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
               <h2 style={{ color: 'var(--color-primary)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                 Como funciona o treino
               </h2>
-              <p style={{ color: '#fff', fontSize: '14px', lineHeight: '1.6' }}>
+              <p style={{ color: '#fff', fontSize: 'var(--text-base)', lineHeight: '1.6', margin: '0 auto', maxWidth: '400px' }}>
                 Sua tarefa é comparar dois conjuntos de símbolos e encontrar o único elemento que está diferente entre eles.
               </p>
               

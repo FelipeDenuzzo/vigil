@@ -16,7 +16,7 @@ const PHASES = [
     id: 'organize',
     icon: '📋',
     title: 'Organizando o relatório',
-    subtitle: 'Montando as seções do laudo clínico...',
+    subtitle: 'Montando as seções do relatório...',
     color: '#5ec893',
   },
 ] as const;

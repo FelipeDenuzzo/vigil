@@ -64,7 +64,7 @@ export const Home: React.FC = () => {
           <Card>
             <h3 style={{ color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>3. Acompanhe a evolução</h3>
             <p style={{ color: '#ffffff' }}>
-              O Vigil não é um teste de uso único: seu progresso é salvo e avaliado continuamente de forma longitudinal. Use os laudos e gráficos para acompanhar sua evolução real no dia a dia.
+              O Vigil não é um teste de uso único: seu progresso é salvo e avaliado continuamente de forma longitudinal. Use os relatórios e gráficos para acompanhar sua evolução real no dia a dia.
             </p>
           </Card>
         </div>

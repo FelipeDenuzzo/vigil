@@ -31,7 +31,7 @@ export const OnboardingWelcome: React.FC<Props> = ({ onStart }) => {
       </div>
 
       <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
-        Este rastreamento é feito uma única vez. Os resultados ficam salvos e são usados para personalizar seus laudos e acompanhar sua evolução.
+        Este rastreamento é feito uma única vez. Os resultados ficam salvos e são usados para personalizar seus relatórios e acompanhar sua evolução.
       </p>
 
       <Button variant="primary" onClick={onStart} style={{ width: '100%' }}>
