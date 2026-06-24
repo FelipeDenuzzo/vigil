@@ -7,6 +7,7 @@ import {
   MotorRoundResult,
   InhibitoryRoundResult,
   FlexibleRoundResult,
+  DividedRoundResult,
   UserBaseline,
   BaselineEntry,
   BaselineLevel,
@@ -76,28 +77,38 @@ function calcFlexibleScore(result: FlexibleRoundResult): BaselineEntry {
   return { score, level, doneAt: new Date().toISOString() };
 }
 
+function calcDividedScore(result: DividedRoundResult): BaselineEntry {
+  const cost = result.dualTaskCost; // Ex: 0.3 = 30% de queda
+
+  // Faixas provisórias: revisar com literatura
+  // Custo: <10%=ótimo, 10–25%=leve, 25–40%=moderado, >40%=importante
+  let score = 100;
+  if (cost > 0.40) score = 35;
+  else if (cost > 0.25) score = 55;
+  else if (cost > 0.10) score = 75;
+
+  const level: BaselineLevel =
+    score >= 75 ? 'minimo' : score >= 55 ? 'leve' : score >= 35 ? 'moderado' : 'importante';
+
+  return { score, level, doneAt: new Date().toISOString() };
+}
+
 function buildBaseline(
   motor: MotorRoundResult,
   inhibitory: InhibitoryRoundResult,
-  flexible: FlexibleRoundResult
+  flexible: FlexibleRoundResult,
+  divided: DividedRoundResult
 ): UserBaseline {
   const motorEntry = calcMotorScore(motor);
   const inhibitoryEntry = calcInhibitoryScore(inhibitory);
   const flexibleEntry = calcFlexibleScore(flexible);
-
-  // Motor → Sustentada (variabilidade de TR = indicador de alerta sustentado)
-  // Inibitório → Seletiva (Go/No-Go = inibição de distratores)
-  // Flexível → Alternada (TMT-B = custo de troca)
-  // Dividida → derivada da combinação motor + inibitório (atenção dual)
-  const dividedScore = Math.round((motorEntry.score + inhibitoryEntry.score) / 2);
-  const dividedLevel: BaselineLevel =
-    dividedScore >= 78 ? 'minimo' : dividedScore >= 58 ? 'leve' : dividedScore >= 38 ? 'moderado' : 'importante';
+  const dividedEntry = calcDividedScore(divided);
 
   return {
     seletiva:  inhibitoryEntry,
     sustentada: motorEntry,
     alternada: flexibleEntry,
-    dividida: { score: dividedScore, level: dividedLevel, doneAt: new Date().toISOString() },
+    dividida: dividedEntry,
   };
 }
 
@@ -108,6 +119,7 @@ const INITIAL_STATE: OnboardingState = {
   motorResult: null,
   inhibitoryResult: null,
   flexibleResult: null,
+  dividedResult: null,
   baseline: null,
 };
 
@@ -129,10 +141,14 @@ export function useOnboardingState(uid: string) {
   }, []);
 
   const submitFlexible = useCallback((result: FlexibleRoundResult) => {
+    setState((s) => ({ ...s, flexibleResult: result, currentStep: 'round-divided' }));
+  }, []);
+
+  const submitDivided = useCallback((result: DividedRoundResult) => {
     setState((prevState) => {
-      if (!prevState.motorResult || !prevState.inhibitoryResult) return prevState;
-      const baseline = buildBaseline(prevState.motorResult, prevState.inhibitoryResult, result);
-      return { ...prevState, flexibleResult: result, baseline, currentStep: 'result' };
+      if (!prevState.motorResult || !prevState.inhibitoryResult || !prevState.flexibleResult) return prevState;
+      const baseline = buildBaseline(prevState.motorResult, prevState.inhibitoryResult, prevState.flexibleResult, result);
+      return { ...prevState, dividedResult: result, baseline, currentStep: 'result' };
     });
   }, []);
 
@@ -152,5 +168,5 @@ export function useOnboardingState(uid: string) {
     }
   }, [uid]);
 
-  return { state, goTo, submitMotor, submitInhibitory, submitFlexible, saveBaseline, saving, saveError };
+  return { state, goTo, submitMotor, submitInhibitory, submitFlexible, submitDivided, saveBaseline, saving, saveError };
 }

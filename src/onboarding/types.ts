@@ -3,6 +3,7 @@ export type OnboardingStep =
   | 'round-motor'      // Etapa 1 — Calibragem Motora/Alerta
   | 'round-inhibitory' // Etapa 2 — Controle Inibitório/Seletiva
   | 'round-flexible'   // Etapa 3 — Flexibilidade/Alternada
+  | 'round-divided'    // Etapa 4 — Dupla-Tarefa/Dividida
   | 'result';
 
 // Resultado bruto de cada etapa — coletado durante a tarefa
@@ -29,7 +30,14 @@ export interface FlexibleRoundResult {
   totalTargets: number;
 }
 
-export type RoundResult = MotorRoundResult | InhibitoryRoundResult | FlexibleRoundResult;
+export interface DividedRoundResult {
+  type: 'divided';
+  precisionBubblesOnly: number; // 0 a 1
+  precisionDualTask: number;    // 0 a 1
+  dualTaskCost: number;         // 0 a 1
+}
+
+export type RoundResult = MotorRoundResult | InhibitoryRoundResult | FlexibleRoundResult | DividedRoundResult;
 
 // Score calculado pelo avaliador interno — nunca pelo Gemini
 export type BaselineLevel = 'minimo' | 'leve' | 'moderado' | 'importante';
@@ -54,5 +62,6 @@ export interface OnboardingState {
   motorResult: MotorRoundResult | null;
   inhibitoryResult: InhibitoryRoundResult | null;
   flexibleResult: FlexibleRoundResult | null;
+  dividedResult: DividedRoundResult | null;
   baseline: UserBaseline | null;
 }

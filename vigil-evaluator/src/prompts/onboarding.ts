@@ -1,69 +1,76 @@
-import { Type } from '@google/genai';
-import type { EvaluatorInput } from '../types';
+// vigil-evaluator/src/prompts/onboarding.ts
 
 export const ONBOARDING_EVALUATION_SCHEMA = {
-  type: Type.OBJECT,
-  description: 'Avaliação inicial lúdica de onboarding',
+  type: "OBJECT",
   properties: {
     mensagem_ux: {
-      type: Type.OBJECT,
-      description: 'Mensagem lúdica e gamificada para o usuário',
+      type: "OBJECT",
       properties: {
-        titulo: {
-          type: Type.STRING,
-          description: 'Um título curto e animador (ex: Seu Perfil de Foco!)',
-        },
-        paragrafo_boas_vindas: {
-          type: Type.STRING,
-          description: 'Um parágrafo curto de boas-vindas elogiando a conclusão do teste.',
-        },
-        superpoder: {
-          type: Type.STRING,
-          description: 'Uma frase apontando a habilidade mais forte (ex: Notamos que sua Agilidade Mental é o seu superpoder! Você tem reflexos rápidos).',
-        },
-        foco_de_treino: {
-          type: Type.STRING,
-          description: 'Uma frase apontando a habilidade mais fraca de forma positiva (ex: Nas próximas semanas, nosso treino será focado em aumentar o seu Controle e Calma para que você não se precipite sob pressão).',
-        },
+        titulo: { type: "STRING" },
+        paragrafo_boas_vindas: { type: "STRING" },
+        superpoder: { type: "STRING" },
+        foco_de_treino: { type: "STRING" },
       },
-      required: ['titulo', 'paragrafo_boas_vindas', 'superpoder', 'foco_de_treino'],
+      required: ["titulo", "paragrafo_boas_vindas", "superpoder", "foco_de_treino"],
     },
     dados_grafico_teia: {
-      type: Type.OBJECT,
-      description: 'Notas de 0 a 100 para o gráfico de teia (radar chart)',
+      type: "OBJECT",
       properties: {
-        "Agilidade Mental": { type: Type.NUMBER },
-        "Foco Contínuo": { type: Type.NUMBER },
-        "Controle e Calma": { type: Type.NUMBER },
-        "Organização Visual": { type: Type.NUMBER },
+        "Agilidade Mental": { type: "NUMBER" },
+        "Foco Contínuo": { type: "NUMBER" },
+        "Controle e Calma": { type: "NUMBER" },
+        "Flexibilidade Mental": { type: "NUMBER" },
+        "Foco Multitarefa": { type: "NUMBER" },
       },
-      required: ['Agilidade Mental', 'Foco Contínuo', 'Controle e Calma', 'Organização Visual'],
+      required: [
+        "Agilidade Mental",
+        "Foco Contínuo",
+        "Controle e Calma",
+        "Flexibilidade Mental",
+        "Foco Multitarefa"
+      ],
     },
   },
-  required: ['mensagem_ux', 'dados_grafico_teia'],
+  required: ["mensagem_ux", "dados_grafico_teia"],
 };
 
-export function buildOnboardingPrompt(input: EvaluatorInput): string {
-  // O payload bruto é passado dentro do input
-  const jsonString = JSON.stringify(input, null, 2);
-
-  return `
-Você é um Treinador Cognitivo Virtual amigável e motivador de um aplicativo de treino cerebral.
-A sua tarefa é analisar os dados JSON da partida de "Onboarding" (avaliação inicial) de um novo usuário e gerar um feedback leve, gamificado e fácil de entender.
+export const buildOnboardingPrompt = (dadosPartida: string) => `
+Você é um Treinador Cognitivo Virtual amigável e motivador de um aplicativo de treino cerebral. 
+A sua tarefa é analisar os dados JSON da partida de "Onboarding" (composta por 4 exercícios) de um novo usuário e gerar um feedback leve, gamificado e fácil de entender.
 
 REGRAS ESTABELECIDAS (MUITO IMPORTANTE):
-1. NUNCA use termos clínicos ou jargões médicos (ex: não use palavras como déficit, TDAH, omissão, comissão, heminegligência, lesão, patológico).
+1. NUNCA use termos clínicos ou jargões médicos (ex: não use palavras como déficit, TDAH, omissão, comissão, heminegligência, custo de dupla-tarefa).
 2. O tom deve ser de um treinador de esportes ou de videogame: encorajador, focado em "habilidades", "superpoderes" e "oportunidades de treino".
 3. Identifique qual é a habilidade mais forte do usuário e elogie.
 4. Identifique qual habilidade está mais fraca e apresente isso como o "nosso principal objetivo de treino".
 
-MAPEAMENTO DOS DADOS PARA HABILIDADES (Para sua análise):
-- "missedTargets" (Deixou o tempo passar sem clicar) reflete o "Foco Contínuo" e a "Resistência à Distração".
-- "errors" (Clicou no item errado) reflete o "Controle e Calma" (Freio mental/Inibição).
-- "reactionTimes" (Tempo que leva para clicar) reflete a "Agilidade Mental".
-- "scanPattern" e "spatialAsymmetry" refletem a "Organização Visual".
+MAPEAMENTO DOS DADOS PARA AS 5 HABILIDADES DA TEIA (Para sua análise):
+- "Agilidade Mental" (Reflete a Velocidade de Processamento): Calculada com base no 'Tempo de Reação Simples' do Exercício 1. Tempos muito curtos ganham notas altas (próximas a 100).
+- "Foco Contínuo" (Reflete a Atenção Sustentada): Calculada com base na ausência de 'Omissões' (alvos perdidos) no Exercício 2. Poucas omissões = nota alta.
+- "Controle e Calma" (Reflete a Atenção Seletiva/Inibição): Calculada com base na ausência de 'Erros de Comissão' (cliques impulsivos) no Exercício 2. Poucos erros = nota alta.
+- "Flexibilidade Mental" (Reflete a Atenção Alternada): Calculada com base no tempo extra gasto no Exercício 3 (Custo de Alternância). Menor atraso ao alternar regras = nota alta.
+- "Foco Multitarefa" (Reflete a Atenção Dividida): Calculada com base no Exercício 4 (Bolhas + Áudio). Analise a queda de precisão entre jogar só visualmente vs. jogar visual + áudio (Custo de Dupla Tarefa). Queda pequena (bom gerenciamento simultâneo) = nota alta.
+
+FORMATO DE SAÍDA EXIGIDO:
+Você deve retornar APENAS um objeto JSON válido com duas chaves principais: "mensagem_ux" e "dados_grafico_teia". 
+
+A estrutura deve ser exatamente esta:
+{
+  "mensagem_ux": {
+    "titulo": "Um título curto e animador (ex: Seu Perfil de Foco!)",
+    "paragrafo_boas_vindas": "Um parágrafo curto elogiando a conclusão do onboarding.",
+    "superpoder": "Uma frase apontando a habilidade com a maior nota (ex: Notamos que o seu Foco Multitarefa é o seu superpoder! Você gerencia várias coisas ao mesmo tempo como um maestro).",
+    "foco_de_treino": "Uma frase apontando a habilidade com a menor nota de forma positiva (ex: Nas próximas semanas, nosso treino será focado em aumentar sua Flexibilidade Mental para você mudar de tarefas mais rápido)."
+  },
+  "dados_grafico_teia": {
+    "Agilidade Mental": [nota de 0 a 100],
+    "Foco Contínuo": [nota de 0 a 100],
+    "Controle e Calma": [nota de 0 a 100],
+    "Flexibilidade Mental": [nota de 0 a 100],
+    "Foco Multitarefa": [nota de 0 a 100]
+  }
+}
 
 DADOS DO USUÁRIO PARA ANÁLISE:
-${jsonString}
+${dadosPartida}
 `;
-}

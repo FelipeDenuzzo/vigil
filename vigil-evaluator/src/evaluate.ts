@@ -63,7 +63,7 @@ function resolvePromptAndSchema(input: EvaluatorInput) {
     case 'dividida':
       return { prompt: buildDividedPrompt(input),     schema: DIVIDED_EVALUATION_SCHEMA     };
     case 'onboarding':
-      return { prompt: buildOnboardingPrompt(input),  schema: ONBOARDING_EVALUATION_SCHEMA  };
+      return { prompt: buildOnboardingPrompt(JSON.stringify(input)),  schema: ONBOARDING_EVALUATION_SCHEMA as any };
     default:
       return { prompt: buildSelectivePrompt(input as any), schema: SELECTIVE_EVALUATION_SCHEMA };
   }
