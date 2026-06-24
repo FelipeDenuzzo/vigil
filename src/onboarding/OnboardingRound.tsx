@@ -435,7 +435,7 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
         <>
           <h2 style={{ marginBottom: 'var(--space-4)' }}>Atenção Dividida</h2>
           <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
-            Nesta etapa, você precisará gerenciar dois estímulos diferentes. Estoure apenas as bolhas <strong>AZUIS</strong>.
+            Nesta etapa, você precisará gerenciar dois estímulos diferentes. Estoure apenas as bolhas <strong>LARANJAS</strong>.
           </p>
           <Button variant="primary" onClick={() => setPhase('simple')}>Começar Fase Visual</Button>
         </>
@@ -445,7 +445,7 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
         <>
           <h2 style={{ marginBottom: 'var(--space-4)' }}>Excelente! Agora vamos dificultar.</h2>
           <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
-            Continue estourando as bolhas azuis. Mas agora, <strong>sempre que ouvir um BEEP sonoro</strong>, toque no botão "ATENÇÃO" na parte inferior da tela!
+            Continue estourando as bolhas laranjas. Mas agora, <strong>sempre que ouvir um BEEP sonoro</strong>, toque no botão "ATENÇÃO" na parte inferior da tela!
           </p>
           <Button variant="primary" onClick={() => setPhase('dual')}>Iniciar Dupla Tarefa</Button>
         </>
