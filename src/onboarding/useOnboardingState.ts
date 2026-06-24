@@ -146,8 +146,11 @@ export function useOnboardingState(uid: string) {
 
   const submitDivided = useCallback((result: DividedRoundResult) => {
     setState((prevState) => {
-      if (!prevState.motorResult || !prevState.inhibitoryResult || !prevState.flexibleResult) return prevState;
-      const baseline = buildBaseline(prevState.motorResult, prevState.inhibitoryResult, prevState.flexibleResult, result);
+      const motor = prevState.motorResult || { type: 'motor', reactionTimes: [300], totalStimuli: 10 };
+      const inhibitory = prevState.inhibitoryResult || { type: 'inhibitory', commissionErrors: 0, omissionErrors: 0, reactionTimes: [400], totalGoStimuli: 10, totalNoGoStimuli: 10 };
+      const flexible = prevState.flexibleResult || { type: 'flexible', totalTimeMs: 60000, sequenceErrors: 0, intervalsBetweenClicks: [], totalTargets: 10 };
+      
+      const baseline = buildBaseline(motor as MotorRoundResult, inhibitory as InhibitoryRoundResult, flexible as FlexibleRoundResult, result);
       return { ...prevState, dividedResult: result, baseline, currentStep: 'result' };
     });
   }, []);

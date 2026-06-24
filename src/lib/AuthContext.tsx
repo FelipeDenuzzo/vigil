@@ -32,11 +32,11 @@ const AuthContext = createContext<AuthContextType>({
 
 async function fetchUserProfile(
   uid: string
-): Promise<{ accessStatus: AccessStatus; isAdmin: boolean; onboardingCompleted: boolean }> {
+): Promise<{ accessStatus: AccessStatus; isAdmin: boolean; onboardingCompleted: boolean; nome: string | null }> {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
     if (!snap.exists()) {
-      return { accessStatus: 'pending', isAdmin: false, onboardingCompleted: false };
+      return { accessStatus: 'pending', isAdmin: false, onboardingCompleted: false, nome: null };
     }
     const data = snap.data();
     const accessStatus: AccessStatus =
@@ -47,9 +47,10 @@ async function fetchUserProfile(
       accessStatus,
       isAdmin: data?.role === 'admin',
       onboardingCompleted: data?.onboardingCompleted === true,
+      nome: data?.nome || null,
     };
   } catch {
-    return { accessStatus: 'pending', isAdmin: false, onboardingCompleted: false };
+    return { accessStatus: 'pending', isAdmin: false, onboardingCompleted: false, nome: null };
   }
 }
 
@@ -70,6 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessStatus, setAccessStatus] = useState<AccessStatus | null>(null);
   const [isAdmin,      setIsAdmin]      = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false); // ← ADICIONADO
+  const [firestoreName, setFirestoreName] = useState<string | null>(null);
   const prevUidRef = useRef<string | null>(null);
 
   async function loadProfile(uid: string) {
@@ -77,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAccessStatus(profile.accessStatus);
     setIsAdmin(profile.isAdmin);
     setOnboardingCompleted(profile.onboardingCompleted); // ← ADICIONADO
+    setFirestoreName(profile.nome);
   }
 
   useEffect(() => {
@@ -113,8 +116,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user?.uid) await loadProfile(user.uid);
   }
 
-  // ← ADICIONADO: derivado do user, sem estado próprio
-  const displayName = user ? resolveDisplayName(user) : null;
+  // ← ADICIONADO: derivado do user, sem estado próprio, mas usando firestoreName com prioridade
+  const displayName = firestoreName || (user ? resolveDisplayName(user) : null);
 
   return (
     <AuthContext.Provider value={{ user, loading, accessStatus, isAdmin, displayName, onboardingCompleted, logout, refreshAccess }}>

@@ -52,7 +52,7 @@ function MotorRound({ onDone }: { onDone: (r: MotorRoundResult) => void }) {
       <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
         Etapa 1 de 3 — Calibragem
       </p>
-      <h2 style={{ marginBottom: 'var(--space-6)' }}>Reaja quando aparecer o círculo verde</h2>
+      <h2 style={{ marginBottom: 'var(--space-6)' }}>Clique no circulo toda vez que ficar verde</h2>
       <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
         {count}/{TOTAL_STIMULI} estímulos
       </p>
@@ -152,7 +152,7 @@ function InhibitoryRound({ onDone }: { onDone: (r: InhibitoryRoundResult) => voi
       <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
         Etapa 2 de 3 — Controle Inibitório
       </p>
-      <h2 style={{ marginBottom: 'var(--space-4)' }}>Aperte apenas no quadrado preto {GO_SYMBOL}</h2>
+      <h2 style={{ marginBottom: 'var(--space-4)' }}>Clique no quadrado preto quando aparecer</h2>
       <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
         Ignore o quadrado branco {NOGO_SYMBOL}
       </p>
@@ -191,14 +191,22 @@ function FlexibleRound({ onDone }: { onDone: (r: FlexibleRoundResult) => void })
   const lastClickRef = useRef<number>(0);
   const startRef = useRef<number>(0);
 
-  // Embaralha posições dos alvos (layout fixo, posições aleatórias)
-  const [positions] = useState(() =>
-    SEQUENCE.map((label) => ({
+  // Posições fixas distribuídas para evitar sobreposição
+  const FIXED_POS = [
+    { x: 10, y: 15 }, { x: 35, y: 10 }, { x: 60, y: 15 }, { x: 85, y: 20 },
+    { x: 15, y: 50 }, { x: 45, y: 45 }, { x: 75, y: 55 },
+    { x: 20, y: 80 }, { x: 50, y: 85 }, { x: 80, y: 75 }
+  ];
+
+  // Embaralha posições dos alvos
+  const [positions] = useState(() => {
+    const shuffledPos = [...FIXED_POS].sort(() => Math.random() - 0.5);
+    return SEQUENCE.map((label, i) => ({
       label,
-      x: 10 + Math.random() * 80,
-      y: 10 + Math.random() * 80,
-    }))
-  );
+      x: shuffledPos[i].x,
+      y: shuffledPos[i].y,
+    }));
+  });
 
   function handleStart() {
     startRef.current = performance.now();
@@ -298,24 +306,15 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
 
   const bubbleIdRef = useRef(0);
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   // Som de Beep
   const playBeep = useCallback(() => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/audio/efeitos/plin.MP3');
     }
-    const ctx = audioContextRef.current;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, ctx.currentTime);
-    gain.gain.setValueAtTime(0.2, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.3);
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(e => console.error('Audio play blocked:', e));
   }, []);
 
   // Loop de Bolhas
@@ -426,7 +425,7 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
   };
 
   return (
-    <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
+    <div style={{ textAlign: 'center', paddingTop: 'var(--space-2)' }}>
       <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
         Etapa 4 de 4 — Foco Multitarefa
       </p>
@@ -434,8 +433,8 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
       {phase === 'waiting' && (
         <>
           <h2 style={{ marginBottom: 'var(--space-4)' }}>Atenção Dividida</h2>
-          <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
-            Nesta etapa, você precisará gerenciar dois estímulos diferentes. Estoure apenas as bolhas <strong>LARANJAS</strong>.
+          <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
+            Nesta etapa, você precisará gerenciar dois estímulos diferentes. Estoure apenas as bolhas <strong>AZUIS</strong>.
           </p>
           <Button variant="primary" onClick={() => setPhase('simple')}>Começar Fase Visual</Button>
         </>
@@ -444,8 +443,8 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
       {phase === 'transition' && (
         <>
           <h2 style={{ marginBottom: 'var(--space-4)' }}>Excelente! Agora vamos dificultar.</h2>
-          <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
-            Continue estourando as bolhas laranjas. Mas agora, <strong>sempre que ouvir um BEEP sonoro</strong>, toque no botão "ATENÇÃO" na parte inferior da tela!
+          <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
+            Continue estourando as bolhas azuis. Mas agora, <strong>sempre que ouvir o efeito sonoro</strong>, toque no botão "ATENÇÃO" na parte inferior da tela!
           </p>
           <Button variant="primary" onClick={() => setPhase('dual')}>Iniciar Dupla Tarefa</Button>
         </>
@@ -464,7 +463,7 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
                     left: `${b.left}%`,
                     bottom: '-10%', // começa de baixo
                     width: 48, height: 48, borderRadius: '50%',
-                    background: b.type === 'target' ? 'var(--color-selective)' : 'var(--color-error)',
+                    background: b.type === 'target' ? 'var(--color-primary)' : 'var(--color-error)',
                     opacity: 0.8, cursor: 'pointer',
                     animation: 'bubbleUp 3.5s linear forwards', // ver styles abaixo
                   }}
