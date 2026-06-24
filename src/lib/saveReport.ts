@@ -1,9 +1,7 @@
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, storage } from './firebase';
+import { auth } from './firebase';
 import db from './firebase';
 import type { EvaluationReport, EvaluatorInput } from './evaluatorClient';
-import { reportToMarkdown } from './reportToMarkdown';
 
 export async function saveReport(
   report: EvaluationReport,
@@ -16,13 +14,6 @@ export async function saveReport(
   }
 
   try {
-    const md = reportToMarkdown(report, input);
-    // Laudos no Storage também isolados por uid
-    const storageRef = ref(storage, `laudos/${uid}/${input.sessionId}.md`);
-
-    await uploadString(storageRef, md, 'raw', { contentType: 'text/markdown' });
-    const downloadUrl = await getDownloadURL(storageRef);
-
     await setDoc(doc(db, 'sessions', input.sessionId), {
       uid,                              // ← campo obrigatório para as Security Rules
       sessionId:     input.sessionId,
@@ -30,11 +21,10 @@ export async function saveReport(
       attentionType: input.attentionType,
       score:         report.score,
       level:         report.level,
-      reportUrl:     downloadUrl,
       createdAt:     serverTimestamp(),
     }, { merge: true });
 
-    return downloadUrl;
+    return "saved";
   } catch (err) {
     if (import.meta.env.DEV) console.error('[saveReport] erro:', err);
     return null;

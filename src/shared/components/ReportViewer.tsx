@@ -32,11 +32,6 @@ export const ReportViewer: React.FC<Props> = ({ report, level, reportUrl }) => {
           <ul>{report.clinical.weaknesses.map((w, i) => <li key={i}>{w}</li>)}</ul>
           <p>{report.clinical.recommendation}</p>
           <blockquote>{report.clinical.clinicalNote}</blockquote>
-          {reportUrl && (
-            <a href={reportUrl} target="_blank" rel="noopener noreferrer">
-              Baixar laudo (.md)
-            </a>
-          )}
         </section>
       )}
     </div>
