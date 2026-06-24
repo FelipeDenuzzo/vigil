@@ -51,6 +51,48 @@ function validate(parsed: unknown, isOnboarding = false): any {
   return r;
 }
 
+// ── Funções de Cálculo do Onboarding (0 a 100) ──────────────────────────────────
+function calculateOnboardingScores(input: any) {
+  // 1. Agilidade Mental: Baseado no tempo de reação médio (250ms-400ms = alto, >600 = baixo)
+  let agilidadeMental = 100;
+  const rt = input.exercicio_1_calibragem?.tempo_de_reacao_medio_ms ?? 500;
+  if (rt <= 250) agilidadeMental = 100;
+  else if (rt <= 400) agilidadeMental = 100 - ((rt - 250) / 150) * 20; // 80 a 100
+  else if (rt <= 600) agilidadeMental = 80 - ((rt - 400) / 200) * 30; // 50 a 80
+  else agilidadeMental = Math.max(0, 50 - ((rt - 600) / 400) * 50); // cai para 0
+
+  // 2 e 3. Foco Contínuo e Controle e Calma: Subtrai 10 pontos por erro de omissão/comissão
+  const omissoes = input.exercicio_2_gonogo?.erros_omissao ?? 0;
+  const comissoes = input.exercicio_2_gonogo?.erros_comissao_impulsividade ?? 0;
+  const focoContinuo = Math.max(0, 100 - (omissoes * 10));
+  const controleCalma = Math.max(0, 100 - (comissoes * 10));
+
+  // 4. Flexibilidade Mental: Custo de alternância
+  let flexibilidadeMental = 100;
+  const flexCost = input.exercicio_3_alternancia?.custo_de_alternancia_segundos ?? 15;
+  if (flexCost <= 5) flexibilidadeMental = 100 - (flexCost / 5) * 10; // 90 a 100
+  else if (flexCost <= 15) flexibilidadeMental = 90 - ((flexCost - 5) / 10) * 40; // 50 a 90
+  else flexibilidadeMental = Math.max(0, 50 - ((flexCost - 15) / 15) * 50); // cai para 0
+
+  // 5. Foco Multitarefa: Custo de Dupla-Tarefa
+  let focoMultitarefa = 100;
+  const dtc = input.exercicio_4_dupla_tarefa?.custo_de_dupla_tarefa_porcento ?? 20;
+  // Se custo for menor que 5%, nota próxima a 100
+  if (dtc <= 5) focoMultitarefa = 100 - (dtc / 5) * 10;
+  else if (dtc <= 30) focoMultitarefa = 90 - ((dtc - 5) / 25) * 40;
+  else focoMultitarefa = Math.max(0, 50 - ((dtc - 30) / 70) * 50);
+
+  return {
+    "notas_finais_0_a_100": {
+      "Agilidade Mental": Math.round(agilidadeMental),
+      "Foco Contínuo": Math.round(focoContinuo),
+      "Controle e Calma": Math.round(controleCalma),
+      "Flexibilidade Mental": Math.round(flexibilidadeMental),
+      "Foco Multitarefa": Math.round(focoMultitarefa)
+    }
+  };
+}
+
 // ── Seleção de prompt e schema por tipo de atenção ─────────────────────────────────
 function resolvePromptAndSchema(input: EvaluatorInput) {
   switch (input.attentionType) {
@@ -63,7 +105,8 @@ function resolvePromptAndSchema(input: EvaluatorInput) {
     case 'dividida':
       return { prompt: buildDividedPrompt(input),     schema: DIVIDED_EVALUATION_SCHEMA     };
     case 'onboarding':
-      return { prompt: buildOnboardingPrompt(JSON.stringify(input)),  schema: ONBOARDING_EVALUATION_SCHEMA as any };
+      const notas = calculateOnboardingScores(input);
+      return { prompt: buildOnboardingPrompt(JSON.stringify(notas)),  schema: ONBOARDING_EVALUATION_SCHEMA as any };
     default:
       return { prompt: buildSelectivePrompt(input as any), schema: SELECTIVE_EVALUATION_SCHEMA };
   }
