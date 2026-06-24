@@ -1,4 +1,5 @@
 // src/attentions/alternated/games/ColorShape/ColorShapeReportPanel.tsx
+import { useAuth } from '../../../../lib/AuthContext';
 import { useState } from 'react';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 import { ReportDisclaimer } from '../../../../shared/components/ReportDisclaimer';
@@ -191,6 +192,7 @@ const LEVEL_LABEL: Record<string, string> = {
 };
 
 export function ColorShapeReportPanel({ report }: { report: EvaluationReport }) {
+  const { displayName } = useAuth();
   const [tab, setTab] = useState<Tab>('ludic');
 
   const level = report.level ?? '';
@@ -223,7 +225,7 @@ export function ColorShapeReportPanel({ report }: { report: EvaluationReport }) 
 
       <div style={s.header}>
         <p style={s.title}>
-          🤖 Avaliação IA
+          🤖 Avaliação de {displayName ? displayName.split(' ')[0] : 'Sessão'}
           <span style={s.levelBadge(level)}>{level}</span>
         </p>
         <div style={s.tabRow}>
