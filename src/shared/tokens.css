@@ -21,6 +21,10 @@
   --color-primary-active: #4b6ee8;
   --color-primary-glow:   rgba(108, 142, 245, 0.2);
 
+  /* Status */
+  --color-error:          #ef4444;   /* vermelho */
+  --color-success:        #22c55e;   /* verde */
+
   /* Cores por tipo de atenção */
   --color-selective:      #f5a76c;   /* laranja — foco no alvo */
   --color-sustained:      #6cf5a7;   /* verde — resistência */
