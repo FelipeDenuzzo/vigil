@@ -69,8 +69,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
   // ── Atenção Sustentada — Long Mazes ──────────────────────────────────────────
   if (game === 'long-mazes' || attentionType === 'sustentada') {
-    const input = body as EvaluatorInput;
-    if (!input.severity || (input as any).completedPhases === undefined) {
+    const input = body as any;
+    if (!input.severity || input.completedPhases === undefined) {
       res.status(400).json({ error: 'Invalid payload for long-mazes: missing severity or completedPhases' });
       return;
     }
@@ -156,7 +156,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   // ── Atenção Dividida — Cofre Mental ou Escuta Seletiva ───────────────────────
   if (game === 'cofre-mental' || game === 'escuta-seletiva' || attentionType === 'dividida') {
     console.log(`[evaluateRouter] Recebida avaliação de Atenção Dividida. game=${game}, sessionId=${body.sessionId}`);
-    const input = body as EvaluatorInput;
+    const input = body as any;
     if (!input.severity) {
       res.status(400).json({ error: 'Invalid payload for divided attention: missing severity' });
       return;
@@ -192,6 +192,20 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       });
     } catch (error) {
       console.error('Erro ao gerar laudo Gemini (dividida):', error);
+      res.status(500).json({ error: 'Gemini evaluation failed' });
+    }
+    return;
+  }
+
+  // ── Onboarding ──────────────────────────────────────────────────────────────
+  if (attentionType === 'onboarding') {
+    const input = body as any;
+    try {
+      const uid: string | undefined = typeof body.uid === 'string' ? body.uid : undefined;
+      const aiReport = await evaluateWithGemini(input, uid);
+      res.json(aiReport); // Retorna direto o JSON de onboarding
+    } catch (error) {
+      console.error('Erro ao gerar laudo Gemini (onboarding):', error);
       res.status(500).json({ error: 'Gemini evaluation failed' });
     }
     return;

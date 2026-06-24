@@ -13,6 +13,7 @@ export const OnboardingFlow: React.FC = () => {
     submitMotor,
     submitInhibitory,
     submitFlexible,
+    submitDivided,
     saveBaseline,
     saving,
     saveError,
@@ -29,7 +30,7 @@ export const OnboardingFlow: React.FC = () => {
             height: '100%',
             borderRadius: 2,
             background: 'var(--color-selective)',
-            width: currentStep === 'round-motor' ? '33%' : currentStep === 'round-inhibitory' ? '66%' : '100%',
+            width: currentStep === 'round-motor' ? '25%' : currentStep === 'round-inhibitory' ? '50%' : currentStep === 'round-flexible' ? '75%' : '100%',
             transition: 'width 0.4s ease',
           }} />
         </div>
@@ -49,6 +50,10 @@ export const OnboardingFlow: React.FC = () => {
 
       {currentStep === 'round-flexible' && (
         <OnboardingRound roundType="flexible" onFlexibleDone={submitFlexible} />
+      )}
+
+      {currentStep === 'round-divided' && (
+        <OnboardingRound roundType="divided" onDividedDone={submitDivided} />
       )}
 
       {currentStep === 'result' && baseline && (

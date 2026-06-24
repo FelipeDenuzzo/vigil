@@ -271,18 +271,244 @@ function FlexibleRound({ onDone }: { onDone: (r: FlexibleRoundResult) => void })
   );
 }
 
+// ─── Etapa 4 — Dupla-Tarefa/Dividida (Bolhas + Áudio) ────────────────────────
+import { DividedRoundResult } from './types';
+
+function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
+  const SIMPLE_DUR = 15000;
+  const DUAL_DUR = 20000;
+
+  const [phase, setPhase] = useState<'waiting' | 'simple' | 'transition' | 'dual' | 'done'>('waiting');
+  
+  // Para gerenciar os elementos em tela
+  const [bubbles, setBubbles] = useState<{ id: number; left: number; type: 'target' | 'distractor'; clicked: boolean }[]>([]);
+  
+  // Métricas Fase Simples
+  const [simpleHits, setSimpleHits] = useState(0);
+  const [simpleTargets, setSimpleTargets] = useState(0);
+
+  // Métricas Fase Dupla
+  const [dualHits, setDualHits] = useState(0);
+  const [dualTargets, setDualTargets] = useState(0);
+
+  // Controle de Áudio
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const [audioTargetActive, setAudioTargetActive] = useState(false);
+  const audioIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const bubbleIdRef = useRef(0);
+
+  // Som de Beep
+  const playBeep = useCallback(() => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    const ctx = audioContextRef.current;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.3);
+  }, []);
+
+  // Loop de Bolhas
+  useEffect(() => {
+    if (phase !== 'simple' && phase !== 'dual') return;
+
+    const interval = setInterval(() => {
+      const isTarget = Math.random() > 0.4; // 60% azuis, 40% vermelhas
+      if (isTarget) {
+        if (phase === 'simple') setSimpleTargets(t => t + 1);
+        if (phase === 'dual') setDualTargets(t => t + 1);
+      }
+      
+      const newBubble = {
+        id: bubbleIdRef.current++,
+        left: 10 + Math.random() * 80,
+        type: isTarget ? 'target' : 'distractor' as const,
+        clicked: false,
+      };
+
+      setBubbles(prev => [...prev, newBubble]);
+
+      // Remove a bolha após 3.5s (tempo da animação + folga)
+      setTimeout(() => {
+        setBubbles(prev => prev.filter(b => b.id !== newBubble.id));
+      }, 3500);
+
+    }, 800); // Nasce uma a cada 800ms
+
+    return () => clearInterval(interval);
+  }, [phase]);
+
+  // Loop de Áudio (Apenas na Dual)
+  useEffect(() => {
+    if (phase !== 'dual') return;
+
+    const scheduleNextAudio = () => {
+      const delay = 2000 + Math.random() * 3000; // a cada 2 a 5s
+      audioIntervalRef.current = setTimeout(() => {
+        playBeep();
+        setAudioTargetActive(true);
+        // Reseta estado do áudio após 1.5s
+        setTimeout(() => setAudioTargetActive(false), 1500);
+        scheduleNextAudio();
+      }, delay);
+    };
+
+    scheduleNextAudio();
+
+    return () => {
+      if (audioIntervalRef.current) clearTimeout(audioIntervalRef.current);
+    };
+  }, [phase, playBeep]);
+
+  // Transições de fase
+  useEffect(() => {
+    if (phase === 'simple') {
+      const t = setTimeout(() => {
+        setPhase('transition');
+      }, SIMPLE_DUR);
+      return () => clearTimeout(t);
+    }
+    
+    if (phase === 'dual') {
+      const t = setTimeout(() => {
+        setPhase('done');
+      }, DUAL_DUR);
+      return () => clearTimeout(t);
+    }
+  }, [phase]);
+
+  // Efetuar cálculo final
+  useEffect(() => {
+    if (phase === 'done') {
+      const precisionSimple = simpleTargets > 0 ? simpleHits / simpleTargets : 0;
+      const precisionDualVisual = dualTargets > 0 ? dualHits / dualTargets : 0;
+      // Podemos somar visual + audio precisão se quiser, mas a literatura costuma focar no custo na tarefa primária (visual).
+      // Vamos manter a precisão baseada no acerto das bolhas para refletir o custo.
+      const cost = precisionSimple > 0 ? (precisionSimple - precisionDualVisual) / precisionSimple : 0;
+      
+      onDone({
+        type: 'divided',
+        precisionBubblesOnly: precisionSimple,
+        precisionDualTask: precisionDualVisual,
+        dualTaskCost: Math.max(0, cost)
+      });
+    }
+  }, [phase, onDone, simpleHits, simpleTargets, dualHits, dualTargets]);
+
+  // Interações
+  const handleBubbleClick = (id: number, type: 'target' | 'distractor') => {
+    setBubbles(prev => prev.map(b => b.id === id ? { ...b, clicked: true } : b));
+    if (type === 'target') {
+      if (phase === 'simple') setSimpleHits(h => h + 1);
+      if (phase === 'dual') setDualHits(h => h + 1);
+    } else {
+      // Punição opcional por estourar a vermelha (desconta acerto ou apenas ignora)
+      if (phase === 'simple') setSimpleHits(h => Math.max(0, h - 1));
+      if (phase === 'dual') setDualHits(h => Math.max(0, h - 1));
+    }
+  };
+
+  const handleAudioButton = () => {
+    if (phase !== 'dual') return;
+    if (audioTargetActive) {
+      setAudioTargetActive(false); // Conta sucesso
+    }
+  };
+
+  return (
+    <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
+      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
+        Etapa 4 de 4 — Foco Multitarefa
+      </p>
+
+      {phase === 'waiting' && (
+        <>
+          <h2 style={{ marginBottom: 'var(--space-4)' }}>Atenção Dividida</h2>
+          <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
+            Nesta etapa, você precisará gerenciar dois estímulos diferentes. Estoure apenas as bolhas <strong>AZUIS</strong>.
+          </p>
+          <Button variant="primary" onClick={() => setPhase('simple')}>Começar Fase Visual</Button>
+        </>
+      )}
+
+      {phase === 'transition' && (
+        <>
+          <h2 style={{ marginBottom: 'var(--space-4)' }}>Excelente! Agora vamos dificultar.</h2>
+          <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
+            Continue estourando as bolhas azuis. Mas agora, <strong>sempre que ouvir um BEEP sonoro</strong>, toque no botão "ATENÇÃO" na parte inferior da tela!
+          </p>
+          <Button variant="primary" onClick={() => setPhase('dual')}>Iniciar Dupla Tarefa</Button>
+        </>
+      )}
+
+      {(phase === 'simple' || phase === 'dual') && (
+        <>
+          <div style={{ position: 'relative', width: '100%', maxWidth: 400, height: 320, margin: '0 auto var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)', overflow: 'hidden' }}>
+            {bubbles.map(b => (
+              !b.clicked && (
+                <div
+                  key={b.id}
+                  onClick={() => handleBubbleClick(b.id, b.type)}
+                  style={{
+                    position: 'absolute',
+                    left: \`\${b.left}%\`,
+                    bottom: '-10%', // começa de baixo
+                    width: 48, height: 48, borderRadius: '50%',
+                    background: b.type === 'target' ? 'var(--color-selective)' : 'var(--color-error)',
+                    opacity: 0.8, cursor: 'pointer',
+                    animation: 'bubbleUp 3.5s linear forwards', // ver styles abaixo
+                  }}
+                />
+              )
+            ))}
+            
+            <style>{\`
+              @keyframes bubbleUp {
+                from { transform: translateY(0); }
+                to { transform: translateY(-400px); }
+              }
+            \`}</style>
+          </div>
+
+          {phase === 'dual' && (
+             <Button variant="secondary" onClick={handleAudioButton} style={{ width: '100%', maxWidth: 400, height: 64, fontSize: '1.2rem', fontWeight: 800, background: audioTargetActive ? 'var(--color-sustained)' : undefined }}>
+               🔔 BEEP (ATENÇÃO!)
+             </Button>
+          )}
+        </>
+      )}
+
+      {phase === 'done' && (
+        <p style={{ color: '#ffffff' }}>Gerando Laudo do Onboarding...</p>
+      )}
+    </div>
+  );
+}
+
 // ─── Exportação genérica ──────────────────────────────────────────────────────
 
 interface Props {
-  roundType: 'motor' | 'inhibitory' | 'flexible';
+  roundType: 'motor' | 'inhibitory' | 'flexible' | 'divided';
   onMotorDone?: (r: MotorRoundResult) => void;
   onInhibitoryDone?: (r: InhibitoryRoundResult) => void;
   onFlexibleDone?: (r: FlexibleRoundResult) => void;
+  onDividedDone?: (r: DividedRoundResult) => void;
 }
 
-export const OnboardingRound: React.FC<Props> = ({ roundType, onMotorDone, onInhibitoryDone, onFlexibleDone }) => {
+export const OnboardingRound: React.FC<Props> = ({ roundType, onMotorDone, onInhibitoryDone, onFlexibleDone, onDividedDone }) => {
   if (roundType === 'motor' && onMotorDone) return <MotorRound onDone={onMotorDone} />;
   if (roundType === 'inhibitory' && onInhibitoryDone) return <InhibitoryRound onDone={onInhibitoryDone} />;
   if (roundType === 'flexible' && onFlexibleDone) return <FlexibleRound onDone={onFlexibleDone} />;
+  if (roundType === 'divided' && onDividedDone) return <DividedRound onDone={onDividedDone} />;
   return null;
 };

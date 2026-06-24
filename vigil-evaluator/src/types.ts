@@ -153,9 +153,13 @@ export interface DividedEvaluatorInput {
 
 // ─── Onboarding (Avaliação Inicial Gamificada) ──────────────────────────────
 export interface OnboardingEvaluatorInput {
-  attentionType: 'onboarding';
   sessionId: string;
-  [key: string]: unknown;
+  attentionType: 'onboarding';
+  exercicio_1_calibragem: any;
+  exercicio_2_gonogo: any;
+  exercicio_3_alternancia: any;
+  exercicio_4_dupla_tarefa: any;
+  uid?: string;
 }
 
 // ─── Union discriminada ──────────────────────────────────────────────────────
@@ -208,7 +212,8 @@ export interface OnboardingReport {
     "Agilidade Mental": number;
     "Foco Contínuo": number;
     "Controle e Calma": number;
-    "Organização Visual": number;
+    "Flexibilidade Mental": number;
+    "Foco Multitarefa": number;
   };
 }
 

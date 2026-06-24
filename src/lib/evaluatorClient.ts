@@ -12,6 +12,10 @@ export interface EvaluatorInput {
   attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida' | 'onboarding';
   severity?: 'minimo' | 'leve' | 'moderado' | 'importante';
   [key: string]: any;
+  exercicio_1_calibragem?: any;
+  exercicio_2_gonogo?: any;
+  exercicio_3_alternancia?: any;
+  exercicio_4_dupla_tarefa?: any;
   game?: 'visual-search' | 'color-shape' | 'cofre-mental' | 'long-mazes' | 'escuta-seletiva' | 'achar-o-faltando';
   roundCount?: number;
   totalClicks?: number;
@@ -102,7 +106,8 @@ export interface OnboardingReport {
     "Agilidade Mental": number;
     "Foco Contínuo": number;
     "Controle e Calma": number;
-    "Organização Visual": number;
+    "Flexibilidade Mental": number;
+    "Foco Multitarefa": number;
   };
 }
 

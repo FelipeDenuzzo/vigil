@@ -27,13 +27,30 @@ export const OnboardingResult: React.FC<Props> = ({ state, onSave, saving, saveE
     async function evaluate() {
       if (!state.baseline) return;
       
-      const payload: EvaluatorInput = {
-        sessionId: 'onboarding-' + Date.now(),
-        attentionType: 'onboarding',
-        motorResult: state.motorResult,
-        inhibitoryResult: state.inhibitoryResult,
-        flexibleResult: state.flexibleResult,
-      };
+        const timeSecFlex = state.flexibleResult ? state.flexibleResult.totalTimeMs / 1000 : 60;
+        const flexCost = timeSecFlex; // Considerando o tempo total como custo
+
+        const payload: EvaluatorInput = {
+          sessionId: 'onboarding-' + Date.now(),
+          attentionType: 'onboarding',
+          exercicio_1_calibragem: {
+            tempo_de_reacao_medio_ms: state.motorResult?.reactionTimes.reduce((a, b) => a + b, 0) / (state.motorResult?.reactionTimes.length || 1),
+          },
+          exercicio_2_gonogo: {
+            erros_omissao: state.inhibitoryResult?.omissionErrors,
+            erros_comissao_impulsividade: state.inhibitoryResult?.commissionErrors,
+          },
+          exercicio_3_alternancia: {
+            tempo_tarefa_simples_segundos: Math.round(timeSecFlex * 0.4), // Estimativa de base
+            tempo_tarefa_alternada_segundos: Math.round(timeSecFlex),
+            custo_de_alternancia_segundos: Math.round(flexCost),
+          },
+          exercicio_4_dupla_tarefa: {
+            precisao_apenas_bolhas_porcento: Math.round((state.dividedResult?.precisionBubblesOnly || 0) * 100),
+            precisao_bolhas_e_audio_simultaneos_porcento: Math.round((state.dividedResult?.precisionDualTask || 0) * 100),
+            custo_de_dupla_tarefa_porcento: Math.round((state.dividedResult?.dualTaskCost || 0) * 100),
+          }
+        };
 
       try {
         const result = await callOnboardingEvaluator(payload);
@@ -87,7 +104,8 @@ export const OnboardingResult: React.FC<Props> = ({ state, onSave, saving, saveE
     { subject: 'Agilidade Mental', A: report.dados_grafico_teia['Agilidade Mental'] || 0, fullMark: 100 },
     { subject: 'Foco Contínuo', A: report.dados_grafico_teia['Foco Contínuo'] || 0, fullMark: 100 },
     { subject: 'Controle e Calma', A: report.dados_grafico_teia['Controle e Calma'] || 0, fullMark: 100 },
-    { subject: 'Organização Visual', A: report.dados_grafico_teia['Organização Visual'] || 0, fullMark: 100 },
+    { subject: 'Flexibilidade Mental', A: report.dados_grafico_teia['Flexibilidade Mental'] || 0, fullMark: 100 },
+    { subject: 'Foco Multitarefa', A: report.dados_grafico_teia['Foco Multitarefa'] || 0, fullMark: 100 },
   ];
 
   const { mensagem_ux } = report;
