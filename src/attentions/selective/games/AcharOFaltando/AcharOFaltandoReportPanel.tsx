@@ -533,29 +533,7 @@ export default function AcharOFaltandoReportPanel({
                   </p>
                 </div>
 
-                {/* Botão de Download */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-                  {reportUrl ? (
-                    <a
-                      href={reportUrl}
-                      download={`laudo-achar-o-faltando-${metrics.roundsPlayed}.md`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="download-btn-hover"
-                      style={s.downloadButton}
-                    >
-                      📥 Baixar laudo (.md)
-                    </a>
-                  ) : (
-                    <button
-                      disabled
-                      title="O arquivo markdown está sendo gravado no servidor..."
-                      style={s.downloadButtonDisabled}
-                    >
-                      ⏳ Gravando laudo para download...
-                    </button>
-                  )}
-                </div>
+
               </>
             )}
           </>
