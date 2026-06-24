@@ -77,7 +77,7 @@ export default function AcharOFaltandoEvaluationContainer() {
   const [metrics, setMetrics] = useState<AcharOFaltandoMetrics | null>(null);
   const [scaleResult, setScaleResult] = useState<AcharOFaltandoScaleResult | null>(null);
   const [geminiReport, setGeminiReport] = useState<GeminiReport | undefined>(undefined);
-  const [reportUrl, setReportUrl] = useState<string | null>(null);
+
   const [loaded, setLoaded] = useState<LoadedState>(false);
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export default function AcharOFaltandoEvaluationContainer() {
     setGeminiReport(undefined);
     setMetrics(null);
     setScaleResult(null);
-    setReportUrl(null);
+
 
     // Pré-calcula as métricas locais e escala instantaneamente para exibição rápida
     const rawRounds = sessionLog.rounds ?? [];
@@ -108,12 +108,10 @@ export default function AcharOFaltandoEvaluationContainer() {
         if (cached) {
           setGeminiReport(cached);
           try {
-            const sessionSnap = await getDoc(doc(db, 'sessions', sessionId));
-            if (sessionSnap.exists()) {
-              setReportUrl(sessionSnap.data()?.reportUrl || null);
-            }
+            await getDoc(doc(db, 'sessions', sessionId));
+            // if (sessionSnap.exists()) { ... }
           } catch (err) {
-            if (import.meta.env.DEV) console.warn('[AcharOFaltandoEvaluationContainer] erro ao carregar reportUrl:', err);
+            console.error('[AcharOFaltandoEvaluationContainer] erro ao carregar docs', err);
           }
           setLoaded(true);
           return;
@@ -134,16 +132,6 @@ export default function AcharOFaltandoEvaluationContainer() {
           setGeminiReport(result.geminiReport);
         } else if (result?.geminiReport) {
           setGeminiReport(result.geminiReport);
-        }
-
-        // Carrega o reportUrl após a gravação
-        try {
-          const sessionSnap = await getDoc(doc(db, 'sessions', sessionId));
-          if (sessionSnap.exists()) {
-            setReportUrl(sessionSnap.data()?.reportUrl || null);
-          }
-        } catch (err) {
-          if (import.meta.env.DEV) console.warn('[AcharOFaltandoEvaluationContainer] erro ao obter sessions após gravação:', err);
         }
       } catch (err) {
         console.error('[AcharOFaltandoEvaluationContainer] erro geral na orquestração:', err);
@@ -168,7 +156,7 @@ export default function AcharOFaltandoEvaluationContainer() {
         metrics={metrics}
         scaleResult={scaleResult}
         geminiReport={geminiReport}
-        reportUrl={reportUrl}
+
         loaded={loaded === true}
         onRepeat={() => navigate('/treinar/seletiva/achar-o-faltando')}
         onBack={() => navigate('/treinar/seletiva')}
