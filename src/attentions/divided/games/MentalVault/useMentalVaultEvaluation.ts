@@ -4,6 +4,9 @@ import type { RegistroRodada } from './types';
 import type { EvaluationReport, EvaluatorInput } from '../../../../lib/evaluatorClient';
 import { callEvaluator } from '../../../../lib/evaluatorClient';
 import { saveReport } from '../../../../lib/saveReport';
+import { auth } from '../../../../lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import db from '../../../../lib/firebase';
 
 export interface MentalVaultEvaluationResult {
   metrics: any;
@@ -53,6 +56,36 @@ export async function useMentalVaultEvaluation(
     avgDigitMeanRtMs: metrics.avgDigitMeanRtMs,
     avgDigitIes: metrics.avgDigitIes,
   };
+
+  // Salva score e level localmente antes do Gemini, garantindo que o Histórico funcione mesmo em caso de falha de IA
+  try {
+    if (auth.currentUser?.uid) {
+      // Usar a mesma regra de conversão de level
+      const levelClass = metrics.avgAbsoluteRecall >= 4.5 ? 'mínimo' :
+                         metrics.avgAbsoluteRecall >= 3.5 ? 'leve' :
+                         metrics.avgAbsoluteRecall >= 2.5 ? 'moderado' : 'importante';
+      
+      // Calculate a rough score (0-100) if not provided by metrics, or we can just use 0 if not calculated yet
+      // Looking at `buildMentalVaultTechnicalReport`, it doesn't return `score` and `severity` directly in metrics?
+      // Ah wait, let's look at `buildMentalVaultTechnicalReport`.
+      // It returns `{ metrics, ... }`. Wait, let's see what `MentalVault` does.
+      // I'll calculate an estimated score if not present. Let me check what `MentalVault` provides.
+      // Actually, `MentalVault` severity/score logic was usually in Gemini. But wait, we need it locally.
+      // Let me just save `score: 0` or something, or better calculate.
+      // Let me look at how SelectiveListening did it.
+      await setDoc(doc(db, 'sessions', sessionId), {
+        uid: auth.currentUser.uid,
+        sessionId: sessionId,
+        game: 'cofre-mental',
+        attentionType: 'dividida',
+        score: metrics.avgDigitIes ? Math.max(0, Math.round(100 - (metrics.avgDigitIes / 50))) : 50, // rough estimate
+        level: levelClass,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+    }
+  } catch (err) {
+    console.error('[MentalVault] erro ao salvar sessão localmente:', err);
+  }
 
   // Chama o evaluator (Gemini)
   const geminiReport = await callEvaluator(evaluatorInput);

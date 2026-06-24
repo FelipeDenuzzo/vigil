@@ -8,8 +8,10 @@ import type { MazeFullSessionLog } from './types';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
 import { saveReport } from '../../../../lib/saveReport';
 import { auth } from '../../../../lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import db from '../../../../lib/firebase';
 
-const EVALUATOR_URL    = import.meta.env.VITE_EVALUATOR_URL    as string | undefined;
+const EVALUATOR_URL = import.meta.env.VITE_EVALUATOR_URL as string | undefined;
 const EVALUATOR_SECRET = import.meta.env.VITE_EVALUATOR_SECRET as string | undefined;
 
 async function callEvaluatorSustained(
@@ -36,10 +38,10 @@ async function callEvaluatorSustained(
     }
     const raw = await res.json();
     return {
-      score:    raw.score,
-      level:    raw.severity === 'minimo' ? 'mínimo' : raw.severity,
-      ludic:    raw.report?.ludic    ?? null,
-      general:  raw.report?.general  ?? null,
+      score: raw.score,
+      level: raw.severity === 'minimo' ? 'mínimo' : raw.severity,
+      ludic: raw.report?.ludic ?? null,
+      general: raw.report?.general ?? null,
       clinical: raw.report?.clinical ?? null,
     } as EvaluationReport;
   } catch (err) {
@@ -77,6 +79,23 @@ export async function useLongMazesEvaluation(
 
   // Monta o payload para o vigil-evaluator
   const evaluatorInput = buildLongMazesTechnicalReport(metrics, sessionId);
+
+  // Salva score e level localmente antes do Gemini, garantindo que o Histórico funcione mesmo em caso de falha de IA
+  try {
+    if (auth.currentUser?.uid) {
+      await setDoc(doc(db, 'sessions', sessionId), {
+        uid: auth.currentUser.uid,
+        sessionId: sessionId,
+        game: 'long-mazes',
+        attentionType: 'sustentada',
+        score: metrics.avgEfficiencyPct,
+        level: metrics.severity === 'minimo' ? 'mínimo' : metrics.severity,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+    }
+  } catch (err) {
+    console.error('[LongMazes] erro ao salvar sessão localmente:', err);
+  }
 
   // Artefato 3: envia ao Gemini
   const geminiReport = await callEvaluatorSustained(evaluatorInput);
