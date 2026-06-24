@@ -1,7 +1,7 @@
 // src/pages/Admin.tsx
 // Painel de administração — acessível apenas para usuários com role: 'admin'.
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc, orderBy, query } from 'firebase/firestore';
 import db from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -76,6 +76,22 @@ export function Admin() {
       setUsers(prev =>
         prev.map(u => u.uid === uid ? { ...u, role: newRole } : u)
       );
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  async function handleDeleteUser(uid: string, email: string) {
+    if (!window.confirm(`Tem certeza que deseja EXCLUIR o usuário ${email} do banco de dados? Essa ação não pode ser desfeita.`)) {
+      return;
+    }
+    setSaving(uid);
+    try {
+      await deleteDoc(doc(db, 'users', uid));
+      setUsers(prev => prev.filter(u => u.uid !== uid));
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao excluir usuário. Verifique as regras de segurança do Firestore.');
     } finally {
       setSaving(null);
     }
@@ -267,6 +283,28 @@ export function Admin() {
                 }}
               >
                 {u.role === 'admin' ? '👑 admin' : 'admin?'}
+              </button>
+
+              {/* Excluir UX */}
+              <button
+                disabled={u.uid === user?.uid || saving === u.uid}
+                onClick={() => handleDeleteUser(u.uid, u.email)}
+                title="Excluir Usuário"
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)',
+                  background: 'transparent',
+                  color: 'var(--color-error, #ef4444)',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: u.uid === user?.uid ? 'not-allowed' : 'pointer',
+                  opacity: saving === u.uid ? 0.5 : 1,
+                  flexShrink: 0,
+                  marginLeft: 'auto'
+                }}
+              >
+                🗑️
               </button>
             </div>
           ))}
