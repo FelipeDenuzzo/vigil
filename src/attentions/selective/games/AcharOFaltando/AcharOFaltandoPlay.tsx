@@ -90,11 +90,7 @@ export default function AcharOFaltandoPlay() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase]);
 
-  useEffect(() => {
-    if (phase === 'playing' && remainingSec <= 0) {
-      submitRoundRef.current();
-    }
-  }, [remainingSec, phase]);
+  // Removido o envio automático ao terminar o tempo para o UX decidir quando avançar
 
   useEffect(() => {
     if (phase !== 'playing' || config.presentationMode !== 'alternating') return;
