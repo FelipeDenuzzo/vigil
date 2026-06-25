@@ -39,7 +39,7 @@ export function LongMazesReportPanel({
   const PHASE_LABELS = ['Fácil', 'Médio', 'Difícil'];
 
   return (
-    <div style={s.wrapper}>
+    <div className="result-card" style={s.wrapper}>
       {/* ── Disclaimer fixo — sempre visível, independente da aba ── */}
       <ReportDisclaimer />
       <div style={s.header}>
@@ -142,12 +142,13 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   );
 }
 
-const s: Record<string, any> = {
+const s = {
   wrapper: {
-    background: '#161820',
+    background: 'rgb(22, 24, 32)',
     border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 16, overflow: 'hidden',
-  },
+    borderRadius: 16,
+    overflow: 'hidden',
+  } as const,
   header: { padding: '16px 16px 0' },
   title:  { fontSize: 16, fontWeight: 700, color: '#e8e9f0', marginBottom: 12 },
   tabRow: {
@@ -162,11 +163,11 @@ const s: Record<string, any> = {
     cursor: 'pointer', background: 'none', transition: 'color 0.18s',
   }),
   body:      { padding: 16, display: 'grid', gap: 12 },
-  gaugeWrap: { position: 'relative', marginTop: 8, marginBottom: 4 },
+  gaugeWrap: { position: 'relative' as const, marginTop: 8, marginBottom: 4 },
   gaugeTrack: {
     height: 12, borderRadius: 99,
     background: 'linear-gradient(to right, #f08080, #f5c070, #6dbf87)',
-    position: 'relative',
+    position: 'relative' as const,
   },
   gaugeMarker: (pct: number): React.CSSProperties => ({
     position: 'absolute', top: '50%', left: `${pct}%`,
@@ -180,17 +181,17 @@ const s: Record<string, any> = {
     marginTop: 6, fontSize: 11, color: '#ffffff',
   },
   ludicScore: {
-    textAlign: 'center', fontSize: 48, fontWeight: 800,
+    textAlign: 'center' as const, fontSize: 48, fontWeight: 800,
     color: '#e8e9f0', lineHeight: 1, marginTop: 16,
   },
   ludicLabel: {
-    textAlign: 'center', fontSize: 18, fontWeight: 600,
+    textAlign: 'center' as const, fontSize: 18, fontWeight: 600,
     color: '#a0b4f8', marginTop: 6, marginBottom: 4,
   },
   recommendation: {
     fontSize: 13, color: '#c8cad8', lineHeight: 1.6,
     padding: '10px 14px', background: 'rgba(108,142,245,0.08)',
-    borderRadius: 10, textAlign: 'center',
+    borderRadius: 10, textAlign: 'center' as const,
   },
   analysisBlock: {
     fontSize: 14, color: '#c8cad8', lineHeight: 1.7,

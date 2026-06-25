@@ -57,3 +57,10 @@ a { color: inherit; text-decoration: none; }
 .container--narrow {
   max-width: var(--content-narrow);
 }
+
+.result-card {
+  background: rgb(22, 24, 32);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}

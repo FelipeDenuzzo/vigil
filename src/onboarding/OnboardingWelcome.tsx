@@ -17,21 +17,21 @@ export const OnboardingWelcome: React.FC<Props> = ({ onStart }) => {
         {displayName ? `Olá, ${displayName}!` : 'Bem-vindo ao Vigil!'}
       </h1>
 
-      <p style={{ fontSize: 'var(--text-lg)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
+      <p style={{ fontSize: 'var(--text-lg)', color: 'rgb(232, 233, 240)', marginBottom: 'var(--space-6)' }}>
         Antes de começar, vamos fazer um rastreamento rápido — cerca de <strong>5 minutos</strong> — para entender seu ponto de partida em cada tipo de atenção.
       </p>
 
       <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', padding: 'var(--space-6)', marginBottom: 'var(--space-8)' }}>
-        <p style={{ fontWeight: 600, marginBottom: 'var(--space-3)' }}>O que vai acontecer:</p>
-        <ol style={{ paddingLeft: 'var(--space-5)', color: '#ffffff', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          <li><strong style={{ color: 'var(--color-text)' }}>Etapa 1 — Calibragem (~1 min)</strong><br />Clique no circulo toda vez que ficar verde.</li>
-          <li><strong style={{ color: 'var(--color-text)' }}>Etapa 2 — Controle (~2 min)</strong><br />Clique no quadrado preto quando aparecer.</li>
-          <li><strong style={{ color: 'var(--color-text)' }}>Etapa 3 — Flexibilidade (~2 min)</strong><br />Alterne entre sequências seguindo a ordem correta.</li>
-          <li><strong style={{ color: 'var(--color-text)' }}>Etapa 4 — Dupla-Tarefa (~2 min)</strong><br />Estoure bolhas azuis enquanto responde a estímulos sonoros.</li>
+        <p style={{ fontWeight: 600, marginBottom: 'var(--space-3)', color: 'rgb(232, 233, 240)' }}>O que vai acontecer:</p>
+        <ol style={{ paddingLeft: 'var(--space-5)', color: 'rgb(232, 233, 240)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+          <li><strong style={{ color: 'var(--color-sustained)' }}>Etapa 1 — Calibragem (~1 min)</strong><br />Clique no circulo toda vez que ficar verde.</li>
+          <li><strong style={{ color: 'var(--color-selective)' }}>Etapa 2 — Controle (~2 min)</strong><br />Clique no quadrado preto quando aparecer.</li>
+          <li><strong style={{ color: 'var(--color-alternating)' }}>Etapa 3 — Flexibilidade (~2 min)</strong><br />Alterne entre sequências seguindo a ordem correta.</li>
+          <li><strong style={{ color: 'var(--color-divided)' }}>Etapa 4 — Dupla-Tarefa (~2 min)</strong><br />Estoure bolhas azuis enquanto responde a estímulos sonoros.</li>
         </ol>
       </div>
 
-      <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(232, 233, 240)', marginBottom: 'var(--space-6)' }}>
         Este rastreamento é feito uma única vez. Os resultados ficam salvos e são usados para personalizar seus relatórios e acompanhar sua evolução.
       </p>
 

@@ -440,11 +440,14 @@ const s: Record<string, any> = {
   },
   modalContainer: {
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     width: '100%',
     maxWidth: 480,
     padding: 24,
+    paddingTop: 24,
+    margin: '0 auto',
   },
   instructionCard: {
     background: '#161824',

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import type { OnboardingReport } from '../lib/evaluatorClient';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   report: OnboardingReport;
@@ -11,6 +12,7 @@ interface Props {
 
 export function OnboardingResultTour({ report, saving, saved, saveError, onStart }: Props) {
   const { mensagem_ux } = report;
+  const navigate = useNavigate();
 
   return (
     <div style={{
@@ -18,6 +20,21 @@ export function OnboardingResultTour({ report, saving, saved, saveError, onStart
       padding: 'var(--space-8) var(--space-4)',
       display: 'flex', flexDirection: 'column', gap: 'var(--space-6)',
     }}>
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          background: 'transparent',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          color: 'rgb(255, 255, 255)',
+          borderRadius: 99,
+          padding: '10px 22px',
+          cursor: 'pointer',
+          alignSelf: 'flex-start',
+          fontSize: 'var(--text-sm)',
+        }}
+      >
+        ← Voltar
+      </button>
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ORDER = [
@@ -38,6 +38,17 @@ interface OnboardingRadarProps {
 
 export const OnboardingRadar: React.FC<OnboardingRadarProps> = ({ scores, onComplete }) => {
   const [step, setStep] = useState(1);
+  const [showFallback, setShowFallback] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const hasInvalidScores = !scores || Object.values(scores).some(v => v === undefined || v === null || isNaN(v) || v === 0);
+      if (hasInvalidScores) {
+        setShowFallback(true);
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [scores]);
 
   const cx = 140, cy = 140, maxR = 100, size = 280;
   const n = ORDER.length;
@@ -62,11 +73,29 @@ export const OnboardingRadar: React.FC<OnboardingRadarProps> = ({ scores, onComp
       case 1: return "Essa é a sua teia de atenção. Vamos conhecê-la juntos.";
       case 2: return "Cada eixo representa um tipo de atenção que você vai treinar.";
       case 3: return "Quanto mais longe do centro, maior o desempenho naquele tipo.";
-      case 4: return "A faixa cinza representa o range de referência da literatura para adultos saudáveis.\n⚠️ Isso é uma leitura livre — não é um instrumento clínico.";
+      case 4: return "A faixa cinza representa o range de referência da literatura para adults saudáveis.\n⚠️ Isso é uma leitura livre — não é um instrumento clínico.";
       case 5: return "Este é o seu ponto de partida, medido agora mesmo.";
       default: return "";
     }
   };
+
+  if (showFallback) {
+    return (
+      <div style={{
+        color: 'var(--color-error, #f08080)',
+        textAlign: 'center',
+        padding: '24px',
+        background: 'rgba(239, 68, 68, 0.05)',
+        border: '1px solid rgba(239, 68, 68, 0.15)',
+        borderRadius: '12px',
+        maxWidth: '300px',
+        margin: '20px auto',
+        fontSize: 'var(--text-sm)'
+      }}>
+        Não foi possível carregar o gráfico. Tente recarregar a página.
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)' }}>
@@ -110,7 +139,7 @@ export const OnboardingRadar: React.FC<OnboardingRadarProps> = ({ scores, onComp
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6, type: 'spring', bounce: 0.3 }}
-                style={{ transformOrigin: 'center' }}
+                style={{ transformOrigin: '140px 140px' }}
               />
             )}
           </AnimatePresence>
@@ -145,7 +174,7 @@ export const OnboardingRadar: React.FC<OnboardingRadarProps> = ({ scores, onComp
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.8, type: 'spring', bounce: 0.4 }}
-                style={{ transformOrigin: 'center' }}
+                style={{ transformOrigin: '140px 140px' }}
               />
             )}
           </AnimatePresence>

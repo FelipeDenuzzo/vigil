@@ -96,7 +96,20 @@ export function OnboardingResult({ state, onSave, saving, saveError }: Props) {
 
   // ── Renders por etapa ────────────────────────────────────────────────────
   if (step === 'loading') {
-    return <EvaluationLoadingAnimation />;
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '80vh',
+        width: '100%',
+      }}>
+        <div style={{ width: '100%', maxWidth: 420 }}>
+          <EvaluationLoadingAnimation />
+        </div>
+      </div>
+    );
   }
 
   if (step === 'ready') {
@@ -155,7 +168,20 @@ export function OnboardingResult({ state, onSave, saving, saveError }: Props) {
   }
 
   // Fallback de segurança — nunca tela em branco
-  return <EvaluationLoadingAnimation />;
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '80vh',
+      width: '100%',
+    }}>
+      <div style={{ width: '100%', maxWidth: 420 }}>
+        <EvaluationLoadingAnimation />
+      </div>
+    </div>
+  );
 }
 
 // ── Fallback local ────────────────────────────────────────────────────────────

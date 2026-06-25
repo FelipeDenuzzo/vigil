@@ -39,7 +39,7 @@ const LEVEL_LABEL: Record<string, string> = {
 
 const s = {
   wrapper: {
-    background: '#161820',
+    background: 'rgb(22, 24, 32)',
     border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: 16,
     overflow: 'hidden',
@@ -348,7 +348,7 @@ export default function AcharOFaltandoReportPanel({
   ];
 
   return (
-    <div style={s.wrapper}>
+    <div className="result-card" style={s.wrapper}>
       <style>{`
         @keyframes reportPanelSpin {
           to { transform: rotate(360deg); }
