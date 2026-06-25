@@ -6,7 +6,7 @@ export function reportToMarkdown(
   input: EvaluatorInput
 ): string {
   const now = new Date().toISOString();
-  return `# Laudo VIGIL — ${input.sessionId}
+  return `# Relatório VIGIL — ${input.sessionId}
 **Data:** ${now}
 **Jogo:** ${input.game}
 **Nível de atenção:** ${input.attentionType}
