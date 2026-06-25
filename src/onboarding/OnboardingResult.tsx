@@ -151,6 +151,7 @@ export function OnboardingResult({ state, onSave, saving, saveError }: Props) {
       <OnboardingRadarIntro
         baseline={state.baseline}
         onAdvance={() => setStep('tour')}
+        onBack={() => setStep('ready')}
       />
     );
   }
@@ -163,6 +164,7 @@ export function OnboardingResult({ state, onSave, saving, saveError }: Props) {
         saved={saved}
         saveError={saveError}
         onStart={handleStart}
+        onBack={() => setStep('radar')}
       />
     );
   }
