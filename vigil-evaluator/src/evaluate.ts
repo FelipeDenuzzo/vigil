@@ -5,6 +5,7 @@ import { buildSustainedPrompt,   SUSTAINED_EVALUATION_SCHEMA   } from './prompts
 import { buildAlternatingPrompt, ALTERNATING_EVALUATION_SCHEMA } from './prompts/alternating';
 import { buildDividedPrompt,     DIVIDED_EVALUATION_SCHEMA     } from './prompts/divided';
 import { buildOnboardingPrompt,  ONBOARDING_EVALUATION_SCHEMA  } from './prompts/onboarding';
+import { buildFruitWatchPrompt } from './prompts/fruitwatch';
 import { buildProgressContext } from './assessment/buildProgressContext';
 import { buildLongitudinalBlock } from './prompts/_longitudinalBlock';
 
@@ -104,6 +105,11 @@ function calculateOnboardingScores(input: any) {
 
 // ── Seleção de prompt e schema por tipo de atenção ─────────────────────────────────
 function resolvePromptAndSchema(input: EvaluatorInput) {
+  // Roteamento customizado para o Foco Ninja (FruitWatch)
+  if (input.attentionType === 'sustentada' && (input as any).game === 'fruit-watch') {
+    return { prompt: buildFruitWatchPrompt(input as any), schema: SUSTAINED_EVALUATION_SCHEMA };
+  }
+
   switch (input.attentionType) {
     case 'seletiva':
       return { prompt: buildSelectivePrompt(input),   schema: SELECTIVE_EVALUATION_SCHEMA   };

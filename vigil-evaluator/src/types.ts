@@ -162,10 +162,33 @@ export interface OnboardingEvaluatorInput {
   uid?: string;
 }
 
+// ─── Foco Ninja (FruitWatch) ──────────────────────────────────────────────────
+export interface FruitWatchEvaluatorInput {
+  attentionType:        'sustentada';
+  game:                 'fruit-watch';
+  sessionId:            string;
+  severity?:            'minimo' | 'leve' | 'moderado' | 'importante';
+  focoContinuo?:        number;
+  controleCalma?:       number;
+  focoMultitarefa?:     number;
+  conquistaSecreta?:    boolean;
+  rawResults?: {
+    phase: number;
+    targetFigureId: string;
+    targetCount: number;
+    userAnswer: number;
+    bonusFigureId?: string;
+    bonusRealCount?: number;
+    bonusUserAnswer?: number;
+    commissionErrors: number;
+  }[];
+}
+
 // ─── Union discriminada ──────────────────────────────────────────────────────
 export type EvaluatorInput =
   | SelectiveEvaluatorInput
   | SustainedEvaluatorInput
+  | FruitWatchEvaluatorInput
   | AlternatingEvaluatorInput
   | DividedEvaluatorInput
   | OnboardingEvaluatorInput;
