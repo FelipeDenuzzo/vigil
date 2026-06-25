@@ -11,9 +11,11 @@ export interface FlyingFigure {
   id: string;               // uuid único da instância
   figureId: string;         // ID da figura no catálogo
   isTarget: boolean;
-  launchX: number;          // 10-90 (% da largura da tela)
+  launchX: number;          // 10-90 (% da largura inicial da tela)
+  endX: number;             // X final de aterrissagem
+  peakY: number;            // altura máxima da parábola (65-85% da tela)
   launchAt: number;         // timestamp em ms para o início do voo
-  flightDurationMs: number; // duração do voo (500-800ms)
+  flightDurationMs: number; // duração do voo (slower agora)
 }
 
 export type PhaseMode =

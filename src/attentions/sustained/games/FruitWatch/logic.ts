@@ -28,11 +28,19 @@ export function generateFigureSequence(
 
     for (let i = 0; i < count; i++) {
       const fig = pool[Math.floor(Math.random() * pool.length)];
+      const launchX = rand(15, 85);
+      // Trajetória em parábola: se lança de um lado, curva-se para o outro
+      const offset = rand(15, 30);
+      const endX = launchX < 50 ? Math.min(95, launchX + offset) : Math.max(5, launchX - offset);
+      const peakY = rand(65, 85);
+
       figures.push({
         id: uuid(),
         figureId: fig.id,
         isTarget: fig.id === target.id,
-        launchX: rand(15, 85),
+        launchX,
+        endX,
+        peakY,
         launchAt: t + i * 150, // Offset um pouco maior para evitar sobreposição total na subida
         flightDurationMs: flightDuration,
       });
