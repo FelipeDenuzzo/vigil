@@ -60,6 +60,31 @@ export const AlternatingHub: React.FC = () => {
               forma — a cada rodada, a regra pode mudar.
             </p>
           </Card>
+
+          <Card
+            interactive
+            accent="var(--color-alternating)"
+            onClick={() => navigate('/treinar/alternada/insetos')}
+          >
+            <p
+              style={{
+                fontSize: 'var(--text-lg)',
+                fontWeight: 600,
+                marginBottom: 'var(--space-2)',
+              }}
+            >
+              🐜 Insetos
+            </p>
+            <p
+              style={{
+                fontSize: 'var(--text-sm)',
+                color: '#ffffff',
+              }}
+            >
+              Formigas e joaninhas se movem pela tela — toque rapidamente nos
+              insetos do grupo ativo quando eles piscarem!
+            </p>
+          </Card>
         </div>
       </section>
     </div>
