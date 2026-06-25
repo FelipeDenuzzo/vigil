@@ -50,7 +50,7 @@ const s: Record<string, React.CSSProperties> = {
   },
   iconWrap: { position: 'relative', width: 72, height: 72 },
   icon: {
-    fontSize: 40, lineHeight: '72px',
+    fontSize: 41, lineHeight: '72px',
     display: 'block', textAlign: 'center',
   },
   ring: {
@@ -60,6 +60,6 @@ const s: Record<string, React.CSSProperties> = {
     borderTopColor: '#6c8ef5',
     animation: 'spin 1s linear infinite',
   },
-  text: { fontSize: 16, fontWeight: 700, color: '#e8e9f0', margin: 0 },
-  sub:  { fontSize: 12, color: '#ffffff', margin: 0 },
+  text: { fontSize: 17, fontWeight: 700, color: '#e8e9f0', margin: 0 },
+  sub:  { fontSize: 13, color: '#ffffff', margin: 0 },
 };

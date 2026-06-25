@@ -322,17 +322,6 @@ function BetweenPhasesScreen({ phase, onDone }: { phase: number; onDone: () => v
     <div style={s.centerScreen}>
       <p style={s.phaseCompletedLabel}>Fase {phase - 1} de 6 Concluída</p>
       <h3 style={s.betweenTitle}>Pronto para a próxima fase?</h3>
-      
-      {phase >= 5 && (
-        <div style={s.tipsBox}>
-          <p style={{ margin: 0, fontWeight: 700, marginBottom: 4 }}>💡 Dica Importante</p>
-          <p style={{ margin: 0, fontSize: 13, color: '#c8cad8' }}>
-            {phase === 5
-              ? 'A partir desta rodada, podemos incluir perguntas sobre outras figuras no final. Fique atento também aos elementos ao redor!'
-              : 'Agora, a pergunta sobre o item secundário virá ANTES da pergunta principal. Tente reter o foco em todas as formas.'}
-          </p>
-        </div>
-      )}
 
       <button style={s.continueBtn} onClick={onDone}>
         Iniciar Rodada {phase}
@@ -417,11 +406,11 @@ const s: Record<string, any> = {
     zIndex: 30,
     pointerEvents: 'none',
     fontWeight: 600,
-    fontSize: 14,
+    fontSize: 15,
     color: 'rgba(255, 255, 255, 0.4)',
   },
   phaseSub: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6c8ef5',
   },
   gameCanvas: {
@@ -469,7 +458,7 @@ const s: Record<string, any> = {
     boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
   },
   stepIndicator: {
-    fontSize: 11,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.35)',
     textTransform: 'uppercase',
     letterSpacing: '0.12em',
@@ -479,18 +468,18 @@ const s: Record<string, any> = {
     background: 'none',
     border: 'none',
     color: 'rgba(255,255,255,0.4)',
-    fontSize: 14,
+    fontSize: 15,
     cursor: 'pointer',
   },
   stepTitle: {
-    fontSize: 22,
+    fontSize: 23,
     fontWeight: 800,
     margin: 0,
     textAlign: 'center',
     color: '#6c8ef5',
   },
   stepText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#c8cad8',
     textAlign: 'center',
     lineHeight: 1.65,
@@ -511,7 +500,7 @@ const s: Record<string, any> = {
     border: '1px solid rgba(255,255,255,0.1)',
     cursor: 'pointer',
     fontWeight: 600,
-    fontSize: 14,
+    fontSize: 15,
   },
   nextBtn: {
     flex: 2,
@@ -522,7 +511,7 @@ const s: Record<string, any> = {
     border: 'none',
     cursor: 'pointer',
     fontWeight: 700,
-    fontSize: 14,
+    fontSize: 15,
     boxShadow: '0 4px 12px rgba(108,142,245,0.3)',
   },
   centerScreen: {
@@ -536,7 +525,7 @@ const s: Record<string, any> = {
   },
   revealLabel: {
     color: 'rgba(255,255,255,0.4)',
-    fontSize: 14,
+    fontSize: 15,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     margin: 0,
@@ -559,29 +548,29 @@ const s: Record<string, any> = {
   },
   revealSub: {
     color: '#c8cad8',
-    fontSize: 13,
+    fontSize: 14,
     maxWidth: 320,
     lineHeight: 1.5,
     margin: 0,
   },
   countdownText: {
-    fontSize: 54,
+    fontSize: 55,
     fontWeight: 900,
     color: '#6c8ef5',
     margin: 0,
   },
   phaseCompletedLabel: {
     color: 'rgba(255,255,255,0.35)',
-    fontSize: 13,
+    fontSize: 14,
     margin: 0,
   },
   betweenTitle: {
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: 800,
     margin: 0,
   },
   tipsBox: {
-    fontSize: 12,
+    fontSize: 13,
     background: 'rgba(108,142,245,0.06)',
     border: '1px solid rgba(108,142,245,0.15)',
     borderRadius: 16,
@@ -597,7 +586,7 @@ const s: Record<string, any> = {
     color: '#fff',
     border: 'none',
     fontWeight: 700,
-    fontSize: 14,
+    fontSize: 15,
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(108,142,245,0.3)',
     marginTop: 8,
@@ -617,14 +606,14 @@ const s: Record<string, any> = {
     boxShadow: '0 20px 45px rgba(0,0,0,0.45)',
   },
   answerQuestionText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#c8cad8',
     lineHeight: 1.6,
     margin: 0,
     fontWeight: 500,
   },
   answerInput: {
-    fontSize: 48,
+    fontSize: 49,
     textAlign: 'center',
     width: 140,
     padding: '12px 16px',
@@ -641,7 +630,7 @@ const s: Record<string, any> = {
     borderRadius: 14,
     background: '#6c8ef5',
     color: 'white',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 700,
     border: 'none',
     cursor: 'pointer',
@@ -654,7 +643,7 @@ const s: Record<string, any> = {
     borderRadius: 14,
     background: 'rgba(255,255,255,0.04)',
     color: 'rgba(255,255,255,0.25)',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 700,
     border: '1px solid rgba(255,255,255,0.05)',
     cursor: 'not-allowed',
