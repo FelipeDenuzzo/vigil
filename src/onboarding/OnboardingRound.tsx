@@ -106,27 +106,39 @@ function MotorRound({ onDone }: { onDone: (r: MotorRoundResult) => void }) {
   }, []);
 
   return (
-    <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
-      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
-        Etapa 1 de 3 — Calibragem
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 'var(--space-8)', maxWidth: 500, margin: '0 auto' }}>
+      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)', textAlign: 'center' }}>
+        Etapa 1 de 4 — Calibragem
       </p>
-      <h2 style={{ marginBottom: 'var(--space-6)' }}>Clique no circulo toda vez que ficar verde</h2>
-      <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
-        {count}/{TOTAL_STIMULI} estímulos
-      </p>
+      <h2 style={{ marginBottom: 'var(--space-6)', textAlign: 'center' }}>Clique no circulo toda vez que ficar verde</h2>
 
-      <div
-        onClick={handleResponse}
-        style={{
-          width: 120, height: 120,
-          borderRadius: '50%',
-          margin: '0 auto var(--space-8)',
-          cursor: phase === 'go' ? 'pointer' : 'default',
-          background: phase === 'go' ? 'var(--color-sustained)' : 'var(--color-surface)',
-          border: '3px solid var(--color-border)',
-          transition: 'background 0.1s',
-        }}
-      />
+      <div style={{
+        background: 'var(--color-surface-2, rgba(255,255,255,0.04))',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: 'var(--space-8) var(--space-6)',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginBottom: 'var(--space-6)',
+      }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
+          {count}/{TOTAL_STIMULI} estímulos
+        </p>
+
+        <div
+          onClick={handleResponse}
+          style={{
+            width: 120, height: 120,
+            borderRadius: '50%',
+            cursor: phase === 'go' ? 'pointer' : 'default',
+            background: phase === 'go' ? 'var(--color-sustained)' : 'var(--color-surface)',
+            border: '3px solid var(--color-border)',
+            transition: 'background 0.1s',
+          }}
+        />
+      </div>
 
       {phase === 'waiting' && (
         <Button variant="primary" onClick={handleStart}>Começar</Button>
@@ -206,28 +218,37 @@ function InhibitoryRound({ onDone }: { onDone: (r: InhibitoryRoundResult) => voi
   }
 
   return (
-    <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
-      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
-        Etapa 2 de 3 — Controle Inibitório
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 'var(--space-8)', maxWidth: 500, margin: '0 auto' }}>
+      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)', textAlign: 'center' }}>
+        Etapa 2 de 4 — Controle Inibitório
       </p>
-      <h2 style={{ marginBottom: 'var(--space-4)' }}>Clique no quadrado preto quando aparecer</h2>
-      <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
-        Ignore o quadrado branco {NOGO_SYMBOL}
-      </p>
-      <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-8)' }}>
-        {trial}/{TOTAL}
-      </p>
+      <h2 style={{ marginBottom: 'var(--space-6)', textAlign: 'center' }}>Clique somente no quadrado preto</h2>
 
-      <div
-        onClick={handleResponse}
-        style={{
-          width: 120, height: 120,
-          margin: '0 auto var(--space-8)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '4rem', cursor: 'pointer',
-        }}
-      >
-        {current === 'go' ? GO_SYMBOL : current === 'nogo' ? NOGO_SYMBOL : ''}
+      <div style={{
+        background: 'var(--color-surface-2, rgba(255,255,255,0.04))',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: 'var(--space-8) var(--space-6)',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginBottom: 'var(--space-6)',
+      }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
+          {trial}/{TOTAL}
+        </p>
+
+        <div
+          onClick={handleResponse}
+          style={{
+            width: 120, height: 120,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '4rem', cursor: 'pointer',
+          }}
+        >
+          {current === 'go' ? GO_SYMBOL : current === 'nogo' ? NOGO_SYMBOL : ''}
+        </div>
       </div>
 
       {!started && (
@@ -295,39 +316,48 @@ function FlexibleRound({ onDone }: { onDone: (r: FlexibleRoundResult) => void })
   const nextTarget = SEQUENCE[nextIndex];
 
   return (
-    <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
-      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
-        Etapa 3 de 3 — Flexibilidade
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 'var(--space-8)', maxWidth: 500, margin: '0 auto' }}>
+      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)', textAlign: 'center' }}>
+        Etapa 3 de 4 — Flexibilidade
       </p>
-      <h2 style={{ marginBottom: 'var(--space-4)' }}>Clique na sequência: 1 → A → 2 → B → ...</h2>
+      <h2 style={{ marginBottom: 'var(--space-4)', textAlign: 'center' }}>Clique na sequência: 1 → A → 2 → B → ...</h2>
       {started && (
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-selective)', marginBottom: 'var(--space-4)' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-selective)', marginBottom: 'var(--space-4)', textAlign: 'center' }}>
           Próximo: <strong>{nextTarget}</strong>
         </p>
       )}
 
-      <div style={{ position: 'relative', width: '100%', maxWidth: 400, height: 280, margin: '0 auto var(--space-6)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)' }}>
-        {started && positions.map(({ label, x, y }) => {
-          const done = SEQUENCE.indexOf(label) < nextIndex;
-          return (
-            <button
-              key={label}
-              onClick={() => handleClick(label)}
-              style={{
-                position: 'absolute',
-                left: `${x}%`, top: `${y}%`,
-                transform: 'translate(-50%, -50%)',
-                width: 40, height: 40, borderRadius: '50%',
-                border: '2px solid var(--color-border)',
-                background: done ? 'var(--color-selective)' : 'var(--color-surface)',
-                color: done ? '#fff' : 'var(--color-text)',
-                fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem',
-              }}
-            >
-              {label}
-            </button>
-          );
-        })}
+      <div style={{
+        background: 'var(--color-surface-2, rgba(255,255,255,0.04))',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: 'var(--space-4)',
+        width: '100%',
+        marginBottom: 'var(--space-6)',
+      }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: 400, height: 280, margin: '0 auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)' }}>
+          {started && positions.map(({ label, x, y }) => {
+            const done = SEQUENCE.indexOf(label) < nextIndex;
+            return (
+              <button
+                key={label}
+                onClick={() => handleClick(label)}
+                style={{
+                  position: 'absolute',
+                  left: `${x}%`, top: `${y}%`,
+                  transform: 'translate(-50%, -50%)',
+                  width: 40, height: 40, borderRadius: '50%',
+                  border: '2px solid var(--color-border)',
+                  background: done ? 'var(--color-selective)' : 'var(--color-surface)',
+                  color: done ? '#fff' : 'var(--color-text)',
+                  fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem',
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {!started && (
@@ -482,15 +512,15 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
   };
 
   return (
-    <div style={{ textAlign: 'center', paddingTop: 'var(--space-2)' }}>
-      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 'var(--space-2)', maxWidth: 500, margin: '0 auto' }}>
+      <p style={{ color: '#ffffff', marginBottom: 'var(--space-2)', textAlign: 'center' }}>
         Etapa 4 de 4 — Foco Multitarefa
       </p>
 
       {phase === 'waiting' && (
         <>
-          <h2 style={{ marginBottom: 'var(--space-4)' }}>Atenção Dividida</h2>
-          <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
+          <h2 style={{ marginBottom: 'var(--space-4)', textAlign: 'center' }}>Atenção Dividida</h2>
+          <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)', textAlign: 'center' }}>
             Nesta etapa, você precisará gerenciar dois estímulos diferentes. Estoure apenas as bolhas <strong>AZUIS</strong>.
           </p>
           <Button variant="primary" onClick={() => setPhase('simple')}>Começar Fase Visual</Button>
@@ -499,8 +529,8 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
 
       {phase === 'transition' && (
         <>
-          <h2 style={{ marginBottom: 'var(--space-4)' }}>Excelente! Agora vamos dificultar.</h2>
-          <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)' }}>
+          <h2 style={{ marginBottom: 'var(--space-4)', textAlign: 'center' }}>Excelente! Agora vamos dificultar.</h2>
+          <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff', marginBottom: 'var(--space-6)', textAlign: 'center' }}>
             Continue estourando as bolhas azuis. Mas agora, <strong>sempre que ouvir o efeito sonoro</strong>, toque no botão "ATENÇÃO" na parte inferior da tela!
           </p>
           <Button variant="primary" onClick={() => setPhase('dual')}>Iniciar Dupla Tarefa</Button>
@@ -509,31 +539,40 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
 
       {(phase === 'simple' || phase === 'dual') && (
         <>
-          <div style={{ position: 'relative', width: '100%', maxWidth: 400, height: 320, margin: '0 auto var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)', overflow: 'hidden' }}>
-            {bubbles.map(b => (
-              !b.clicked && (
-                <div
-                  key={b.id}
-                  onClick={() => handleBubbleClick(b.id, b.type)}
-                  style={{
-                    position: 'absolute',
-                    left: `${b.left}%`,
-                    bottom: '-10%', // começa de baixo
-                    width: 48, height: 48, borderRadius: '50%',
-                    background: b.type === 'target' ? 'var(--color-primary)' : 'var(--color-error)',
-                    opacity: 0.8, cursor: 'pointer',
-                    animation: 'bubbleUp 3.5s linear forwards', // ver styles abaixo
-                  }}
-                />
-              )
-            ))}
-            
-            <style>{`
-              @keyframes bubbleUp {
-                from { transform: translateY(0); }
-                to { transform: translateY(-400px); }
-              }
-            `}</style>
+          <div style={{
+            background: 'var(--color-surface-2, rgba(255,255,255,0.04))',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 'var(--space-4)',
+            width: '100%',
+            marginBottom: 'var(--space-4)',
+          }}>
+            <div style={{ position: 'relative', width: '100%', maxWidth: 400, height: 320, margin: '0 auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)', overflow: 'hidden' }}>
+              {bubbles.map(b => (
+                !b.clicked && (
+                  <div
+                    key={b.id}
+                    onClick={() => handleBubbleClick(b.id, b.type)}
+                    style={{
+                      position: 'absolute',
+                      left: `${b.left}%`,
+                      bottom: '-10%',
+                      width: 48, height: 48, borderRadius: '50%',
+                      background: b.type === 'target' ? 'var(--color-primary)' : 'var(--color-error)',
+                      opacity: 0.8, cursor: 'pointer',
+                      animation: 'bubbleUp 3.5s linear forwards',
+                    }}
+                  />
+                )
+              ))}
+              
+              <style>{`
+                @keyframes bubbleUp {
+                  from { transform: translateY(0); }
+                  to { transform: translateY(-400px); }
+                }
+              `}</style>
+            </div>
           </div>
 
           {phase === 'dual' && (
@@ -545,7 +584,7 @@ function DividedRound({ onDone }: { onDone: (r: DividedRoundResult) => void }) {
       )}
 
       {phase === 'done' && (
-        <p style={{ color: '#ffffff' }}>Gerando Resultados do Onboarding...</p>
+        <p style={{ color: '#ffffff', textAlign: 'center' }}>Gerando Resultados do Onboarding...</p>
       )}
     </div>
   );
