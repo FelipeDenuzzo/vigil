@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
 import { OnboardingRadar } from './OnboardingRadar';
 import type { UserBaseline } from './types';
-import { useNavigate } from 'react-router-dom';
 
 interface Props {
   baseline: UserBaseline;
   onAdvance: () => void;
+  onBack: () => void;
 }
 
 const ATTENTION_TEXTS = [
@@ -38,9 +38,7 @@ const ATTENTION_COLORS: Record<string, string> = {
   'Dividida': 'var(--color-divided)',
 };
 
-export function OnboardingRadarIntro({ baseline, onAdvance }: Props) {
-  const navigate = useNavigate();
-
+export function OnboardingRadarIntro({ baseline, onAdvance, onBack }: Props) {
   const scores = {
     'Seletiva':  baseline.seletiva?.score ?? 0,
     'Sustentada': baseline.sustentada?.score ?? 0,
@@ -59,7 +57,7 @@ export function OnboardingRadarIntro({ baseline, onAdvance }: Props) {
       display: 'flex', flexDirection: 'column', gap: 'var(--space-6)',
     }}>
       <button
-        onClick={() => navigate(-1)}
+        onClick={onBack}
         style={{
           background: 'transparent',
           border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -94,7 +92,7 @@ export function OnboardingRadarIntro({ baseline, onAdvance }: Props) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <OnboardingRadar scores={scores} onComplete={onAdvance} />
+        <OnboardingRadar scores={scores} />
       </motion.div>
 
       {/* Linha dinâmica */}

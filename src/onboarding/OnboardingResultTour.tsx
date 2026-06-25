@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import type { OnboardingReport } from '../lib/evaluatorClient';
-import { useNavigate } from 'react-router-dom';
 
 interface Props {
   report: OnboardingReport;
@@ -8,11 +7,11 @@ interface Props {
   saved: boolean;
   saveError: string | null;
   onStart: () => void; // chama refreshAccess + navigate
+  onBack: () => void;
 }
 
-export function OnboardingResultTour({ report, saving, saved, saveError, onStart }: Props) {
+export function OnboardingResultTour({ report, saving, saved, saveError, onStart, onBack }: Props) {
   const { mensagem_ux } = report;
-  const navigate = useNavigate();
 
   return (
     <div style={{
@@ -21,7 +20,7 @@ export function OnboardingResultTour({ report, saving, saved, saveError, onStart
       display: 'flex', flexDirection: 'column', gap: 'var(--space-6)',
     }}>
       <button
-        onClick={() => navigate(-1)}
+        onClick={onBack}
         style={{
           background: 'transparent',
           border: '1px solid rgba(255, 255, 255, 0.1)',
