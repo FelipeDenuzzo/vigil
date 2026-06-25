@@ -8,7 +8,7 @@ import {
   MissingItemType,
 } from './types';
 
-const DEFAULT_SYMBOLS = Array.from({ length: 28 }, (_, i) => String(18 + i));
+const DEFAULT_SYMBOLS = Array.from({ length: 28 }, (_, i) => String(18 + i)).filter(s => s !== '39');
 
 export function createSeededRng(seed: string): () => number {
   if (!seed.trim()) return Math.random;
@@ -65,7 +65,7 @@ export function generateRound(
   let differences: MissingItemDifference[] = [];
   let options: string[] = [];
 
-  const symbolsPool = Array.from({ length: 28 }, (_, i) => String(18 + i)); // '18' to '45'
+  const symbolsPool = Array.from({ length: 28 }, (_, i) => String(18 + i)).filter(s => s !== '39'); // '18' to '45' sem o '39'
   const lettersPool = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)); // 'A' to 'Z'
   const digitsPool = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
