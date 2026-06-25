@@ -2,19 +2,17 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ORDER = [
-  'Agilidade Mental',
-  'Foco Contínuo',
-  'Controle e Calma',
-  'Flexibilidade Mental',
-  'Foco Multitarefa'
+  'Seletiva',
+  'Sustentada',
+  'Alternada',
+  'Dividida'
 ] as const;
 
 const COLORS: Record<string, string> = {
-  'Agilidade Mental': '#6dbf87',
-  'Foco Contínuo': '#6c8ef5',
-  'Controle e Calma': '#f56c6c',
-  'Flexibilidade Mental': '#f5c070',
-  'Foco Multitarefa': '#c084fc',
+  'Seletiva': '#f56c6c',
+  'Sustentada': '#6c8ef5',
+  'Alternada': '#f5c070',
+  'Dividida': '#c084fc',
 };
 
 function polarToCartesian(cx: number, cy: number, r: number, angleRad: number) {
@@ -62,10 +60,10 @@ export const OnboardingRadar: React.FC<OnboardingRadarProps> = ({ scores, onComp
   const getStepText = () => {
     switch(step) {
       case 1: return "Essa é a sua teia de atenção. Vamos conhecê-la juntos.";
-      case 2: return "Cada eixo representa uma habilidade cognitiva que você vai treinar.";
-      case 3: return "Quanto mais longe do centro, maior o desempenho naquela habilidade.";
-      case 4: return "A faixa cinza representa a zona de equilíbrio (média esperada).\n⚠️ Isso é uma leitura livre — não um diagnóstico clínico.";
-      case 5: return "Este é o seu ponto de partida, medido agora mesmo pelas suas respostas!";
+      case 2: return "Cada eixo representa um tipo de atenção que você vai treinar.";
+      case 3: return "Quanto mais longe do centro, maior o desempenho naquele tipo.";
+      case 4: return "A faixa cinza representa o range de referência da literatura para adultos saudáveis.\n⚠️ Isso é uma leitura livre — não é um instrumento clínico.";
+      case 5: return "Este é o seu ponto de partida, medido agora mesmo.";
       default: return "";
     }
   };
@@ -191,10 +189,42 @@ export const OnboardingRadar: React.FC<OnboardingRadarProps> = ({ scores, onComp
         key={step}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{ textAlign: 'center', minHeight: 60, color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', padding: '0 var(--space-4)', whiteSpace: 'pre-line' }}
+        style={{ textAlign: 'center', minHeight: 60, color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', padding: '0 var(--space-4)', whiteSpace: 'pre-line', marginBottom: step >= 5 ? 'var(--space-4)' : 0 }}
       >
         {getStepText()}
       </motion.div>
+
+      <AnimatePresence>
+        {step >= 5 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 0.5 }}
+            style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}
+          >
+            <div style={{ background: 'var(--color-surface)', padding: 'var(--space-4)', borderRadius: 'var(--radius-md)', borderLeft: `4px solid ${COLORS['Seletiva']}` }}>
+              <h4 style={{ color: COLORS['Seletiva'], marginBottom: '4px', fontSize: '14px' }}>Seletiva</h4>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', margin: 0 }}>Sua capacidade de focar no que importa e ignorar o resto. É ela que age quando você lê numa sala barulhenta ou procura um rosto numa multidão.</p>
+            </div>
+            <div style={{ background: 'var(--color-surface)', padding: 'var(--space-4)', borderRadius: 'var(--radius-md)', borderLeft: `4px solid ${COLORS['Sustentada']}` }}>
+              <h4 style={{ color: COLORS['Sustentada'], marginBottom: '4px', fontSize: '14px' }}>Sustentada</h4>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', margin: 0 }}>Manter o foco por um período contínuo, sem deixar a mente viajar. Ela é exigida quando você assiste a uma aula longa, lê um livro ou faz uma tarefa que demora.</p>
+            </div>
+            <div style={{ background: 'var(--color-surface)', padding: 'var(--space-4)', borderRadius: 'var(--radius-md)', borderLeft: `4px solid ${COLORS['Alternada']}` }}>
+              <h4 style={{ color: COLORS['Alternada'], marginBottom: '4px', fontSize: '14px' }}>Alternada</h4>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', margin: 0 }}>Mudar o foco de uma coisa para outra com agilidade, sem perder o fio. Ela entra em ação quando você alterna entre e-mails e uma reunião, ou muda de assunto e precisa se reorientar rapidamente.</p>
+            </div>
+            <div style={{ background: 'var(--color-surface)', padding: 'var(--space-4)', borderRadius: 'var(--radius-md)', borderLeft: `4px solid ${COLORS['Dividida']}` }}>
+              <h4 style={{ color: COLORS['Dividida'], marginBottom: '4px', fontSize: '14px' }}>Dividida</h4>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', margin: 0 }}>Gerenciar duas ou mais coisas ao mesmo tempo. É o que você usa quando dirige e conversa, ou cozinha enquanto acompanha uma receita.</p>
+            </div>
+            
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '11px', textAlign: 'center', marginTop: 'var(--space-2)', fontStyle: 'italic' }}>
+              * Esta leitura é baseada em literatura científica sobre atenção, mas não é um instrumento clínico. Não substitui avaliação por psicólogo ou neuropsicólogo. Use como referência pessoal de treino.
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <button
         onClick={handleNext}
@@ -206,10 +236,11 @@ export const OnboardingRadar: React.FC<OnboardingRadarProps> = ({ scores, onComp
           borderRadius: 'var(--radius-full)',
           cursor: 'pointer',
           fontWeight: 600,
-          transition: 'all 0.2s'
+          transition: 'all 0.2s',
+          width: step === 5 ? '100%' : 'auto'
         }}
       >
-        {step === 5 ? "Ver Análise Completa" : "Próximo"}
+        {step === 5 ? "Ver Análise da Inteligência Artificial" : "Próximo"}
       </button>
 
     </div>
