@@ -44,7 +44,7 @@ export const OnboardingRadar: React.FC<OnboardingRadarProps> = ({ scores, onComp
   const cx = 140, cy = 140, maxR = 100, size = 280;
   const n = ORDER.length;
 
-  const currentValues = ORDER.map((t) => scores[t] ?? 0);
+  const currentValues = ORDER.map((t) => (scores && scores[t]) ?? 0);
   const referenceValues = ORDER.map(() => 75); // Polígono externo de referência
   const referenceInner = ORDER.map(() => 55); // Polígono interno de referência (faixa cinza)
   
