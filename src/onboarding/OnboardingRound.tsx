@@ -184,8 +184,12 @@ function InhibitoryRound({ onDone }: { onDone: (r: InhibitoryRoundResult) => voi
       }
       const next = trialIndex + 1;
       setTrial(next);
-      if (next < TOTAL) nextTrial(next);
-      else setCurrent(null);
+      setCurrent(null);
+      if (next < TOTAL) {
+        autoAdvanceRef.current = setTimeout(() => {
+          nextTrial(next);
+        }, 300);
+      }
     }, 1200);
   }, []);
 
@@ -214,7 +218,9 @@ function InhibitoryRound({ onDone }: { onDone: (r: InhibitoryRoundResult) => voi
     const next = trial + 1;
     setTrial(next);
     setCurrent(null);
-    setTimeout(() => { if (next < TOTAL) nextTrial(next); }, 400);
+    if (next < TOTAL) {
+      autoAdvanceRef.current = setTimeout(() => { nextTrial(next); }, 300);
+    }
   }
 
   return (
