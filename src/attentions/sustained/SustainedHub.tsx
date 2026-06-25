@@ -7,7 +7,11 @@ import { LabirintosProlongadosGame } from './games/LongMazes/LabirintosProlongad
 import { LongMazesEvaluationContainer } from './games/LongMazes/LongMazesEvaluationContainer';
 import type { MazeFullSessionLog } from './games/LongMazes/types';
 
-type ActiveGame = 'long-mazes' | 'result' | null;
+import FruitWatchGame from './games/FruitWatch/FruitWatchGame';
+import { FruitWatchEvaluationContainer } from './games/FruitWatch/FruitWatchEvaluationContainer';
+import type { PhaseRawResult } from './games/FruitWatch/types';
+
+type ActiveGame = 'long-mazes' | 'fruit-watch' | 'result-long-mazes' | 'result-fruit-watch' | null;
 
 const ENABLE_LONG_MAZES = true;
 
@@ -15,22 +19,31 @@ export const SustainedHub: React.FC = () => {
   const navigate = useNavigate();
   const [activeGame,  setActiveGame]  = useState<ActiveGame>(null);
   const [sessionLog,  setSessionLog]  = useState<MazeFullSessionLog | null>(null);
+  const [fruitResults, setFruitResults] = useState<PhaseRawResult[] | null>(null);
   const [sessionId,   setSessionId]   = useState<string>('');
 
   const handleBack = () => {
     if (activeGame !== null) {
       setActiveGame(null);
       setSessionLog(null);
+      setFruitResults(null);
     } else {
       navigate('/treinar');
     }
   };
 
-  const handleComplete = (log: MazeFullSessionLog) => {
+  const handleLongMazesComplete = (log: MazeFullSessionLog) => {
     const id = uuidv4();
     setSessionId(id);
     setSessionLog(log);
-    setActiveGame('result');
+    setActiveGame('result-long-mazes');
+  };
+
+  const handleFruitWatchComplete = (res: PhaseRawResult[]) => {
+    const id = uuidv4();
+    setSessionId(id);
+    setFruitResults(res);
+    setActiveGame('result-fruit-watch');
   };
 
   return (
@@ -50,12 +63,21 @@ export const SustainedHub: React.FC = () => {
           <div style={{ height: '600px' }}>
             <LabirintosProlongadosGame
               onClose={() => setActiveGame(null)}
-              onComplete={handleComplete}
+              onComplete={handleLongMazesComplete}
             />
           </div>
         )}
 
-        {activeGame === 'result' && sessionLog && (
+        {activeGame === 'fruit-watch' && (
+          <div style={{ minHeight: '600px', width: '100%' }}>
+            <FruitWatchGame
+              onClose={() => setActiveGame(null)}
+              onComplete={handleFruitWatchComplete}
+            />
+          </div>
+        )}
+
+        {activeGame === 'result-long-mazes' && sessionLog && (
           <LongMazesEvaluationContainer
             log={sessionLog}
             sessionId={sessionId}
@@ -65,6 +87,21 @@ export const SustainedHub: React.FC = () => {
             }}
             onBack={() => {
               setSessionLog(null);
+              setActiveGame(null);
+            }}
+          />
+        )}
+
+        {activeGame === 'result-fruit-watch' && fruitResults && (
+          <FruitWatchEvaluationContainer
+            results={fruitResults}
+            sessionId={sessionId}
+            onRepeat={() => {
+              setFruitResults(null);
+              setActiveGame('fruit-watch');
+            }}
+            onBack={() => {
+              setFruitResults(null);
               setActiveGame(null);
             }}
           />
@@ -87,18 +124,20 @@ export const SustainedHub: React.FC = () => {
                   </p>
                 </Card>
               )}
-            </div>
 
-            {!ENABLE_LONG_MAZES && (
-              <Card style={{ textAlign: 'center', padding: 'var(--space-12) var(--space-6)' }}>
-                <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)' }}>
-                  Exercícios chegando em breve. Volte para a tela principal e explore outro tipo de atenção.
+              <Card
+                interactive
+                accent="var(--color-sustained)"
+                onClick={() => setActiveGame('fruit-watch')}
+              >
+                <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
+                  🥷 Foco Ninja
                 </p>
-                <Button variant="secondary" onClick={() => navigate('/treinar')}>
-                  Voltar à seleção
-                </Button>
+                <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff' }}>
+                  Realize uma contagem mental silenciosa de figuras-alvo e teste sua estabilidade e resistência atencional.
+                </p>
               </Card>
-            )}
+            </div>
           </div>
         )}
       </section>

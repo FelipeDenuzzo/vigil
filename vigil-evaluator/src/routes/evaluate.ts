@@ -67,8 +67,51 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  // ── Atenção Sustentada — Foco Ninja (FruitWatch) ──────────────────────────────
+  if (game === 'fruit-watch') {
+    const input = body as any;
+    if (!input.severity || input.focoContinuo === undefined) {
+      res.status(400).json({ error: 'Invalid payload for fruit-watch: missing severity or focoContinuo' });
+      return;
+    }
+
+    try {
+      const uid: string | undefined = typeof body.uid === 'string' ? body.uid : undefined;
+      const aiReport = await evaluateWithGemini(input, uid) as any;
+      const level = (aiReport.level as string) === 'minimo' ? 'mínimo' : aiReport.level;
+
+      res.json({
+        score:    aiReport.score,
+        severity: level,
+        report: {
+          ludic: {
+            score: aiReport.score,
+            label: levelToLabel(level),
+            emoji: levelToEmoji(level),
+          },
+          general: {
+            summary:        aiReport.generalSummary        ?? '',
+            strengths:      aiReport.generalStrengths      ?? [],
+            weaknesses:     aiReport.generalWeaknesses     ?? [],
+            recommendation: aiReport.generalRecommendation ?? '',
+          },
+          clinical: {
+            strengths:      aiReport.clinicalStrengths      ?? [],
+            weaknesses:     aiReport.clinicalWeaknesses     ?? [],
+            recommendation: aiReport.clinicalRecommendation ?? '',
+            clinicalNote:   aiReport.clinicalNote           ?? '',
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Erro ao gerar laudo Gemini (fruit-watch):', error);
+      res.status(500).json({ error: 'Gemini evaluation failed' });
+    }
+    return;
+  }
+
   // ── Atenção Sustentada — Long Mazes ──────────────────────────────────────────
-  if (game === 'long-mazes' || attentionType === 'sustentada') {
+  if (game === 'long-mazes' || (attentionType === 'sustentada' && game !== 'fruit-watch')) {
     const input = body as any;
     if (!input.severity || input.completedPhases === undefined) {
       res.status(400).json({ error: 'Invalid payload for long-mazes: missing severity or completedPhases' });
