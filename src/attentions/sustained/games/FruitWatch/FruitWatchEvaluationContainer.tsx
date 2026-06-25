@@ -203,11 +203,11 @@ const s: Record<string, React.CSSProperties> = {
     background: '#12131e',
     color: '#e8e9f0',
   },
-  title: { fontSize: 22, fontWeight: 800, margin: 0, color: '#6c8ef5' },
+  title: { fontSize: 23, fontWeight: 800, margin: 0, color: '#6c8ef5' },
   btn: {
     padding: '12px 28px',
     borderRadius: 14,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 700,
     background: '#6c8ef5',
     color: '#fff',
@@ -218,7 +218,7 @@ const s: Record<string, React.CSSProperties> = {
   btnBack: {
     padding: '12px 28px',
     borderRadius: 14,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 600,
     background: 'rgba(255,255,255,0.06)',
     color: '#ffffff',
