@@ -380,11 +380,24 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
 
   if (phase === 'done') return (
     <div style={css.screen}>
-      <p style={css.title}>Obrigado!</p>
-      <p style={{ ...css.sub, textAlign: 'center' }}>
-        {evaluating ? 'Processando...' : 'Atividade concluída.'}
-      </p>
-      {onClose && !evaluating && <button style={css.ghostBtn} onClick={onClose}>Sair</button>}
+      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, background: 'rgba(255,255,255,0.02)', padding: '32px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <span style={{ fontSize: '3rem', animation: evaluating ? 'pulse 2s infinite' : 'none' }}>
+          {evaluating ? '🧠' : '✅'}
+        </span>
+        <p style={{ ...css.title, fontSize: 24, color: '#6c8ef5' }}>
+          {evaluating ? 'Analisando respostas...' : 'Treino Concluído!'}
+        </p>
+        <p style={{ ...css.sub, maxWidth: 300, lineHeight: 1.6 }}>
+          {evaluating 
+            ? 'A inteligência artificial está processando as suas respostas e gerando o seu relatório de desempenho.' 
+            : 'Bom trabalho! As suas métricas já foram salvas.'}
+        </p>
+        {onClose && !evaluating && (
+          <button style={{ ...css.primaryBtn, marginTop: 16, width: '100%' }} onClick={onClose}>
+            Voltar
+          </button>
+        )}
+      </div>
     </div>
   );
 

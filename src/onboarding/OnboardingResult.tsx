@@ -57,10 +57,10 @@ export const OnboardingResult: React.FC<Props> = ({ state, onSave, saving, saveE
 
       try {
         const result = await callOnboardingEvaluator(payload);
-        if (result) {
+        if (result && result.mensagem_ux && result.dados_grafico_teia) {
           setReport(result);
         } else {
-          console.warn('API de avaliação retornou nulo. Usando fallback local.');
+          console.warn('API de avaliação retornou nulo ou payload inválido. Usando fallback local.');
           setReport(generateLocalFallbackReport(payload));
         }
       } catch (err) {
