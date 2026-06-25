@@ -56,7 +56,7 @@ export function FruitWatchReportPanel({ report, metrics }: Props) {
   };
 
   return (
-    <div style={s.wrapper}>
+    <div className="result-card" style={s.wrapper}>
       {/* Disclaimer de saúde obrigatório */}
       <ReportDisclaimer />
 
@@ -223,7 +223,7 @@ export function FruitWatchReportPanel({ report, metrics }: Props) {
 
 const s: Record<string, any> = {
   wrapper: {
-    background: '#161820',
+    background: 'rgb(22, 24, 32)',
     border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: 16,
     overflow: 'hidden',

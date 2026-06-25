@@ -408,6 +408,16 @@ O problema se manifesta principalmente em emojis e caracteres acentuados do port
 
 ---
 
+## Design System / UI Guidelines
+
+### Regras de Texto e Cores
+
+- **Nunca usar cores sutis para textos informativos.** Todo texto que não seja decorativo ou placeholder deve usar `color: rgb(232,233,240)` (`--color-text-primary`) ou a cor da categoria de atenção correspondente.
+- Textos com opacidade reduzida (ex: `rgba(255,255,255,0.4)`) são reservados apenas para labels secundários de métricas ou timestamps.
+- Disclaimers e avisos legais seguem a mesma regra: cor primária, nunca cor sutil.
+
+---
+
 ### Checklist de conformidade — aplicar antes de criar qualquer novo artefato
 
 - [ ] A métrica tem diretriz científica aprovada pelo responsável do produto?

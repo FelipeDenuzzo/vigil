@@ -97,7 +97,7 @@ function RuleBadge({ rule }: { rule: RuleType }) {
 // ── Instruções ──────────────────────────────────────────────────────────────────
 function Instructions({ onStart }: { onStart: () => void }) {
   return (
-    <div style={css.screen}>
+    <div style={{ ...css.screen, justifyContent: 'flex-start', paddingTop: 24 }}>
       <p style={css.title}>Cor ou Forma</p>
       <p style={{ ...css.sub, maxWidth: 320, textAlign: 'center', lineHeight: 1.7 }}>
         Você verá figuras coloridas na tela.

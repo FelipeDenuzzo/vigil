@@ -43,7 +43,7 @@ const MentalVaultPlay: React.FC = () => {
           ← Voltar
         </Button>
       </header>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '24px' }}>
         <MentalVaultGame
           sessionId={sessionId}
           onClose={() => navigate('/treinar/dividida')}

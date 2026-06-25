@@ -77,6 +77,10 @@ export function EvaluationLoadingAnimation({ organizing = false }: Props) {
         borderRadius: 16,
         padding: '36px 20px',
         textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         animation: 'vigilSlideUp 0.35s ease',
         transition: 'border-color 0.5s ease',
       }}

@@ -236,7 +236,7 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
   const rows = maze?.grid.length ?? level.rows;
 
   if (phase === 'menu') return (
-    <div style={css.screen}>
+    <div style={{ ...css.screen, justifyContent: 'flex-start', paddingTop: 24 }}>
       <p style={css.title}>🧩 Labirintos</p>
       <p style={css.sub}>Treino de atenção sustentada — Fase {levelIdx + 1} de {LONG_MAZE_LEVELS.length}</p>
       <p style={css.hint}>Clique com o mouse nas setas ao lado do labirinto para se mover</p>

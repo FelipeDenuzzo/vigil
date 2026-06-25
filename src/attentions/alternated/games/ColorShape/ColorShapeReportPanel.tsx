@@ -15,7 +15,7 @@ const LEVEL_COLOR: Record<string, string> = {
 
 const s = {
   wrapper: {
-    background: '#161820',
+    background: 'rgb(22, 24, 32)',
     border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: 16,
     overflow: 'hidden',
@@ -218,7 +218,7 @@ export function ColorShapeReportPanel({ report }: { report: EvaluationReport }) 
   const recommendation = report.general?.recommendation ?? '';
 
   return (
-    <div style={s.wrapper}>
+    <div className="result-card" style={s.wrapper}>
 
       {/* ── Disclaimer fixo — sempre visível, independente da aba ── */}
       <ReportDisclaimer />

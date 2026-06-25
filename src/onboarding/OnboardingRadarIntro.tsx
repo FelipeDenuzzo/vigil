@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { OnboardingRadar } from './OnboardingRadar';
 import type { UserBaseline } from './types';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   baseline: UserBaseline;
@@ -10,32 +11,41 @@ interface Props {
 const ATTENTION_TEXTS = [
   {
     key: 'Seletiva',
-    color: 'var(--color-selective, #a78bfa)',
+    color: 'var(--color-selective, #f5a76c)',
     text: 'Focar no que importa e ignorar o resto. Age quando você lê numa sala barulhenta ou procura um rosto numa multidão.',
   },
   {
     key: 'Sustentada',
-    color: 'var(--color-sustained, #6ee7b7)',
+    color: 'var(--color-sustained, #6cf5a7)',
     text: 'Manter o foco por um período contínuo sem deixar a mente viajar. Exigida em aulas longas, leituras ou tarefas que demoram.',
   },
   {
     key: 'Alternada',
-    color: 'var(--color-alternating, #fbbf24)',
+    color: 'var(--color-alternating, #f56c9e)',
     text: 'Mudar o foco de uma coisa para outra com agilidade. Entra em ação quando você alterna entre e-mails e uma reunião.',
   },
   {
     key: 'Dividida',
-    color: 'var(--color-divided, #60a5fa)',
+    color: 'var(--color-divided, #a76cf5)',
     text: 'Gerenciar duas ou mais coisas ao mesmo tempo. É o que você usa quando dirige e conversa, ou cozinha acompanhando uma receita.',
   },
 ];
 
+const ATTENTION_COLORS: Record<string, string> = {
+  'Seletiva': 'var(--color-selective)',
+  'Sustentada': 'var(--color-sustained)',
+  'Alternada': 'var(--color-alternating)',
+  'Dividida': 'var(--color-divided)',
+};
+
 export function OnboardingRadarIntro({ baseline, onAdvance }: Props) {
+  const navigate = useNavigate();
+
   const scores = {
-    'Seletiva':  baseline.seletiva.score,
-    'Sustentada': baseline.sustentada.score,
-    'Alternada': baseline.alternada.score,
-    'Dividida':  baseline.dividida.score,
+    'Seletiva':  baseline.seletiva?.score ?? 0,
+    'Sustentada': baseline.sustentada?.score ?? 0,
+    'Alternada': baseline.alternada?.score ?? 0,
+    'Dividida':  baseline.dividida?.score ?? 0,
   };
 
   const entries = Object.entries(scores) as [string, number][];
@@ -46,8 +56,24 @@ export function OnboardingRadarIntro({ baseline, onAdvance }: Props) {
     <div style={{
       maxWidth: 600, margin: '0 auto',
       padding: 'var(--space-8) var(--space-4)',
-      display: 'flex', flexDirection: 'column', gap: 'var(--space-8)',
+      display: 'flex', flexDirection: 'column', gap: 'var(--space-6)',
     }}>
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          background: 'transparent',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          color: 'rgb(255, 255, 255)',
+          borderRadius: 99,
+          padding: '10px 22px',
+          cursor: 'pointer',
+          alignSelf: 'flex-start',
+          fontSize: 'var(--text-sm)',
+        }}
+      >
+        ← Voltar
+      </button>
+
       {/* Título */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -68,7 +94,7 @@ export function OnboardingRadarIntro({ baseline, onAdvance }: Props) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <OnboardingRadar scores={scores} onComplete={() => {}} />
+        <OnboardingRadar scores={scores} onComplete={onAdvance} />
       </motion.div>
 
       {/* Linha dinâmica */}
@@ -84,9 +110,9 @@ export function OnboardingRadarIntro({ baseline, onAdvance }: Props) {
           borderRadius: 'var(--radius-md)',
         }}
       >
-        Maior destaque: <strong style={{ color: 'var(--color-primary)' }}>{highest}</strong>
+        ⭐ Seu ponto forte: <strong style={{ color: ATTENTION_COLORS[highest] }}>{highest}</strong>
         {'  ·  '}
-        Área de treino: <strong style={{ color: 'var(--color-primary)' }}>{lowest}</strong>
+        🎯 Foco do treino: <strong style={{ color: ATTENTION_COLORS[lowest] }}>{lowest}</strong>
       </motion.div>
 
       {/* Textos das 4 atenções */}
@@ -119,7 +145,7 @@ export function OnboardingRadarIntro({ baseline, onAdvance }: Props) {
 
       {/* Disclaimer */}
       <p style={{
-        fontSize: 'var(--text-xs)', color: 'var(--color-text-faint)',
+        fontSize: 'var(--text-xs)', color: 'rgb(232, 233, 240)',
         textAlign: 'center', lineHeight: 1.6,
       }}>
         Estas descrições são baseadas em literatura científica sobre atenção e têm caráter informativo.

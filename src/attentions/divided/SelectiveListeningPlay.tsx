@@ -50,7 +50,7 @@ const SelectiveListeningPlay: React.FC = () => {
           ← Voltar
         </Button>
       </header>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '24px' }}>
         {saving ? (
           <div style={{ textAlign: 'center', color: '#ffffff' }}>
             <p>Salvando dados do treino...</p>
