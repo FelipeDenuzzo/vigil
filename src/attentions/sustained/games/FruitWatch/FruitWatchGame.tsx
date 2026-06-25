@@ -1,7 +1,7 @@
 // src/attentions/sustained/games/FruitWatch/FruitWatchGame.tsx
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { PHASE_CONFIGS, FIGURES, pickTargetAndDistractorsForSession, shuffleColorCategories } from './levels';
 import { generateFigureSequence, countFiguresInSequence } from './logic';
 import type { FlyingFigure, PhaseRawResult } from './types';
@@ -34,7 +34,6 @@ export default function FruitWatchGame({ onComplete, onClose }: Props) {
   const [bonusInput, setBonusInput] = useState('');
   const [commissions, setCommissions] = useState(0);
   const commissionsRef = useRef(0);
-  const [flashError, setFlashError] = useState(false);
 
   const config = PHASE_CONFIGS[phase - 1];
   const { target, distractors, bonusFigure } = pickTargetAndDistractorsForSession(phase, shuffledCategories);
@@ -90,8 +89,6 @@ export default function FruitWatchGame({ onComplete, onClose }: Props) {
     
     // Evita contar cliques se o usuário clicou em algum botão ou controle (embora não existam durante o jogo)
     commissionsRef.current += 1;
-    setFlashError(true);
-    setTimeout(() => setFlashError(false), 250);
   }, [step]);
 
   // Envio da resposta da fase
@@ -152,29 +149,22 @@ export default function FruitWatchGame({ onComplete, onClose }: Props) {
           onPointerDown={handleScreenTouch}
           style={s.gameCanvas}
         >
-          {/* Flash visual de penalidade por erro de comissão */}
-          <AnimatePresence>
-            {flashError && (
-              <motion.div
-                key="flash"
-                initial={{ opacity: 0.6 }}
-                animate={{ opacity: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                style={s.flashOverlay}
-              />
-            )}
-          </AnimatePresence>
-
-          {/* Renderização das figuras subindo */}
+          {/* Renderização das figuras em trajetória de parábola */}
           {visible.map(fig => {
             const figDef = FIGURES.find(f => f.id === fig.figureId)!;
             return (
               <motion.div
                 key={fig.id}
                 initial={{ bottom: '-15%', left: `${fig.launchX}%`, scale: 0.8 }}
-                animate={{ bottom: '115%', scale: 1.1 }}
-                transition={{ duration: fig.flightDurationMs / 1000, ease: 'linear' }}
+                animate={{
+                  bottom: ['-15%', `${fig.peakY}%`, '-15%'],
+                  left: [`${fig.launchX}%`, `${fig.endX}%`],
+                  scale: [0.8, 1.15, 0.8]
+                }}
+                transition={{
+                  duration: fig.flightDurationMs / 1000,
+                  ease: 'easeInOut'
+                }}
                 style={s.flyingItem}
               >
                 <img src={figDef.imagePath} alt="" style={s.flyingImage} />
@@ -234,23 +224,15 @@ function SimulationScreen({ onDone, onClose }: { onDone: () => void; onClose?: (
   const steps = [
     {
       title: 'Contagem Mental Silenciosa',
-      text: 'Você treinará sua Atenção Sustentada. Uma figura-alvo será exibida antes de começar. Conte mentalmente quantas vezes ela sobe na tela.',
+      text: 'Você treinará sua Atenção Sustentada. Uma figura-alvo será exibida antes de começar. Conte mentalmente quantas vezes ela aparece na tela.',
     },
     {
       title: 'Apenas Observe',
-      text: 'Não toque na tela enquanto os objetos estiverem voando. Guarde a contagem em silêncio. Caso toque, a tela piscará em vermelho sinalizando erro motor.',
+      text: 'Não toque na tela enquanto os objetos estiverem voando. Guarde a contagem em silêncio.',
     },
     {
       title: 'Guarde na Memória',
-      text: 'Depois que a fase iniciar, o alvo não aparecerá mais em janelas de ajuda. Você precisará se guiar puramente pela memória.',
-    },
-    {
-      title: 'Evite a Impulsividade',
-      text: 'Atenção redobrada: nas fases seguintes, aparecerão várias figuras parecidas (de cor idêntica ou formato similar). Não as conte por engano.',
-    },
-    {
-      title: 'Perguntas Surpresa',
-      text: 'Nas últimas rodadas, além do alvo, poderemos fazer perguntas extras sobre uma outra figura secundária. Tente notar os outros elementos periféricos.',
+      text: 'Depois que a fase iniciar, o alvo não aparecerá mais.',
     },
   ];
 
