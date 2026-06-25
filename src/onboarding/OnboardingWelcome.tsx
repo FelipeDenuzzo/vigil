@@ -27,6 +27,7 @@ export const OnboardingWelcome: React.FC<Props> = ({ onStart }) => {
           <li><strong style={{ color: 'var(--color-text)' }}>Etapa 1 — Calibragem (~1 min)</strong><br />Clique no circulo toda vez que ficar verde.</li>
           <li><strong style={{ color: 'var(--color-text)' }}>Etapa 2 — Controle (~2 min)</strong><br />Clique no quadrado preto quando aparecer.</li>
           <li><strong style={{ color: 'var(--color-text)' }}>Etapa 3 — Flexibilidade (~2 min)</strong><br />Alterne entre sequências seguindo a ordem correta.</li>
+          <li><strong style={{ color: 'var(--color-text)' }}>Etapa 4 — Dupla-Tarefa (~2 min)</strong><br />Estoure bolhas azuis enquanto responde a estímulos sonoros.</li>
         </ol>
       </div>
 
