@@ -17,6 +17,8 @@ import { SustainedHub } from './attentions/sustained/SustainedHub';
 import { AlternatingHub } from './attentions/alternating/AlternatingHub';
 import ColorShapePlay from './attentions/alternating/ColorShapePlay';
 import ColorShapeEvaluationContainer from './attentions/alternated/games/ColorShape/ColorShapeEvaluationContainer';
+import InsetosPlay from './attentions/alternating/InsetosPlay';
+import InsetosEvaluationContainer from './attentions/alternating/games/Insetos/InsetosEvaluationContainer';
 import { DividedHub } from './attentions/divided/DividedHub';
 import MentalVaultPlay from './attentions/divided/MentalVaultPlay';
 import SelectiveListeningPlay from './attentions/divided/SelectiveListeningPlay';
@@ -70,6 +72,8 @@ export default function App() {
           <Route path="/treinar/alternada" element={<ProtectedRoute><AlternatingHub /></ProtectedRoute>} />
           <Route path="/treinar/alternada/color-shape" element={<ProtectedRoute><ColorShapePlay /></ProtectedRoute>} />
           <Route path="/treinar/alternada/color-shape/resultado" element={<ProtectedRoute><ColorShapeEvaluationContainer /></ProtectedRoute>} />
+          <Route path="/treinar/alternada/insetos" element={<ProtectedRoute><InsetosPlay /></ProtectedRoute>} />
+          <Route path="/treinar/alternada/insetos/resultado" element={<ProtectedRoute><InsetosEvaluationContainer /></ProtectedRoute>} />
 
           {/* Dividida */}
           <Route path="/treinar/dividida" element={<ProtectedRoute><DividedHub /></ProtectedRoute>} />
