@@ -125,7 +125,12 @@ export const OnboardingResult: React.FC<Props> = ({ state, onSave, saving, saveE
             {mensagem_ux.paragrafo_boas_vindas}
           </p>
           <OnboardingRadar 
-            scores={report.dados_grafico_teia} 
+            scores={{
+              'Seletiva': state.baseline?.seletiva.score ?? 0,
+              'Sustentada': state.baseline?.sustentada.score ?? 0,
+              'Alternada': state.baseline?.alternada.score ?? 0,
+              'Dividida': state.baseline?.dividida.score ?? 0,
+            }} 
             onComplete={() => setRadarComplete(true)} 
           />
         </div>
