@@ -102,13 +102,7 @@ export interface OnboardingReport {
     superpoder: string;
     foco_de_treino: string;
   };
-  dados_grafico_teia: {
-    "Agilidade Mental": number;
-    "Foco Contínuo": number;
-    "Controle e Calma": number;
-    "Flexibilidade Mental": number;
-    "Foco Multitarefa": number;
-  };
+  dados_grafico_teia: Record<string, number>;
 }
 
 interface RawEvaluatorResponse {
