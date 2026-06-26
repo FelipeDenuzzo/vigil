@@ -1,16 +1,18 @@
 // src/attentions/alternating/InsetosPlay.tsx
 // Página wrapper do jogo Insetos — espelha ColorShapePlay.
+// Fluxo: instructions → simulation → playing → result
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../shared/components/Button';
 import { InsetosGame } from './games/Insetos/InsetosGame';
 import { InsetosInstructions } from './games/Insetos/InsetosInstructions';
+import InsetosSimulation from './games/Insetos/InsetosSimulation';
 import { InsetosEvaluationContainer, persistInsetosLog } from './games/Insetos/InsetosEvaluationContainer';
 import type { InsetosSessionLog } from './games/Insetos/types';
 import { v4 as uuidv4 } from 'uuid';
 
-type Screen = 'instructions' | 'playing' | 'result';
+type Screen = 'instructions' | 'simulation' | 'playing' | 'result';
 
 const InsetosPlay: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +44,15 @@ const InsetosPlay: React.FC = () => {
     );
   }
 
+  if (screen === 'simulation') {
+    return (
+      <InsetosSimulation
+        onDone={() => setScreen('playing')}
+        onBack={() => setScreen('instructions')}
+      />
+    );
+  }
+
   return (
     <div style={{ padding: 'var(--space-6)' }}>
       <Button
@@ -52,7 +63,7 @@ const InsetosPlay: React.FC = () => {
         ← Voltar
       </Button>
       <InsetosInstructions
-        onStart={() => setScreen('playing')}
+        onStart={() => setScreen('simulation')}
         onBack={() => navigate('/treinar/alternada')}
       />
     </div>
