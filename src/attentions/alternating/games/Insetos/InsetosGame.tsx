@@ -8,7 +8,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { Insect, InsectGroup, InsetosSessionLog } from './types';
 import type { InsetosRawEvent } from '../../../../assessment/insetos/types';
 
-/* ── Constantes ───────────────────────────────────────────────────────────────── */
+/* ── Constantes ────────────────────────────────────────────────────────────────── */
 const TOTAL_PHASES      = 6;
 const PHASE_DURATION_MS = 30_000;
 const NUM_INSECTS       = 8;   // total de insetos (4 de cada grupo)
@@ -33,7 +33,7 @@ function collisionSrc(g: InsectGroup, frame: 1 | 2 | 3 | 4 | 5) {
   return `/Insetos/${name} ${suffix}.png`;
 }
 
-/* ── Helpers ──────────────────────────────────────────────────────────────────── */
+/* ── Helpers ───────────────────────────────────────────────────────────────────────── */
 function rand(min: number, max: number) {
   return min + Math.random() * (max - min);
 }
@@ -59,7 +59,7 @@ function buildInitialInsects(): Insect[] {
   return insects;
 }
 
-/* ── Componente ───────────────────────────────────────────────────────────────── */
+/* ── Componente ──────────────────────────────────────────────────────────────────────── */
 interface Props {
   sessionId: string;
   onComplete?: (log: InsetosSessionLog) => void;
@@ -68,11 +68,11 @@ interface Props {
 
 export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose }) => {
   /* ── State reativo (para re-render) ── */
-  const [tick, setTick]               = useState(0);       // força repaint
   const [phase, setPhase]             = useState(0);       // fase atual (0-based)
   const [timeLeft, setTimeLeft]       = useState(PHASE_DURATION_MS);
   const [done, setDone]               = useState(false);
   const [score, setScore]             = useState(0);
+  const [, forceUpdate]               = useState(0);       // força repaint do canvas
 
   /* ── Refs (dados de jogo sem re-render) ── */
   const insectsRef       = useRef<Insect[]>(buildInitialInsects());
@@ -186,7 +186,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
       });
     }
 
-    setTick(t => t + 1);
+    forceUpdate(t => t + 1);
     rafRef.current = requestAnimationFrame(gameLoop);
   }, [done, sessionId, onComplete]);
 
@@ -259,7 +259,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
     }
 
     if (!hit) {
-      /* Toque no vazio — não registra evento (não é omissão, só miss) */
+      /* Toque no vazio — não registra evento */
     }
   }, [done]);
 
@@ -269,8 +269,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
   const curGroup = activeGroup(phase);
   const phaseSec = Math.ceil(timeLeft / 1000);
 
-  const ACTIVE_COLOR   = curGroup === 'formiga' ? '#f97316' : '#ef4444';
-  const INACTIVE_COLOR = 'rgba(255,255,255,0.3)';
+  const ACTIVE_COLOR = curGroup === 'formiga' ? '#f97316' : '#ef4444';
 
   return (
     <div style={{ fontFamily: 'Inter, sans-serif', userSelect: 'none' }}>
@@ -323,7 +322,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
         style={{
           position: 'relative',
           width: '100%',
-          paddingBottom: '75%', // 4:3 aspect ratio
+          paddingBottom: '75%',
           background: 'radial-gradient(ellipse at center, #1a1d2e 0%, #0d0f1a 100%)',
           borderRadius: '0 0 12px 12px',
           overflow: 'hidden',
@@ -354,7 +353,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
                     ? `drop-shadow(0 0 8px ${ACTIVE_COLOR}) drop-shadow(0 0 16px ${ACTIVE_COLOR})`
                     : isTarget
                       ? `drop-shadow(0 0 2px ${ACTIVE_COLOR}44)`
-                      : `opacity(0.4)`,
+                      : 'opacity(0.4)',
                   animation: isAlert ? 'inseto-pulse 0.6s ease-in-out infinite' : 'none',
                   opacity: isTarget ? 1 : 0.35,
                   zIndex: isAlert ? 10 : 1,
