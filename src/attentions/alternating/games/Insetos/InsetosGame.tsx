@@ -3,7 +3,9 @@
 //  • Arena quadrada menor (max 480px) renderizada em <canvas>
 //  • Insetos andam só horizontal OU vertical (linhas retas)
 //  • Viram 90° em esquinas aleatórias
-//  • Ao se encontrarem: param, piscam (mudam de cor) — estado de alerta
+//  • Só param ao se encontrar com inseto do MESMO grupo
+//  • Insetos de grupos diferentes se cruzam sem parar
+//  • Sprite gira conforme direção: up=0°, right=90°, down=180°, left=270°
 //  • Clicar no inseto do grupo ATIVO em alerta = acerto
 //  • Não clicar em 2.8s = omissão, retomam sozinhos
 
@@ -14,16 +16,16 @@ import type { InsetosRawEvent } from '../../../../assessment/insetos/types';
 /* ── Constantes ── */
 const TOTAL_PHASES      = 6;
 const PHASE_DURATION_MS = 30_000;
-const NUM_EACH          = 4;          // 4 formigas + 4 joaninhas
-const SPEED_BASE        = 80;         // px/s na fase 0
-const SPEED_RAMP        = 8;          // px/s extra por fase
-const TURN_MIN          = 1500;       // ms entre viradas espontâneas
+const NUM_EACH          = 4;
+const SPEED_BASE        = 80;
+const SPEED_RAMP        = 8;
+const TURN_MIN          = 1500;
 const TURN_MAX          = 3200;
-const COLLISION_PX      = 36;         // px - raio de encontro
-const ALERT_MS          = 2800;       // janela de clique
-const INSECT_SIZE       = 36;         // px
-const HIT_RADIUS        = 28;         // px raio de toque
-const MARGIN            = 28;         // px afastamento das bordas
+const COLLISION_PX      = 36;
+const ALERT_MS          = 2800;
+const INSECT_SIZE       = 36;
+const HIT_RADIUS        = 28;
+const MARGIN            = 28;
 
 const DIRS: Direction[] = ['up', 'down', 'left', 'right'];
 function rDir(): Direction { return DIRS[Math.floor(Math.random() * 4)]; }
@@ -35,6 +37,14 @@ function dirVec(d: Direction): [number, number] {
   if (d === 'down') return [0,  1];
   if (d === 'left') return [-1, 0];
   return [1, 0];
+}
+
+/** Rotação em radianos para cada direção (imagem base aponta para cima) */
+function dirAngle(d: Direction): number {
+  if (d === 'up')    return 0;
+  if (d === 'right') return Math.PI / 2;
+  if (d === 'down')  return Math.PI;
+  return -Math.PI / 2; // left
 }
 
 function makeInsect(id: string, group: InsectGroup, W: number, H: number, nowMs: number): Insect {
@@ -66,11 +76,11 @@ function activeGroup(phase: number): InsectGroup {
 
 function resumeInsect(ins: Insect, nowMs: number, speed: number) {
   const others = DIRS.filter(d => d !== ins.dir);
-  ins.dir          = others[Math.floor(Math.random() * others.length)];
-  ins.frozen       = false;
-  ins.alertStartMs = 0;
-  ins.speed        = speed;
-  ins.nextTurnMs   = nowMs + rTurn();
+  ins.dir            = others[Math.floor(Math.random() * others.length)];
+  ins.frozen         = false;
+  ins.alertStartMs   = 0;
+  ins.speed          = speed;
+  ins.nextTurnMs     = nowMs + rTurn();
   ins.collisionFrame = 0;
 }
 
@@ -100,7 +110,6 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
   const [score, setScore]       = useState(0);
   const [done, setDone]         = useState(false);
 
-  /* Pré-carrega imagens */
   useEffect(() => {
     const srcs = [
       '/Insetos/Formiga integra.png',
@@ -130,7 +139,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
     const group        = activeGroup(curPhase);
     const insects      = insectsRef.current;
 
-    /* ─ Move insetos ─ */
+    /* ─ Move ─ */
     for (const ins of insects) {
       if (ins.frozen) {
         if (ins.alertStartMs > 0 && nowMs - ins.alertStartMs > ALERT_MS) {
@@ -160,11 +169,12 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
       if (ins.y > H - MARGIN) { ins.y = H - MARGIN;  ins.dir = 'up';    ins.nextTurnMs = nowMs + rTurn(); }
     }
 
-    /* ─ Detecta encontros ─ */
+    /* ─ Detecta encontros APENAS entre insetos do MESMO grupo ─ */
     const moving = insects.filter(i => !i.frozen);
     for (let a = 0; a < moving.length; a++) {
       for (let b = a + 1; b < moving.length; b++) {
         const ia = moving[a], ib = moving[b];
+        if (ia.group !== ib.group) continue; // grupos diferentes: passam por cima
         const dx = ia.x - ib.x, dy = ia.y - ib.y;
         if (Math.sqrt(dx * dx + dy * dy) < COLLISION_PX) {
           ia.frozen = true; ia.alertStartMs = nowMs;
@@ -198,9 +208,8 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
       });
     }
 
-    /* ── Render canvas ── */
+    /* ── Render ── */
     const blink = Math.floor(nowMs / 380) % 2 === 0;
-
     ctx.clearRect(0, 0, W, H);
 
     const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W * 0.7);
@@ -213,12 +222,16 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
       const isActive = ins.group === group;
       const isAlert  = ins.frozen;
       const alertCol = ins.group === 'formiga' ? '#f97316' : '#ef4444';
+      const half     = INSECT_SIZE / 2;
 
       ctx.save();
+
+      /* opacidade */
       ctx.globalAlpha = isAlert
         ? (blink ? (isActive ? 1 : 0.35) : (isActive ? 0.55 : 0.15))
         : (isActive ? 1 : 0.25);
 
+      /* glow */
       if (isAlert && isActive) {
         ctx.shadowColor = blink ? '#ffffff' : alertCol;
         ctx.shadowBlur  = blink ? 22 : 14;
@@ -227,10 +240,10 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
         ctx.shadowBlur  = 4;
       }
 
-      /* anel piscando */
+      /* anel piscando para grupo ativo em alerta */
       if (isAlert && isActive) {
         ctx.beginPath();
-        ctx.arc(ins.x, ins.y, INSECT_SIZE / 2 + 9, 0, Math.PI * 2);
+        ctx.arc(ins.x, ins.y, half + 9, 0, Math.PI * 2);
         ctx.strokeStyle = blink ? '#ffffff' : alertCol;
         ctx.lineWidth   = 2.5;
         ctx.shadowBlur  = 0;
@@ -239,20 +252,24 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
         ctx.shadowBlur  = blink ? 22 : 14;
       }
 
-      /* imagem */
+      /* Desenha sprite com rotação conforme direção */
       const imgKey = ins.collisionFrame > 0
         ? `/Insetos/${ins.group === 'formiga' ? 'Formiga' : 'Joaninha'} colisão ${ins.collisionFrame}.png`
         : ins.group === 'formiga'
           ? '/Insetos/Formiga integra.png'
           : '/Insetos/Joaninha Integra.png';
 
-      const img  = imgsRef.current[imgKey];
-      const half = INSECT_SIZE / 2;
+      const img = imgsRef.current[imgKey];
+
+      /* Translação ao centro do inseto + rotação */
+      ctx.translate(ins.x, ins.y);
+      ctx.rotate(dirAngle(ins.dir));
+
       if (img?.complete && img.naturalWidth > 0) {
-        ctx.drawImage(img, ins.x - half, ins.y - half, INSECT_SIZE, INSECT_SIZE);
+        ctx.drawImage(img, -half, -half, INSECT_SIZE, INSECT_SIZE);
       } else {
         ctx.beginPath();
-        ctx.arc(ins.x, ins.y, half, 0, Math.PI * 2);
+        ctx.arc(0, 0, half, 0, Math.PI * 2);
         ctx.fillStyle = alertCol;
         ctx.fill();
       }
@@ -329,13 +346,9 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
 
   return (
     <div style={{ maxWidth: 520, margin: '0 auto', fontFamily: 'Inter, sans-serif', userSelect: 'none' }}>
-
-      {/* HUD */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '8px 14px',
-        background: 'rgba(0,0,0,0.6)',
-        borderRadius: '12px 12px 0 0',
+        padding: '8px 14px', background: 'rgba(0,0,0,0.6)', borderRadius: '12px 12px 0 0',
       }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <span style={{ fontSize: 12, color: '#a0a4be' }}>
@@ -352,30 +365,21 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
           <span style={{ fontSize: 12, color: '#a0a4be' }}>⭐ <strong style={{ color: '#fff' }}>{score}</strong></span>
           <span style={{ fontSize: 14, fontWeight: 700, color: phaseSec <= 5 ? '#f08080' : '#e8e9f0' }}>{phaseSec}s</span>
           {onClose && (
-            <button
-              onClick={onClose}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a0a4be', fontSize: 18, lineHeight: 1, padding: 0 }}
-              aria-label="Fechar"
-            >×</button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a0a4be', fontSize: 18, lineHeight: 1, padding: 0 }} aria-label="Fechar">×</button>
           )}
         </div>
       </div>
 
-      {/* Canvas quadrado responsivo */}
       <canvas
         ref={canvasRef}
         width={ARENA}
         height={ARENA}
         onClick={handleClick}
         style={{
-          display: 'block',
-          width: '100%',
-          maxWidth: ARENA,
-          height: 'auto',
+          display: 'block', width: '100%', maxWidth: ARENA, height: 'auto',
           borderRadius: '0 0 12px 12px',
           border: `2px solid ${ACTIVE_COL}44`,
-          cursor: 'crosshair',
-          touchAction: 'none',
+          cursor: 'crosshair', touchAction: 'none',
         }}
       />
     </div>
