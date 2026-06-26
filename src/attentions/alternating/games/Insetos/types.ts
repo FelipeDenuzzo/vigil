@@ -1,30 +1,34 @@
 // src/attentions/alternating/games/Insetos/types.ts
-// Tipos internos do treino Insetos — Atenção Alternada
-
 import type { InsetosRawEvent } from '../../../../assessment/insetos/types';
 
 export type InsectGroup = 'formiga' | 'joaninha';
 
-/** Inseto na tela com posição e velocidade */
+/** Direção cardinal de movimento */
+export type Direction = 'up' | 'down' | 'left' | 'right';
+
+/** Inseto na tela */
 export interface Insect {
   id: string;
   group: InsectGroup;
-  x: number;   // 0–100 (% da largura do canvas)
-  y: number;   // 0–100 (% da altura do canvas)
-  vx: number;  // velocidade em % por segundo
-  vy: number;
-  /** Frame de animação de colisão (0 = íntegro, 1–5 = colisão) */
+  x: number;          // 0–100 (% da largura do canvas)
+  y: number;          // 0–100 (% da altura do canvas)
+  dir: Direction;     // direção atual
+  speed: number;      // % por segundo
+  /** ms até próxima virada espontânea */
+  nextTurnMs: number;
+  /** timestamp da última virada */
+  lastTurnMs: number;
+  /** parado em colisão/alerta */
+  frozen: boolean;
+  /** timestamp em que o alerta de colisão começou */
+  alertStartMs: number;
+  /** frame de animação de saída (0 = normal) */
   collisionFrame: number;
-  /** Timestamp em que a colisão começou (ms) */
   collisionStartMs: number;
 }
 
-export type GamePhase =
-  | 'instructions'
-  | 'playing'
-  | 'done';
+export type GamePhase = 'instructions' | 'playing' | 'done';
 
-/** Log completo enviado ao avaliador após a sessão */
 export interface InsetosSessionLog {
   sessionId: string;
   startedAt: string;
