@@ -3,7 +3,7 @@
 
 import type { InsetosSessionLog } from './types';
 import type { InsetosMetrics } from '../../../../assessment/insetos/types';
-import type { EvaluationReport } from '../../../../lib/evaluatorClient';
+import type { EvaluationReport, EvaluatorInput } from '../../../../lib/evaluatorClient';
 import { adaptSessionToInsetos }    from '../../../../assessment/insetos/adaptSessionToInsetos';
 import { calculateInsetosMetrics }  from '../../../../assessment/insetos/calculateInsetosMetrics';
 import { buildInsetosScaleResult }  from '../../../../assessment/insetos/buildInsetosScaleResult';
@@ -20,7 +20,7 @@ export interface InsetosEvaluationResult {
   geminiReport: EvaluationReport | null;
 }
 
-async function callEvaluator(payload: object): Promise<EvaluationReport | null> {
+async function callEvaluator(payload: EvaluatorInput): Promise<EvaluationReport | null> {
   if (!EVALUATOR_URL || !EVALUATOR_SECRET) {
     console.warn('[Insetos] VITE_EVALUATOR_URL ou VITE_EVALUATOR_SECRET não configurados');
     return null;
@@ -53,7 +53,7 @@ async function callEvaluator(payload: object): Promise<EvaluationReport | null> 
   }
 }
 
-async function saveWithRetry(report: EvaluationReport, input: object): Promise<void> {
+async function saveWithRetry(report: EvaluationReport, input: EvaluatorInput): Promise<void> {
   const result = await saveReport(report, input);
   if (result !== null) return;
   await new Promise((r) => setTimeout(r, 2000));
@@ -70,20 +70,20 @@ export async function useInsetosEvaluation(
   const metrics     = calculateInsetosMetrics(sessionData.rawEvents);
   const scale       = buildInsetosScaleResult(metrics);
 
-  const payload = {
-    game:          'insetos',
-    attentionType: 'alternada' as const,
+  const payload: EvaluatorInput = {
+    game:          'insetos' as any,
+    attentionType: 'alternada',
     sessionId:     sessionData.sessionId,
     startedAt:     sessionData.startedAt,
     severity:      scale.level,
 
     // Métricas globais
-    totalTrials:     metrics.totalTrials,
-    totalHits:       metrics.totalHits,
-    accuracyPct:     metrics.accuracyPct,
-    omissions:       metrics.omissions,
+    totalTrials:      metrics.totalTrials,
+    totalHits:        metrics.totalHits,
+    accuracyPct:      metrics.accuracyPct,
+    omissions:        metrics.omissions,
     commissionErrors: metrics.commissionErrors,
-    meanRT:          metrics.meanRT,
+    meanRT:           metrics.meanRT,
 
     // Custo de alternância
     switchCostMs:      metrics.switchCostMs,
@@ -92,7 +92,7 @@ export async function useInsetosEvaluation(
     // Custo de multi-track
     multiTrackCostPct: metrics.multiTrackCostPct,
 
-    // Decaimento de vigilância
+    // Decaimento de vigílância
     vigilanceDecayPct: metrics.vigilanceDecayPct,
 
     // Notas clínicas
