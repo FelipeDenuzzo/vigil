@@ -1,7 +1,6 @@
 // src/attentions/alternating/games/Insetos/InsetosResult.tsx
 // Tela de resultado pós-sessão — espelha ColorShapeEvaluationScreen.
 
-import React from 'react';
 import { InsetosReportPanel } from './InsetosReportPanel';
 import { EvaluationLoadingAnimation } from '../../../../shared/EvaluationLoadingAnimation';
 import type { EvaluationReport as GeminiReport } from '../../../../lib/evaluatorClient';
