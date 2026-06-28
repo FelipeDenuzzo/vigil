@@ -1,5 +1,6 @@
 import { Type } from '@google/genai';
 import type { SustainedEvaluatorInput } from '../types';
+import { formatMsToSeconds } from './utils';
 
 // ─── Schema JSON retornado pelo Gemini ───────────────────────────────────────
 export const SUSTAINED_EVALUATION_SCHEMA = {
@@ -70,7 +71,7 @@ export function buildSustainedPrompt(input: SustainedEvaluatorInput): string {
     `    - Revisitas (perseveração): ${p.revisits}`,
     `    - Entradas inéditas em becos (impulsividade): ${p.deadEndEntries}`,
     `    - Lapsos de atenção (paradas >3s): ${p.longStops}`,
-    `    - Pausa pós-erro média: ${p.postErrorPauseMs}ms`,
+    `    - Pausa pós-erro média: ${formatMsToSeconds(p.postErrorPauseMs)}`,
     `    - Tempo total: ${p.elapsedSec}s`,
   ].join('\n')).join('\n\n');
 
@@ -94,7 +95,7 @@ O usuário completou o treino "Labirintos Prolongados" do Vigil, composto por 3 
 - Total de revisitas: ${input.totalRevisits}
 - Total de entradas em becos: ${input.totalDeadEndEntries}
 - Total de lapsos de atenção: ${input.totalLongStops}
-- Pausa pós-erro média: ${input.avgPostErrorPauseMs}ms
+- Pausa pós-erro média: ${formatMsToSeconds(input.avgPostErrorPauseMs)}
 - Severity calculado: ${input.severity}
 
 ### Detalhamento por fase

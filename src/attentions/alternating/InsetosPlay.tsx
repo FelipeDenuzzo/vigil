@@ -24,7 +24,14 @@ const InsetosPlay: React.FC<Props> = ({ onClose }) => {
   if (screen === 'result' && completedLog) {
     return (
       <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
-        <InsetosEvaluationContainer sessionLog={completedLog} />
+        <InsetosEvaluationContainer 
+          sessionLog={completedLog} 
+          onClose={onClose} 
+          onRepeat={() => {
+            setCompletedLog(null);
+            setScreen('instructions');
+          }}
+        />
       </div>
     );
   }

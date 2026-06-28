@@ -17,6 +17,7 @@ type LoadedState = false | 'organizing' | true;
 interface Props {
   sessionId: string;
   onRepeat?: () => void;
+  onClose?: () => void;
 }
 
 const RETRYABLE_CODES = new Set(['unavailable', 'permission-denied', 'resource-exhausted']);
@@ -73,7 +74,7 @@ async function loadReportFromFirestore(
   }
 }
 
-export default function AcharOFaltandoEvaluationContainer({ sessionId, onRepeat }: Props) {
+export default function AcharOFaltandoEvaluationContainer({ sessionId, onRepeat, onClose }: Props) {
   const sessionLog = getSessionById(sessionId);
 
   const [metrics, setMetrics] = useState<AcharOFaltandoMetrics | null>(null);
@@ -160,7 +161,7 @@ export default function AcharOFaltandoEvaluationContainer({ sessionId, onRepeat 
 
         loaded={loaded === true}
         onRepeat={onRepeat ?? (() => {})}
-        onBack={() => {}}
+        onBack={onClose ?? (() => {})}
       />
     </div>
   );

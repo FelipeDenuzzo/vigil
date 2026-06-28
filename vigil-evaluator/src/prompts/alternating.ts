@@ -1,5 +1,6 @@
 import { Type } from '@google/genai';
 import type { AlternatingEvaluatorInput } from '../types';
+import { formatMsToSeconds } from './utils';
 
 // ─── Schema de resposta forçado via Structured Output ─────────────────────────
 export const ALTERNATING_EVALUATION_SCHEMA = {
@@ -99,7 +100,7 @@ O instrumento avalia 3 dimensões executivas:
 REGRAS GERAIS:
 - Não recalcule métricas — já processadas pelo sistema local.
 - Não feche diagnóstico clínico.
-- FUNDAMENTAÇÃO: na camada clínica, cite explicitamente os valores numéricos (ms, %).
+- FUNDAMENTAÇÃO: na camada clínica, cite explicitamente os valores numéricos (segundos, %).
 - NARRATIVA: clinicalNote articula as 3 dimensões em conjunto — switching cost alto com perseveração
   conta história diferente de switching cost alto sem perseveração.
 - severity e notas de custo são verdade absoluta.
@@ -115,7 +116,7 @@ severity (calculada localmente): ${displaySeverity}
 Métricas globais:
   totalTrials:  ${totalTrials}
   accuracy:     ${input.accuracy ?? 0}%  → ${input.accuracyNote ?? 'indeterminado'}
-  avgRtMs:      ${input.avgRtMs ?? 0} ms
+  avgRtMs:      ${formatMsToSeconds(input.avgRtMs)}
   timeouts:     ${input.timeoutCount ?? 0} (${input.timeoutPct ?? 0}%)
 
 Switching Cost:
@@ -123,16 +124,16 @@ Switching Cost:
   repeat trials:    ${input.repeatTrials ?? 0}
   switch accuracy:  ${input.switchAccuracy ?? 0}%
   repeat accuracy:  ${input.repeatAccuracy ?? 0}%
-  switch RT médio:  ${input.switchAvgRtMs ?? 0} ms
-  repeat RT médio:  ${input.repeatAvgRtMs ?? 0} ms
-  custo RT:         ${input.switchCostRtMs ?? 0} ms  → ${input.switchingCostNote ?? 'indeterminado'}
+  switch RT médio:  ${formatMsToSeconds(input.switchAvgRtMs)}
+  repeat RT médio:  ${formatMsToSeconds(input.repeatAvgRtMs)}
+  custo RT:         ${formatMsToSeconds(input.switchCostRtMs)}  → ${input.switchingCostNote ?? 'indeterminado'}
   custo erro:       ${input.switchCostErrorPp ?? 0} p.p.
 
 Mixing Cost:
   pure trials:      ${input.pureTrials ?? 0}
   pure accuracy:    ${input.pureAccuracy ?? 0}%
-  pure RT médio:    ${input.pureAvgRtMs ?? 0} ms
-  custo RT:         ${input.mixingCostRtMs ?? 0} ms  → ${input.mixingCostNote ?? 'indeterminado'}
+  pure RT médio:    ${formatMsToSeconds(input.pureAvgRtMs)}
+  custo RT:         ${formatMsToSeconds(input.mixingCostRtMs)}  → ${input.mixingCostNote ?? 'indeterminado'}
   custo erro:       ${input.mixingCostErrorPp ?? 0} p.p.
 
 Perseveração:
@@ -140,8 +141,8 @@ Perseveração:
   taxa:    ${input.perseverationPct ?? 0}% dos switch trials  → ${input.perseverationNote ?? 'indeterminado'}
 
 Por regra (blocos puros):
-  cor   — accuracy: ${input.colorAccuracy ?? 0}%  RT: ${input.colorAvgRtMs ?? 0} ms
-  forma — accuracy: ${input.shapeAccuracy ?? 0}%  RT: ${input.shapeAvgRtMs ?? 0} ms
+  cor   — accuracy: ${input.colorAccuracy ?? 0}%  RT: ${formatMsToSeconds(input.colorAvgRtMs)}
+  forma — accuracy: ${input.shapeAccuracy ?? 0}%  RT: ${formatMsToSeconds(input.shapeAvgRtMs)}
 ───────────────────────────────────────────────────────────────────────────
 
 Gere o laudo com os dois campos de cada camada completamente preenchidos.

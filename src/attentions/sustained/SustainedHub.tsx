@@ -83,6 +83,10 @@ export const SustainedHub: React.FC = () => {
               setSessionLog(null);
               setActiveGame('long-mazes');
             }}
+            onBack={() => {
+              setActiveGame(null);
+              setSessionLog(null);
+            }}
           />
         )}
 
@@ -93,6 +97,10 @@ export const SustainedHub: React.FC = () => {
             onRepeat={() => {
               setFruitResults(null);
               setActiveGame('fruit-watch');
+            }}
+            onBack={() => {
+              setActiveGame(null);
+              setFruitResults(null);
             }}
           />
         )}

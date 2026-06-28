@@ -56,9 +56,11 @@ interface Props {
   startedAt?: string;
   nivelMaximo?: number;
   rodadas?: RegistroRodada[];
+  onRepeat?: () => void;
+  onClose?: () => void;
 }
 
-export function MentalVaultEvaluationContainer({ sessionId: propSessionId, startedAt, nivelMaximo, rodadas }: Props) {
+export function MentalVaultEvaluationContainer({ sessionId: propSessionId, startedAt, nivelMaximo, rodadas, onRepeat, onClose }: Props) {
   const [searchParams] = useSearchParams();
   const sessionId = propSessionId ?? searchParams.get('sessionId') ?? '';
   const navigate = useNavigate();
@@ -121,8 +123,8 @@ export function MentalVaultEvaluationContainer({ sessionId: propSessionId, start
       <MentalVaultEvaluationScreen
         geminiReport={geminiReport}
         loaded={loaded}
-        onRepeat={() => navigate('/treinar/dividida/cofre-mental')}
-        onBackToStart={() => navigate('/treinar/dividida')}
+        onRepeat={onRepeat ?? (() => navigate('/treinar/dividida/cofre-mental'))}
+        onBackToStart={onClose ?? (() => navigate('/treinar/dividida'))}
       />
     </div>
   );

@@ -41,7 +41,7 @@ interface Props {
   onClose?: () => void;
 }
 
-export default function AcharOFaltandoPlay({ onClose: _onClose }: Props) {
+export default function AcharOFaltandoPlay({ onClose }: Props) {
   const config = DEFAULT_CONFIG;
 
   const [phase, setPhase] = useState<Phase>('instructions');
@@ -200,6 +200,7 @@ export default function AcharOFaltandoPlay({ onClose: _onClose }: Props) {
             setCompletedSessionId(null);
             setPhase('instructions');
           }}
+          onClose={onClose}
         />
       </div>
     );

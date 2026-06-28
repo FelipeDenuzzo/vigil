@@ -17,7 +17,7 @@ interface Props {
   onClose?: () => void;
 }
 
-const MentalVaultPlay: React.FC<Props> = () => {
+const MentalVaultPlay: React.FC<Props> = ({ onClose }) => {
   const [sessionId] = useState(() => uuidv4());
   const [completedLog, setCompletedLog] = useState<MentalVaultSessionLog | null>(null);
 
@@ -29,6 +29,10 @@ const MentalVaultPlay: React.FC<Props> = () => {
           startedAt={completedLog.startedAt}
           nivelMaximo={completedLog.nivelMaximo}
           rodadas={completedLog.rodadas}
+          onClose={onClose}
+          onRepeat={() => {
+            setCompletedLog(null);
+          }}
         />
       </div>
     );

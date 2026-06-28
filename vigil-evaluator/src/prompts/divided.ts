@@ -1,5 +1,6 @@
 import { Type } from '@google/genai';
 import type { DividedEvaluatorInput } from '../types';
+import { formatMsToSeconds } from './utils';
 
 export const DIVIDED_EVALUATION_SCHEMA = {
   type: Type.OBJECT,
@@ -116,7 +117,7 @@ Métricas globais:
   Precisão Serial:      ${((input.serialAccuracy as number) ?? 0) * 100}% (${input.accuracyNote ?? 'sem nota'})
   Precisão de Itens:    ${((input.itemAccuracy as number) ?? 0) * 100}%
   Omissões (Silêncio):  ${input.omissions ?? 0}
-  Tempo Médio de Resp:  ${input.meanResponseTimeMs ?? 0} ms
+  Tempo Médio de Resp:  ${formatMsToSeconds(input.meanResponseTimeMs as number)}
   Taxa de Intrusão:     ${((input.distractorIntrusionRate as number) ?? 0) * 100}% (${input.intrusionNote ?? 'sem nota'})
   Custo de Carga:       ${((input.loadCost as number) ?? 0) * 100}%
   Média Repetições:     ${input.avgReplayCount ?? 0}
@@ -186,8 +187,8 @@ Métricas globais:
   Precisão nos dígitos:     ${((input.avgDigitAccuracy as number) ?? 0) * 100}%
   Erros de comissão dígitos: ${input.totalCommissionErrors ?? 0}
   Omissões dígitos:         ${input.totalOmissions ?? 0}
-  Tempo reação dígitos:     ${input.avgDigitMeanRtMs ?? 0} ms
-  Índice Eficiência (IES):  ${input.avgDigitIes ?? 0} ms
+  Tempo reação dígitos:     ${formatMsToSeconds(input.avgDigitMeanRtMs as number)}
+  Índice Eficiência (IES):  ${formatMsToSeconds(input.avgDigitIes as number)}
 ───────────────────────────────────────────────────────────────────────────
 
 Gere o laudo com os dois campos de cada camada completamente preenchidos.

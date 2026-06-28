@@ -92,9 +92,11 @@ async function loadReportFromFirestore(sessionId: string): Promise<GeminiReport 
 interface Props {
   /** Passa o log diretamente quando vindo do jogo inline */
   sessionLog?: ColorShapeSessionLog;
+  onRepeat?: () => void;
+  onClose?: () => void;
 }
 
-export function ColorShapeEvaluationContainer({ sessionLog: logProp }: Props = {}) {
+export function ColorShapeEvaluationContainer({ sessionLog: logProp, onRepeat, onClose }: Props = {}) {
   const [searchParams] = useSearchParams();
   const sessionId = logProp?.sessionId ?? searchParams.get('sessionId') ?? '';
   const navigate = useNavigate();
@@ -159,8 +161,8 @@ export function ColorShapeEvaluationContainer({ sessionLog: logProp }: Props = {
       <ColorShapeEvaluationScreen
         geminiReport={geminiReport}
         loaded={loaded}
-        onRepeat={() => navigate('/treinar/alternada/color-shape')}
-        onBackToStart={() => navigate('/treinar/alternada')}
+        onRepeat={onRepeat ?? (() => navigate('/treinar/alternada/color-shape'))}
+        onBackToStart={onClose ?? (() => navigate('/treinar/alternada'))}
       />
     </div>
   );
