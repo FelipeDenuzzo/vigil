@@ -370,7 +370,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
           {curGroup === 'formiga' ? '🐜 Formigas' : '🐞 Joaninhas'}
         </span>
         {onClose && (
-          <button onClick={onClose} style={{ position: 'absolute', right: 16, background: 'none', border: 'none', cursor: 'pointer', color: '#a0a4be', fontSize: 22, lineHeight: 1, padding: 0 }} aria-label="Fechar">×</button>
+          <button onClick={onClose} style={{ position: 'absolute', right: 16, background: 'none', border: 'none', cursor: 'pointer', color: '#e8e9f0', fontSize: 24, lineHeight: 1, padding: 0 }} aria-label="Fechar">×</button>
         )}
       </div>
 
