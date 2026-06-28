@@ -429,6 +429,18 @@ Para garantir consistência na navegação e apresentação de cada modalidade d
    - *Padrão:* `<p style="color: rgb(255, 255, 255); margin-top: var(--space-2);">Esta modalidade treina sua capacidade de...</p>`
 5. **Prevenção de Duplicidade (Jogos Embutidos no Hub):** Se o treino for renderizado dentro da própria tela do Hub (sem navegar para uma rota de tela cheia separada), eventuais botões de "Voltar" internos do componente do jogo devem ser ocultados/retirados. A ação de sair do jogo embutido deve ser delegada exclusivamente ao Botão de Retorno do Hub (que fica do lado de fora) para evitar que a tela fique com botões de voltar duplicados.
 
+### Ortografia, Gramática e Legibilidade
+
+- É obrigatória a revisão ortográfica e gramatical cuidadosa de todos os textos apresentados ao usuário.
+- Nas telas de introdução e instruções dos treinos, deve-se usar estrategicamente quebras de linha (tags `<br />` ou múltiplos parágrafos) para criar espaçamento. **Não apresentar blocos densos de texto** que dificultem a leitura.
+
+### Navegação e Botões de Ação nos Treinos (Laudos)
+
+- **Desacoplamento de Rotas (onRepeat / onClose):** Componentes de avaliação (Ex: `InsetosEvaluationContainer`, `ColorShapeEvaluationContainer`) **não devem** invocar navegações estáticas diretas (como `useNavigate('/treinar/alternada')`) em seus botões de conclusão.
+- A responsabilidade de encerrar ou reiniciar o fluxo pertence ao componente orquestrador (`Hub` ou `Play`).
+- O botão **"Repetir o treino"** deve invocar uma prop `onRepeat` enviada pelo pai, permitindo que a sessão recomece localmente (reset de estado) sem redirecionamento abrupto de rota.
+- O botão **"Voltar ao início"** (ou "Voltar") deve invocar uma prop `onClose` ou `onBack` enviada pelo pai, que fará o unmount do jogo e exibirá novamente os cards de seleção no respectivo Hub.
+
 ---
 
 ### Checklist de conformidade — aplicar antes de criar qualquer novo artefato
