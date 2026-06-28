@@ -31,10 +31,10 @@ function SimInsect({
         width: 72, height: 72, borderRadius: '50%',
         border: alert ? `3px solid ${borderColor}` : '2px solid rgba(255,255,255,0.15)',
         background: alert
-          ? `rgba(${group === 'formiga' ? '249,115,22' : '239,68,68'},0.1)`
-          : 'rgba(255,255,255,0.05)',
+          ? `rgba(${group === 'formiga' ? '249,115,22' : '239,68,68'},0.2)`
+          : 'rgba(255,255,255,0.15)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: active ? 1 : 0.35,
+        opacity: active ? 1 : 0.6,
         animation: alert ? 'pulse 0.8s infinite alternate' : 'none',
       }}
     >
@@ -104,7 +104,7 @@ export default function InsetosSimulation({ onDone, onBack }: Props) {
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                  <Button variant="primary" onClick={() => setStep(2)} style={{ width: '100%' }}>
+                  <Button variant="primary" onClick={() => setStep('done')} style={{ width: '100%' }}>
                     Entendi, ver mais →
                   </Button>
                   <Button variant="ghost" onClick={onBack} style={{ width: '100%' }}>
@@ -115,50 +115,7 @@ export default function InsetosSimulation({ onDone, onBack }: Props) {
             </motion.div>
           )}
 
-          {/* ── STEP 2: Alternância de fases ── */}
-          {step === 2 && (
-            <motion.div key="step2"
-              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}
-            >
-              <Card style={{ padding: 'var(--space-6)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <span style={{ fontSize: '3rem' }}>🔄</span>
-                <h2 style={{ color: 'var(--color-primary)', fontSize: 'var(--text-lg)', fontWeight: 700, margin: 0 }}>
-                  Alternância de Fases
-                </h2>
-                <p style={{ color: '#fff', fontSize: 'var(--text-base)', lineHeight: 1.6, margin: '0 auto', maxWidth: 440 }}>
-                  O jogo tem <strong>6 fases de 30 segundos</strong> cada. A cada troca de fase, a borda da tela muda de cor
-                  {' '}(<span style={{ color: '#f97316' }}>laranja = formiga</span>, <span style={{ color: '#ef4444' }}>vermelho = joaninha</span>).
-                  Fique atento: o grupo ativo muda e você precisa alternar o foco rapidamente.
-                </p>
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  {[1,2,3,4,5,6].map(n => (
-                    <div key={n} style={{
-                      width: 44, height: 44, borderRadius: 8,
-                      background: n % 2 === 1 ? 'rgba(249,115,22,0.2)' : 'rgba(239,68,68,0.2)',
-                      border: `2px solid ${n % 2 === 1 ? '#f97316' : '#ef4444'}`,
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 10, color: '#fff', fontWeight: 700,
-                    }}>
-                      <span style={{ fontSize: 16 }}>{n % 2 === 1 ? '🐜' : '🐞'}</span>
-                      F{n}
-                    </div>
-                  ))}
-                </div>
-                <p style={{ color: '#a0a4be', fontSize: 13, margin: 0 }}>
-                  Fases ímpares = formigas ativas · Fases pares = joaninhas ativas
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                  <Button variant="primary" onClick={() => setStep('done')} style={{ width: '100%' }}>
-                    Pronto, iniciar treino →
-                  </Button>
-                  <Button variant="ghost" onClick={() => setStep(1)} style={{ width: '100%' }}>
-                    ← Voltar
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
-          )}
+
 
           {/* ── DONE ── */}
           {step === 'done' && (
@@ -171,7 +128,7 @@ export default function InsetosSimulation({ onDone, onBack }: Props) {
                 <h2 style={{ margin: 0, color: 'var(--color-primary)', fontSize: 'var(--text-lg)', fontWeight: 700 }}>
                   Pronto!
                 </h2>
-                <p style={{ color: '#fff', fontSize: 14, lineHeight: 1.6, marginBottom: 8 }}>
+                <p style={{ color: '#fff', fontSize: 14, lineHeight: 1.6, marginBottom: 8, textAlign: 'center', margin: '0 auto' }}>
                   Lembre-se: toque <em>apenas</em> nos insetos do grupo ativo quando eles pararem e piscarem. Velocidade e precisão contam!
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
