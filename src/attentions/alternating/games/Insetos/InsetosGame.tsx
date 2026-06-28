@@ -116,8 +116,6 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
 
   const [phase, setPhase]       = useState(0);
   const [done, setDone]         = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [score, setScore]       = useState(0);
 
   useEffect(() => {
     const srcs = [
@@ -197,7 +195,6 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
 
     /* ─ Fase ─ */
     const remaining = phaseDurMs.current - (nowMs - phaseStartMs.current);
-    setTimeLeft(Math.max(0, remaining));
 
     if (remaining <= 0) {
       const next = curPhase + 1;
@@ -338,7 +335,6 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
           phase: curPhase, activeGroup: group,
           rt: nowMs - ins.alertStartMs, isPostSwitch: isPost, alertState: 1 });
         scoreRef.current += 1;
-        setScore(scoreRef.current);
       } else {
         eventsRef.current.push({ type: 'commission_error',
           timestamp: nowMs, phase: curPhase, activeGroup: group });
