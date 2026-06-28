@@ -54,6 +54,7 @@ Toda nova avaliação ou treino deve seguir os mesmos padrões arquiteturais est
 | **VisualSearchHunt** (Caça ao Alvo) | Seletiva | `src/attentions/selective/games/VisualSearchHunt/VisualSearchHunt.tsx` |
 | **AcharOFaltando** (Achar o Faltando) | Seletiva | `src/attentions/selective/games/AcharOFaltando/AcharOFaltandoPlay.tsx` |
 | **SelectiveListening** (Escuta Seletiva) | Dividida | `src/attentions/divided/games/SelectiveListening/SelectiveListening.tsx` |
+| **SalaDeVigilia** (Sala de Vigília) | Sustentada | `src/attentions/sustained/games/SalaDeVigilia/SalaDeVigilia.tsx` |
 
 **Estrutura de pastas por tipo de atenção (já existem no repositório):**
 
@@ -146,7 +147,7 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 | Arquivo | Status | Link |
 |---|---|---|
 | `selective.ts` | ✅ Implementado | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/selective.ts) |
-| `sustained.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/sustained.ts) |
+| `sustained.ts` | 🔲 Esqueleto preenchido — aguarda faixas científicas em ScaleDefinitions | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/sustained.ts) |
 | `alternating.ts` | ✅ Implementado | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/alternating.ts) |
 | `divided.ts` | 🔲 Esqueleto — a preencher | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/divided.ts) |
 | `onboarding.ts`| ✅ Implementado (Backend processa 0-100) | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/vigil-evaluator/src/prompts/onboarding.ts) |
