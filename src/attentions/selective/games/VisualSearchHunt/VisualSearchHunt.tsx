@@ -1,7 +1,7 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchHunt.tsx
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// useNavigate removed
 import { Button } from '../../../../shared/components/Button';
 import { Card } from '../../../../shared/components/Card';
 import type { GameResult } from '../../../../shared/types';
@@ -54,7 +54,7 @@ type RoundResult = {
 type VisualSearchHuntProps = {
   onCorrectSound?: () => void;
   onErrorSound?: () => void;
-  onEnd?: (result: GameResult) => void;
+  onEnd?: (result: GameResult, sessionId: string) => void;
 };
 
 const SHAPES: Shape[] = ['circle', 'square', 'triangle'];
@@ -638,7 +638,6 @@ export default function VisualSearchHunt({
   onErrorSound,
   onEnd,
 }: VisualSearchHuntProps) {
-  const navigate = useNavigate();
 
   const [level, setLevel] = useState(1);
   const [roundIndex, setRoundIndex] = useState(1);
@@ -781,9 +780,8 @@ export default function VisualSearchHunt({
       }
       saveResult(gameResult, uidRef.current);
     } catch (e) {}
-    onEnd?.(gameResult);
-    navigate(`/treinar/seletiva/visual-search/resultado?sessionId=${sessionId}`);
-  }, [roundIndex, level, onEnd, navigate]);
+    onEnd?.(gameResult, sessionId);
+  }, [roundIndex, level, onEnd]);
 
   const finishRound = useCallback(
     (resultStatus: 'won' | 'lost') => {

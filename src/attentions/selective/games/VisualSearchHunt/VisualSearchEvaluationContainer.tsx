@@ -1,7 +1,7 @@
 // src/attentions/selective/games/VisualSearchHunt/VisualSearchEvaluationContainer.tsx
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+// react-router-dom removed
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import db from '../../../../lib/firebase';
 import { auth } from '../../../../lib/firebase';
@@ -12,6 +12,11 @@ import { VisualSearchEvaluationScreen } from './VisualSearchEvaluationScreen';
 import type { EvaluationReport as GeminiReport } from '../../../../lib/evaluatorClient';
 
 type LoadedState = false | 'organizing' | true;
+
+interface Props {
+  sessionId: string;
+  onRepeat?: () => void;
+}
 
 const RETRYABLE_CODES = new Set(['unavailable', 'permission-denied', 'resource-exhausted']);
 
@@ -67,10 +72,7 @@ async function loadReportFromFirestore(
   }
 }
 
-export function VisualSearchEvaluationContainer() {
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('sessionId') || '';
-  const navigate = useNavigate();
+export function VisualSearchEvaluationContainer({ sessionId, onRepeat }: Props) {
   const sessionLog = getSessionById(sessionId);
 
   const [evaluation,   setEvaluation]   = useState<InternalReport | null>(null);
@@ -164,8 +166,8 @@ export function VisualSearchEvaluationContainer() {
         sessionLog={sessionLogMapped}
         geminiReport={geminiReport ?? evaluation?.geminiReport}
         loaded={loaded}
-        onRepeatTraining={() => navigate('/treinar/seletiva/visual-search')}
-        onBackToStart={() => navigate('/treinar/seletiva')}
+        onRepeatTraining={onRepeat ?? (() => {})}
+        onBackToStart={() => {}}
       />
     </div>
   );

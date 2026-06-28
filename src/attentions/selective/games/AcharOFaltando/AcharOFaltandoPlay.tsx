@@ -1,6 +1,6 @@
 // src/attentions/selective/games/AcharOFaltando/AcharOFaltandoPlay.tsx
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// removed useNavigate
 import { generateRound, buildRoundResult } from './logic';
 import type {
   MissingItemConfig,
@@ -11,6 +11,7 @@ import { saveSession } from '../../../../shared/storage';
 import { auth } from '../../../../lib/firebase';
 import AcharOFaltandoSimulation from './AcharOFaltandoSimulation';
 import { useScaleToFit } from '../../../../hooks/useScaleToFit';
+import AcharOFaltandoEvaluationContainer from './AcharOFaltandoEvaluationContainer';
 
 const DEFAULT_CONFIG: MissingItemConfig = {
   presentationMode: 'side-by-side',
@@ -36,11 +37,15 @@ const isSymbol = (item: string) => /^\d+$/.test(item) && Number(item) >= 18 && N
 
 type Phase = 'instructions' | 'simulation' | 'playing' | 'feedback' | 'finished';
 
-export default function AcharOFaltandoPlay() {
-  const navigate = useNavigate();
+interface Props {
+  onClose?: () => void;
+}
+
+export default function AcharOFaltandoPlay({ onClose: _onClose }: Props) {
   const config = DEFAULT_CONFIG;
 
   const [phase, setPhase] = useState<Phase>('instructions');
+  const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
   const [currentRound, setCurrentRound] = useState<MissingItemRound | null>(null);
   const [roundNumber, setRoundNumber] = useState(1);
   const [results, setResults] = useState<MissingItemRoundResult[]>([]);
@@ -183,27 +188,26 @@ export default function AcharOFaltandoPlay() {
     );
 
     setPhase('finished');
-    navigate(`/treinar/seletiva/achar-o-faltando/resultado?sessionId=${sessionId}`);
+    setCompletedSessionId(sessionId);
+  }
+
+  if (completedSessionId) {
+    return (
+      <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
+        <AcharOFaltandoEvaluationContainer
+          sessionId={completedSessionId}
+          onRepeat={() => {
+            setCompletedSessionId(null);
+            setPhase('instructions');
+          }}
+        />
+      </div>
+    );
   }
 
   if (phase === 'instructions') {
     return (
       <div style={{ maxWidth: 560, margin: '0 auto', padding: '40px 24px' }}>
-        <button
-          onClick={() => navigate('/treinar/seletiva')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#ffffff',
-            cursor: 'pointer',
-            fontSize: 14,
-            marginBottom: 'var(--space-8)',
-            padding: 0,
-            display: 'block',
-          }}
-        >
-          ← Voltar
-        </button>
         <div style={{ textAlign: 'center' }}>
           <h1 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>🔎 Achar o Diferente</h1>
           <p style={{ color: '#fff', lineHeight: 1.7, marginBottom: 'var(--space-6)' }}>
@@ -313,13 +317,7 @@ export default function AcharOFaltandoPlay() {
         transition: 'transform 0.2s ease-out',
         width: '100%',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <button
-            onClick={() => navigate('/treinar/seletiva')}
-            style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: 14 }}
-          >
-            ← Voltar
-          </button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
           <div style={{ display: 'flex', gap: 24, fontSize: 'var(--text-sm)', color: '#ffffff' }}>
             <span>Rodada {roundNumber}/{config.roundLimit}</span>
             <span>⏱ {formatSec(remainingSec)}</span>

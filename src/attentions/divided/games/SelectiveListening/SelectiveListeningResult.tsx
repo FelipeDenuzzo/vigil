@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+// react-router-dom removed
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import db, { auth } from '../../../../lib/firebase';
 import { useSelectiveListeningEvaluation } from './useSelectiveListeningEvaluation';
@@ -11,6 +11,12 @@ import { calculateSelectiveListeningMetrics } from '../../../../assessment/selec
 import { buildSelectiveListeningScaleResult } from '../../../../assessment/selectiveListening/buildSelectiveListeningScaleResult';
 
 type LoadedState = false | 'organizing' | true;
+
+interface Props {
+  sessionId: string;
+  rodadas?: TentativaRodada[];
+  onRepeat?: () => void;
+}
 
 const RETRYABLE_CODES = new Set(['unavailable', 'permission-denied', 'resource-exhausted']);
 
@@ -111,18 +117,13 @@ const s = {
   } as const,
 };
 
-export function SelectiveListeningResult() {
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('sessionId') ?? '';
-  const navigate = useNavigate();
-  const location = useLocation();
-
+export function SelectiveListeningResult({ sessionId, rodadas, onRepeat }: Props) {
   const [geminiReport, setGeminiReport] = useState<GeminiReport | undefined>(undefined);
   const [loaded, setLoaded] = useState<LoadedState>(false);
   const [localRounds, setLocalRounds] = useState<TentativaRodada[]>([]);
 
-  // Carrega rodadas do state de navegação caso o usuário acabe de finalizar o jogo
-  const stateRounds = location.state?.rodadas as TentativaRodada[] | undefined;
+  // Carrega rodadas do props caso o usuário acabe de finalizar o jogo
+  const stateRounds = rodadas;
 
   useEffect(() => {
     if (!sessionId) return;
@@ -271,20 +272,15 @@ export function SelectiveListeningResult() {
       <section style={s.section}>
         <h3 style={s.sectionTitle}>Próximos passos</h3>
         <div style={s.actions}>
-          <button
-            type="button"
-            onClick={() => navigate('/treinar/dividida/escuta-seletiva')}
-            style={s.primaryButton}
-          >
-            Repetir o treino
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/treinar/dividida')}
-            style={s.secondaryButton}
-          >
-            Voltar ao começo
-          </button>
+          {onRepeat && (
+            <button
+              type="button"
+              onClick={onRepeat}
+              style={s.primaryButton}
+            >
+              Repetir o treino
+            </button>
+          )}
         </div>
         <p style={s.helperText}>Mais modos de treino estarão disponíveis em breve.</p>
       </section>
