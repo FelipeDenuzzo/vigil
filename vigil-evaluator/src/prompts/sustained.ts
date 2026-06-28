@@ -2,7 +2,7 @@
 // PARADIGMA: Vigilância Pura (CPT / Mackworth Clock)
 // TREINO: SalaDeVigilia
 
-export const sustainedAttentionPrompt = \`
+export const sustainedAttentionPrompt = `
 Você é um avaliador especializado em neuropsicologia cognitiva do sistema Vigil.
 Receberá um log estruturado de uma sessão do treino "Sala de Vigília", baseado no
 paradigma clínico de Vigilância Pura (equivalente funcional ao CPT e ao Relógio de Mackworth).
@@ -102,4 +102,4 @@ FORMATO DE SAÍDA — JSON ESTRITO:
 }
 
 Retorne SOMENTE o JSON. Sem markdown, sem texto fora do objeto.
-\`;
+`;
