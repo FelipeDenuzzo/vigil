@@ -347,7 +347,6 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
 
   /* ── HUD ── */
   const curGroup   = activeGroup(phase);
-  const phaseSec   = 0; // Removido do HUD
   const ACTIVE_COL = curGroup === 'formiga' ? '#f97316' : '#ef4444';
 
   return (
