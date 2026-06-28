@@ -62,7 +62,6 @@ export const SustainedHub: React.FC = () => {
         {activeGame === 'long-mazes' && (
           <div style={{ height: '600px' }}>
             <LabirintosProlongadosGame
-              onClose={() => setActiveGame(null)}
               onComplete={handleLongMazesComplete}
             />
           </div>
@@ -71,7 +70,6 @@ export const SustainedHub: React.FC = () => {
         {activeGame === 'fruit-watch' && (
           <div style={{ minHeight: '600px', width: '100%' }}>
             <FruitWatchGame
-              onClose={() => setActiveGame(null)}
               onComplete={handleFruitWatchComplete}
             />
           </div>
@@ -85,10 +83,6 @@ export const SustainedHub: React.FC = () => {
               setSessionLog(null);
               setActiveGame('long-mazes');
             }}
-            onBack={() => {
-              setSessionLog(null);
-              setActiveGame(null);
-            }}
           />
         )}
 
@@ -99,10 +93,6 @@ export const SustainedHub: React.FC = () => {
             onRepeat={() => {
               setFruitResults(null);
               setActiveGame('fruit-watch');
-            }}
-            onBack={() => {
-              setFruitResults(null);
-              setActiveGame(null);
             }}
           />
         )}
