@@ -274,7 +274,8 @@ Para neutralizar variáveis que possam distorcer as métricas cognitivas reais d
 5. **Cada treino tem seu próprio avaliador interno** — as métricas são específicas de cada treino.
 6. **Cada tipo de atenção tem um único prompt do Gemini** — compartilhado por todos os treinos daquele tipo.
 7. **As diretrizes científicas** (faixas de normalidade, valores de corte) ficam exclusivamente no Artefato 2, codificadas com base em artigos científicos definidos pelo responsável do produto.
-8. **O avaliador determinístico** (`vigil-evaluator/src/evaluators/visualSearch.ts`) está preservado e não deve ser removido — serve como fallback e referência futura.
+8. **Formatação de Métricas de Tempo (Latência):** Para evitar confusões de grandeza e melhorar a performance analítica da IA (Gemini), as métricas de tempo de reação e latência devem ser convertidas de milissegundos (`ms`) para segundos em formato decimal (`0.xx s` ou `X s`) **antes** de serem inseridas no payload do prompt. Não utilizar escalas na casa dos milhares (ex: 13113 ms) nas orientações do LLM.
+9. **O avaliador determinístico** (`vigil-evaluator/src/evaluators/visualSearch.ts`) está preservado e não deve ser removido — serve como fallback e referência futura.
 
 ---
 
@@ -428,6 +429,10 @@ Para garantir consistência na navegação e apresentação de cada modalidade d
 4. **Descrição da Modalidade:** Breve parágrafo explicativo logo abaixo do título, na cor branca.
    - *Padrão:* `<p style="color: rgb(255, 255, 255); margin-top: var(--space-2);">Esta modalidade treina sua capacidade de...</p>`
 5. **Prevenção de Duplicidade (Jogos Embutidos no Hub):** Se o treino for renderizado dentro da própria tela do Hub (sem navegar para uma rota de tela cheia separada), eventuais botões de "Voltar" internos do componente do jogo devem ser ocultados/retirados. A ação de sair do jogo embutido deve ser delegada exclusivamente ao Botão de Retorno do Hub (que fica do lado de fora) para evitar que a tela fique com botões de voltar duplicados.
+
+### Layout e Componentes de Carregamento (Loaders)
+
+- **Prevenção de Layout Shift (CLS):** Ao renderizar componentes que dependem de dados assíncronos (como o Gráfico Radar da Teia de Atenção), o contêiner deve possuir altura/largura mínimas pré-reservadas (ex: `minHeight`). Isso impede que o carregamento do componente empurre os botões e outros elementos da tela para baixo de forma abrupta, prejudicando a experiência do usuário. Sempre que possível, exiba um esqueleto ou spinner (loader) no espaço reservado enquanto os dados carregam.
 
 ### Ortografia, Gramática e Legibilidade
 
