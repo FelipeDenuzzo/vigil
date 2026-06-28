@@ -25,6 +25,8 @@ export interface Insect {
   /** frame de animação de saída (0 = normal) */
   collisionFrame: number;
   collisionStartMs: number;
+  /** previne colisões imediatas após se soltarem */
+  cooldownMs: number;
 }
 
 export type GamePhase = 'instructions' | 'playing' | 'done';
