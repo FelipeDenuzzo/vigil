@@ -1,6 +1,6 @@
 // src/attentions/selective/games/AcharOFaltando/AcharOFaltandoEvaluationContainer.tsx
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+// react-router-dom removed
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import db, { auth } from '../../../../lib/firebase';
 import { getSessionById } from '../../../../shared/storage';
@@ -13,6 +13,11 @@ import type { EvaluationReport as GeminiReport } from '../../../../lib/evaluator
 import AcharOFaltandoReportPanel from './AcharOFaltandoReportPanel';
 
 type LoadedState = false | 'organizing' | true;
+
+interface Props {
+  sessionId: string;
+  onRepeat?: () => void;
+}
 
 const RETRYABLE_CODES = new Set(['unavailable', 'permission-denied', 'resource-exhausted']);
 
@@ -68,10 +73,7 @@ async function loadReportFromFirestore(
   }
 }
 
-export default function AcharOFaltandoEvaluationContainer() {
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('sessionId') || '';
-  const navigate = useNavigate();
+export default function AcharOFaltandoEvaluationContainer({ sessionId, onRepeat }: Props) {
   const sessionLog = getSessionById(sessionId);
 
   const [metrics, setMetrics] = useState<AcharOFaltandoMetrics | null>(null);
@@ -145,7 +147,6 @@ export default function AcharOFaltandoEvaluationContainer() {
     return (
       <div style={{ maxWidth: 920, margin: '0 auto', padding: 16, textAlign: 'center' }}>
         <p style={{ color: '#ffffff' }}>Sessão não encontrada.</p>
-        <button onClick={() => navigate('/treinar/seletiva')} style={{ marginTop: 16, cursor: 'pointer' }}>Voltar</button>
       </div>
     );
   }
@@ -158,8 +159,8 @@ export default function AcharOFaltandoEvaluationContainer() {
         geminiReport={geminiReport}
 
         loaded={loaded === true}
-        onRepeat={() => navigate('/treinar/seletiva/achar-o-faltando')}
-        onBack={() => navigate('/treinar/seletiva')}
+        onRepeat={onRepeat ?? (() => {})}
+        onBack={() => {}}
       />
     </div>
   );

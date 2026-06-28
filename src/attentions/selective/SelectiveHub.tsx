@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../shared/components/Button';
 import { Card } from '../../shared/components/Card';
 import VisualSearchHunt from './games/VisualSearchHunt/VisualSearchHunt';
+import AcharOFaltandoPlay from './games/AcharOFaltando/AcharOFaltandoPlay';
 import type { GameResult } from '../../shared/types';
 
-type ActiveGame = 'visual-search-hunt' | null;
+type ActiveGame = 'visual-search-hunt' | 'achar-o-faltando' | null;
 
 export const SelectiveHub: React.FC = () => {
   const navigate = useNavigate();
@@ -48,6 +49,8 @@ export const SelectiveHub: React.FC = () => {
       <section>
         {activeGame === 'visual-search-hunt' ? (
           <VisualSearchHunt onEnd={handleEnd} />
+        ) : activeGame === 'achar-o-faltando' ? (
+          <AcharOFaltandoPlay onClose={() => setActiveGame(null)} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             <div
@@ -85,7 +88,7 @@ export const SelectiveHub: React.FC = () => {
               <Card
                 interactive
                 accent="var(--color-selective)"
-                onClick={() => navigate('/treinar/seletiva/achar-o-faltando')}
+                onClick={() => setActiveGame('achar-o-faltando')}
               >
                 <p
                   style={{
