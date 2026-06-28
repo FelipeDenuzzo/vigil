@@ -21,7 +21,7 @@ const SPEED_RAMP        = 8;
 const TURN_MIN          = 1500;
 const TURN_MAX          = 3200;
 const COLLISION_PX      = 36;
-const ALERT_MS          = 2800;
+const ALERT_MS          = 2500;
 const INSECT_SIZE       = 36;
 const HIT_RADIUS        = 28;
 const MARGIN            = 28;
@@ -141,11 +141,14 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
     for (const ins of insects) {
       if (ins.frozen) {
         if (ins.alertStartMs > 0 && nowMs - ins.alertStartMs > ALERT_MS) {
+          const partner = insects.find(o => o !== ins && o.frozen && o.alertStartMs === ins.alertStartMs);
+          
           eventsRef.current.push({
             type: 'omission', timestamp: ins.alertStartMs,
             phase: curPhase, activeGroup: group, alertState: 1,
           });
           resumeInsect(ins, nowMs, speed);
+          if (partner) resumeInsect(partner, nowMs, speed);
         }
         continue;
       }
@@ -340,7 +343,12 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
           phase: curPhase, activeGroup: group,
         });
       }
+      
+      // Libera o clicado e o parceiro da colisão
       resumeInsect(ins, nowMs, speed);
+      const partner = insectsRef.current.find(o => o !== ins && o.frozen && o.alertStartMs === ins.alertStartMs);
+      if (partner) resumeInsect(partner, nowMs, speed);
+      
       break;
     }
   }, [done, ARENA]); // eslint-disable-line
