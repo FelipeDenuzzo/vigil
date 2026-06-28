@@ -1,4 +1,3 @@
-import { SalaDeVigiliaMetrics } from './types';
 
 // TODO: A equipe científica deve preencher estas faixas de corte
 // com base nos artigos de referência do paradigma CPT / Mackworth Clock.
