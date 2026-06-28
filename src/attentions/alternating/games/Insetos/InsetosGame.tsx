@@ -59,6 +59,7 @@ function makeInsect(id: string, group: InsectGroup, W: number, H: number, nowMs:
     alertStartMs: 0,
     collisionFrame: 0,
     collisionStartMs: 0,
+    cooldownMs: 0,
   };
 }
 
@@ -81,6 +82,7 @@ function resumeInsect(ins: Insect, nowMs: number, speed: number) {
   ins.speed          = speed;
   ins.nextTurnMs     = nowMs + rTurn();
   ins.collisionFrame = 0;
+  ins.cooldownMs     = nowMs + 1000;
 }
 
 function releasePair(ins: Insect, insects: Insect[], nowMs: number, speed: number) {
@@ -184,6 +186,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
       for (let b = a + 1; b < moving.length; b++) {
         const ia = moving[a], ib = moving[b];
         if (ia.group !== ib.group) continue; // grupos diferentes: passam por cima
+        if (nowMs < ia.cooldownMs || nowMs < ib.cooldownMs) continue; // evita colisão dupla imediata
         const dx = ia.x - ib.x, dy = ia.y - ib.y;
         if (Math.sqrt(dx * dx + dy * dy) < COLLISION_PX) {
           ia.frozen = true; ia.alertStartMs = nowMs;
@@ -351,23 +354,17 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
   const ACTIVE_COL = curGroup === 'formiga' ? '#f97316' : '#ef4444';
 
   return (
-    <div style={{ maxWidth: 520, margin: '0 auto', fontFamily: 'Inter, sans-serif', userSelect: 'none' }}>
+    <div style={{ maxWidth: ARENA, margin: '0 auto', fontFamily: 'Inter, sans-serif', userSelect: 'none' }}>
       <div style={{
         display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative',
         padding: '12px 14px', background: 'rgba(0,0,0,0.6)', borderRadius: '12px 12px 0 0',
       }}>
-        <div style={{ position: 'absolute', left: 16, color: '#e8e9f0', fontSize: 14, fontWeight: 600 }}>
-          {Math.ceil(timeLeft / 1000)}s
-        </div>
         <span style={{
           fontSize: 14, fontWeight: 700, padding: '4px 12px', borderRadius: 99,
           background: ACTIVE_COL + '22', color: ACTIVE_COL, border: `1px solid ${ACTIVE_COL}`,
         }}>
           {curGroup === 'formiga' ? '🐜 Formigas' : '🐞 Joaninhas'}
         </span>
-        <div style={{ position: 'absolute', right: 48, color: '#e8e9f0', fontSize: 14, fontWeight: 600 }}>
-          ⭐ {score}
-        </div>
         {onClose && (
           <button onClick={onClose} style={{ position: 'absolute', right: 16, background: 'none', border: 'none', cursor: 'pointer', color: '#e8e9f0', fontSize: 24, lineHeight: 1, padding: 0 }} aria-label="Fechar">×</button>
         )}

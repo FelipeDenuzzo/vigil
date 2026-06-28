@@ -11,7 +11,9 @@ import FruitWatchGame from './games/FruitWatch/FruitWatchGame';
 import { FruitWatchEvaluationContainer } from './games/FruitWatch/FruitWatchEvaluationContainer';
 import type { PhaseRawResult } from './games/FruitWatch/types';
 
-type ActiveGame = 'long-mazes' | 'fruit-watch' | 'result-long-mazes' | 'result-fruit-watch' | null;
+import { SalaDeVigilia } from './games/SalaDeVigilia/SalaDeVigilia';
+
+type ActiveGame = 'long-mazes' | 'fruit-watch' | 'sala-de-vigilia' | 'result-long-mazes' | 'result-fruit-watch' | null;
 
 const ENABLE_LONG_MAZES = true;
 
@@ -75,6 +77,15 @@ export const SustainedHub: React.FC = () => {
           </div>
         )}
 
+        {activeGame === 'sala-de-vigilia' && (
+          <div style={{ height: '600px' }}>
+            <SalaDeVigilia
+              onClose={() => setActiveGame(null)}
+              onRepeat={() => setActiveGame('sala-de-vigilia')}
+            />
+          </div>
+        )}
+
         {activeGame === 'result-long-mazes' && sessionLog && (
           <LongMazesEvaluationContainer
             log={sessionLog}
@@ -133,6 +144,19 @@ export const SustainedHub: React.FC = () => {
                 </p>
                 <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff' }}>
                   Realize uma contagem mental silenciosa de figuras-alvo e teste sua estabilidade e resistência atencional.
+                </p>
+              </Card>
+
+              <Card
+                interactive
+                accent="var(--color-sustained)"
+                onClick={() => setActiveGame('sala-de-vigilia')}
+              >
+                <p style={{ fontSize: 'var(--text-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
+                  🕰️ Sala de Vigília
+                </p>
+                <p style={{ fontSize: 'var(--text-sm)', color: '#ffffff' }}>
+                  Treino clássico de vigilância para testar a sua capacidade de manter o foco em tarefas monótonas e repetitivas.
                 </p>
               </Card>
             </div>
