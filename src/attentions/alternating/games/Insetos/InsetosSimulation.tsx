@@ -82,8 +82,8 @@ export default function InsetosSimulation({ onDone, onBack }: Props) {
                   Formigas e Joaninhas
                 </h2>
                 <p style={{ color: '#fff', fontSize: 'var(--text-base)', lineHeight: 1.6, margin: '0 auto', maxWidth: 420 }}>
-                  Insetos se movem pela tela em dois grupos: <strong>formigas</strong> e <strong>joaninhas</strong>.
-                  A cada fase, apenas <strong>um grupo está ativo</strong>. Você deve tocar <em>somente</em> nos insetos do grupo ativo quando eles <strong>piscarem e pararem</strong> — esse é o estado de <em>alerta</em>.
+                  Insetos se movem pela tela em dois grupos: <strong>formigas</strong> e <strong>joaninhas</strong>.<br />
+                  A cada fase, apenas <strong>um grupo está ativo</strong>. Você deve tocar <em>somente</em> nos insetos do grupo ativo<br />quando eles <strong>piscarem e pararem</strong> — esse é o estado de <em>alerta</em>.
                 </p>
                 <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap' }}>
                   <div style={{ textAlign: 'center' }}>
@@ -129,7 +129,7 @@ export default function InsetosSimulation({ onDone, onBack }: Props) {
                   Pronto!
                 </h2>
                 <p style={{ color: '#fff', fontSize: 14, lineHeight: 1.6, marginBottom: 8, textAlign: 'center', margin: '0 auto' }}>
-                  Lembre-se: toque <em>apenas</em> nos insetos do grupo ativo quando eles pararem e piscarem. Velocidade e precisão contam!
+                  Lembre-se: toque <em>apenas</em> nos insetos do grupo ativo<br />quando eles pararem e piscarem. Velocidade e precisão contam!
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
                   <Button variant="primary" onClick={onDone} style={{ width: '100%', fontSize: 15 }}>

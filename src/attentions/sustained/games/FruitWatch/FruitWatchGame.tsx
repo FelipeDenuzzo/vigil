@@ -224,11 +224,11 @@ function SimulationScreen({ onDone, onClose }: { onDone: () => void; onClose?: (
   const steps = [
     {
       title: 'Contagem Mental Silenciosa',
-      text: 'Você treinará sua Atenção Sustentada. Uma figura-alvo será exibida antes de começar. Conte mentalmente quantas vezes ela aparece na tela.',
+      text: <>Você treinará sua Atenção Sustentada.<br />Uma figura-alvo será exibida antes de começar.<br />Conte mentalmente quantas vezes ela aparece na tela.</>,
     },
     {
       title: 'Apenas Observe',
-      text: 'Não toque na tela enquanto os objetos estiverem voando. Guarde a contagem em silêncio.',
+      text: <>Não toque na tela enquanto os objetos estiverem voando.<br />Guarde a contagem em silêncio.</>,
     },
     {
       title: 'Guarde na Memória',

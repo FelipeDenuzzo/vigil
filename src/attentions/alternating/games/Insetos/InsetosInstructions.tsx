@@ -89,7 +89,8 @@ export const InsetosInstructions: React.FC<Props> = ({ onStart, onBack }) => (
     <div style={s.card}>
       <p style={s.title}>🐜🐞 Insetos em Alerta</p>
       <p style={s.subtitle}>
-        Treine sua atenção alternada — mude de foco rapidamente entre grupos de insetos!
+        Treine sua atenção alternada — <br />
+        mude de foco rapidamente entre grupos de insetos!
       </p>
     </div>
 

@@ -211,7 +211,7 @@ export default function AcharOFaltandoPlay({ onClose: _onClose }: Props) {
         <div style={{ textAlign: 'center' }}>
           <h1 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>🔎 Achar o Diferente</h1>
           <p style={{ color: '#fff', lineHeight: 1.7, marginBottom: 'var(--space-6)' }}>
-            Compare duas imagens quase idênticas e encontre o item que está diferente antes que o tempo acabe.
+            Compare duas imagens quase idênticas e encontre o item<br />que está diferente antes que o tempo acabe.
           </p>
           <button
             onClick={() => setPhase('simulation')}

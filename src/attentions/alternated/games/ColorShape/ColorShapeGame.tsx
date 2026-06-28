@@ -100,8 +100,8 @@ function Instructions({ onStart }: { onStart: () => void }) {
     <div style={{ ...css.screen, justifyContent: 'flex-start', paddingTop: 24 }}>
       <p style={css.title}>Cor ou Forma</p>
       <p style={{ ...css.sub, maxWidth: 320, textAlign: 'center', lineHeight: 1.7 }}>
-        Você verá figuras coloridas na tela.
-        Em cada figura, uma pergunta aparecerá indicando o que deve responder.
+        Você verá figuras coloridas na tela.<br />
+        Em cada figura, uma pergunta aparecerá indicando o que deve responder.<br />
         Use os botões para dar sua resposta.
       </p>
       <button style={css.primaryBtn} onClick={onStart}>Iniciar</button>

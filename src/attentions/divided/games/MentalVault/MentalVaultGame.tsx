@@ -159,7 +159,8 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
               🔐 Cofre Mental
             </h2>
             <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', textAlign: 'center', fontSize: '15px', lineHeight: '1.7' }}>
-              Guarde uma sequência de letras e classifique os números que aparecem na tela. No final, digite as letras na mesma ordem para abrir o cofre.
+              Guarde uma sequência de letras e classifique os números que aparecem na tela.<br />
+              No final, digite as letras na mesma ordem para abrir o cofre.
             </p>
             <Button
               variant="primary"

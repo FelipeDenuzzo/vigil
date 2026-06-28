@@ -79,7 +79,7 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
                 Como funciona o treino
               </h2>
               <p style={{ color: '#fff', fontSize: 'var(--text-base)', lineHeight: '1.6', margin: '0 auto', maxWidth: '400px' }}>
-                Sua tarefa é comparar dois conjuntos de símbolos e encontrar o único elemento que está diferente entre eles.
+                Sua tarefa é comparar dois conjuntos de símbolos<br />e encontrar o único elemento que está diferente entre eles.
               </p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
@@ -117,7 +117,7 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
                   Encontre a diferença!
                 </h3>
                 <p style={{ color: '#fff', fontSize: '13px', marginTop: '4px' }}>
-                  Compare a Imagem A com a Imagem B. Clique na célula diferente na **Imagem B**.
+                  Compare a Imagem A com a Imagem B.<br />Clique na célula diferente na **Imagem B**.
                 </p>
               </div>
 

@@ -239,7 +239,7 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
     <div style={{ ...css.screen, justifyContent: 'flex-start', paddingTop: 24 }}>
       <p style={css.title}>🧩 Labirintos</p>
       <p style={css.sub}>Treino de atenção sustentada — Fase {levelIdx + 1} de {LONG_MAZE_LEVELS.length}</p>
-      <p style={css.hint}>Clique com o mouse nas setas ao lado do labirinto para se mover</p>
+      <p style={css.hint}>Clique com o mouse nas setas<br />ao lado do labirinto para se mover</p>
       <button style={css.primaryBtn} onClick={startGame}>Iniciar Fase {levelIdx + 1}</button>
       {onClose && <button style={css.ghostBtn} onClick={onClose}>Voltar</button>}
     </div>
@@ -249,7 +249,7 @@ export const LabirintosProlongadosGame: React.FC<Props> = ({ onComplete, onClose
     <div style={css.screen}>
       <p style={{ fontSize: 36 }}>⚠️</p>
       <p style={css.title}>Abandonar treino?</p>
-      <p style={{ ...css.sub, textAlign: 'center', maxWidth: 280 }}>Se sair agora, o progresso desta sessão não será salvo.</p>
+      <p style={{ ...css.sub, textAlign: 'center', maxWidth: 280 }}>Se sair agora, o progresso<br />desta sessão não será salvo.</p>
       <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
         <button style={css.primaryBtn} onClick={() => setPhase('playing')}>Continuar</button>
         <button style={css.ghostBtn} onClick={handleAbandonConfirm}>Sair mesmo assim</button>
