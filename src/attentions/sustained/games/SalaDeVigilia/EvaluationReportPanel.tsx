@@ -65,9 +65,9 @@ export const EvaluationReportPanel: React.FC<EvaluationReportPanelProps> = ({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
             <MetricCard label="Omissões" value={metrics.omissions} severity={scaleResult.omissionSeverity} />
             <MetricCard label="Comissões (Falso Alarme)" value={metrics.commissions} severity={scaleResult.commissionSeverity} />
-            <MetricCard label="Tempo Médio (RT)" value={\`\${Math.round(metrics.meanRT)} ms\`} />
-            <MetricCard label="Desvio (RT)" value={\`\${Math.round(metrics.sdRT)} ms\`} severity={scaleResult.rtVariabilitySeverity} />
-            <MetricCard label="Queda de Vigilância" value={\`\${(metrics.vigilanceDecrement * 100).toFixed(1)}%\`} severity={scaleResult.vigilanceDecrementSeverity} />
+            <MetricCard label="Tempo Médio (RT)" value={`${Math.round(metrics.meanRT)} ms`} />
+            <MetricCard label="Desvio (RT)" value={`${Math.round(metrics.sdRT)} ms`} severity={scaleResult.rtVariabilitySeverity} />
+            <MetricCard label="Queda de Vigilância" value={`${(metrics.vigilanceDecrement * 100).toFixed(1)}%`} severity={scaleResult.vigilanceDecrementSeverity} />
           </div>
         </section>
 

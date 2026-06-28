@@ -137,8 +137,8 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
             onClick={(e) => handleLampClick(e, lamp.id)}
             style={{
               position: 'absolute',
-              left: \`\${lamp.x}%\`,
-              top: \`\${lamp.y}%\`,
+              left: `${lamp.x}%`,
+              top: `${lamp.y}%`,
               width: '24px',
               height: '24px',
               borderRadius: '50%',
