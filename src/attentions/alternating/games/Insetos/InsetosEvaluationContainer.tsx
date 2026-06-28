@@ -2,7 +2,7 @@
 // Orquestra avaliação pós-sessão do Insetos — espelha ColorShapeEvaluationContainer.
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import db from '../../../../lib/firebase';
 import { auth } from '../../../../lib/firebase';

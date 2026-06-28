@@ -15,19 +15,19 @@ type Phase = 'instructions' | 'simulation' | 'play' | 'evaluation';
 
 export const SalaDeVigilia: React.FC<SalaDeVigiliaProps> = ({ onClose, onRepeat }) => {
   const [phase, setPhase] = useState<Phase>('instructions');
-  const [rawSession, setRawSession] = useState<SalaDeVigiliaRawSession | null>(null);
+
 
   const { evaluate, report, isEvaluating, error } = useSalaDeVigiliaEvaluation();
 
   const handleFinishPlay = async (session: SalaDeVigiliaRawSession) => {
-    setRawSession(session);
+
     setPhase('evaluation');
     await evaluate(session);
   };
 
   const handleRepeat = () => {
     setPhase('instructions');
-    setRawSession(null);
+
     onRepeat();
   };
 
