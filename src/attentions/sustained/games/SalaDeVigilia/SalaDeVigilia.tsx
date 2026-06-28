@@ -3,7 +3,7 @@ import { SalaDeVigiliaInstructions } from './SalaDeVigiliaInstructions';
 import { SalaDeVigiliaSimulation } from './SalaDeVigiliaSimulation';
 import { SalaDeVigiliaPlay } from './SalaDeVigiliaPlay';
 import { EvaluationReportPanel } from './EvaluationReportPanel';
-import { SalaDeVigiliaRawSession } from '../../../assessment/salaDeVigilia/types';
+import { SalaDeVigiliaRawSession } from '../../../../assessment/salaDeVigilia/types';
 import { useSalaDeVigiliaEvaluation } from './useSalaDeVigiliaEvaluation';
 
 interface SalaDeVigiliaProps {

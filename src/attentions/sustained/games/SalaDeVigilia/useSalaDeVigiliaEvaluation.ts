@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import db, { auth } from '../../../../lib/firebase';
-import { callEvaluator } from '../../../../lib/evaluatorClient';
+import { callEvaluator, EvaluatorInput } from '../../../../lib/evaluatorClient';
 import { saveReport } from '../../../../lib/saveReport';
 import { 
   SalaDeVigiliaRawSession, 
   SalaDeVigiliaMetrics, 
   SalaDeVigiliaScaleResult 
-} from '../../../assessment/salaDeVigilia/types';
-import { calculateSalaDeVigiliaMetrics } from '../../../assessment/salaDeVigilia/calculateSalaDeVigiliaMetrics';
-import { buildSalaDeVigiliaScaleResult } from '../../../assessment/salaDeVigilia/buildSalaDeVigiliaScaleResult';
-import { buildSalaDeVigiliaTechnicalReport } from '../../../assessment/salaDeVigilia/buildSalaDeVigiliaTechnicalReport';
+} from '../../../../assessment/salaDeVigilia/types';
+import { calculateSalaDeVigiliaMetrics } from '../../../../assessment/salaDeVigilia/calculateSalaDeVigiliaMetrics';
+import { buildSalaDeVigiliaScaleResult } from '../../../../assessment/salaDeVigilia/buildSalaDeVigiliaScaleResult';
+import { buildSalaDeVigiliaTechnicalReport } from '../../../../assessment/salaDeVigilia/buildSalaDeVigiliaTechnicalReport';
 
 const GAME_ID = 'SalaDeVigilia';
 
@@ -41,7 +41,7 @@ export function useSalaDeVigiliaEvaluation() {
             uid,
             sessionId: session.sessionId,
             game: GAME_ID,
-            attentionType: 'sustained',
+            attentionType: 'sustentada',
             score: scaleResult.score,
             level: scaleResult.level,
             createdAt: serverTimestamp(),
@@ -52,9 +52,9 @@ export function useSalaDeVigiliaEvaluation() {
       }
 
       // Format input for callEvaluator (which expects { sessionId, evaluatorInput })
-      const evaluatorInput = {
+      const evaluatorInput: EvaluatorInput = {
         sessionId: session.sessionId,
-        ...technicalReport // technicalReport já tem attentionType, game, durationMs, metrics e scales
+        ...technicalReport // technicalReport já tem attentionType, game, durationMs, metrics, scales, e severity
       };
 
       let geminiReport = null;

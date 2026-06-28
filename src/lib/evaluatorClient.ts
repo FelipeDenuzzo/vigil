@@ -16,7 +16,7 @@ export interface EvaluatorInput {
   exercicio_2_gonogo?: any;
   exercicio_3_alternancia?: any;
   exercicio_4_dupla_tarefa?: any;
-  game?: 'visual-search' | 'color-shape' | 'cofre-mental' | 'long-mazes' | 'escuta-seletiva' | 'achar-o-faltando';
+  game?: 'visual-search' | 'color-shape' | 'cofre-mental' | 'long-mazes' | 'escuta-seletiva' | 'achar-o-faltando' | 'SalaDeVigilia';
   roundCount?: number;
   totalClicks?: number;
   totalHits?: number;

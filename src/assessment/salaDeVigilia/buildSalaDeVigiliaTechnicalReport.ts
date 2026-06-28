@@ -8,9 +8,15 @@ export function buildSalaDeVigiliaTechnicalReport(
   scales: SalaDeVigiliaScaleResult
 ) {
   // Converte tempos em ms para segundos conforme Regra 8 do ARCHITECTURE.md
+  let severity: 'minimo' | 'leve' | 'moderado' | 'importante' = 'leve';
+  if (scales.score < 50) severity = 'importante';
+  else if (scales.score < 80) severity = 'moderado';
+  else if (scales.score >= 95) severity = 'minimo';
+
   return {
-    attentionType: 'sustained',
-    game: 'SalaDeVigilia',
+    attentionType: 'sustentada' as const,
+    game: 'SalaDeVigilia' as const,
+    severity,
     durationMs,
     metrics: {
       omissions: metrics.omissions,
