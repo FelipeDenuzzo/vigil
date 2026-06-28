@@ -61,7 +61,7 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 Passo 1: Memorizar Letras
               </h2>
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
-                Algumas consoantes aparecerão na tela uma por uma. Seu objetivo é guardar a sequência exata na memória.
+                Algumas consoantes aparecerão na tela uma por uma.<br />Seu objetivo é guardar a sequência exata na memória.
               </p>
 
               {/* Simulação Visual das Letras */}
@@ -117,7 +117,7 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 Passo 2: Atenção Dividida
               </h2>
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-4)', fontSize: '14px', lineHeight: '1.6' }}>
-                Enquanto segura as letras na memória, números aparecerão rapidamente. Classifique-os usando as regras abaixo:
+                Enquanto segura as letras na memória, números aparecerão rapidamente.<br />Classifique-os usando as regras abaixo:
               </p>
 
               {/* Demonstração de Regra */}
@@ -200,7 +200,7 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 Passo 3: Abrir o Cofre
               </h2>
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
-                Após responder a todos os números, você deve digitar as letras memorizadas no Passo 1 na mesma ordem para abrir o cofre.
+                Após responder a todos os números, você deve digitar as letras<br />memorizadas no Passo 1 na mesma ordem para abrir o cofre.
               </p>
 
               {/* Visual de Teclado Virtual / Slots */}
@@ -252,7 +252,7 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 Passo 4: Tente Responder!
               </h2>
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
-                Quais eram as 3 letras que mostramos no **Passo 1**? Digite-as na ordem correta:
+                Quais eram as 3 letras que mostramos no **Passo 1**?<br />Digite-as na ordem correta:
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
@@ -330,9 +330,9 @@ export default function MentalVaultSimulation({ onDone }: Props) {
 
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
                 {answer === SIM_TARGET_LETTERS.join('') ? (
-                  <>Você memorizou com precisão a sequência de letras <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_LETTERS.join(' ')}</strong>. No treino real, o desafio será fazer isso enquanto classifica 8 números rapidamente!</>
+                  <>Você memorizou com precisão a sequência de letras <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_LETTERS.join(' ')}</strong>.<br />No treino real, o desafio será fazer isso enquanto classifica 8 números rapidamente!</>
                 ) : (
-                  <>A sequência correta era <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_LETTERS.join(' ')}</strong>. No treino real, concentre-se em reter as letras visualmente enquanto responde aos números. Vamos começar?</>
+                  <>A sequência correta era <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_LETTERS.join(' ')}</strong>.<br />No treino real, concentre-se em reter as letras visualmente enquanto responde aos números. Vamos começar?</>
                 )}
               </p>
 

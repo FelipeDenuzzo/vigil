@@ -220,7 +220,8 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 Como Funciona o Treino?
               </h2>
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '18px', lineHeight: '1.6' }}>
-                Você vai ouvir duas vozes falando números diferentes ao mesmo tempo, como se fossem duas conversas paralelas.
+                Você vai ouvir duas vozes falando números diferentes ao mesmo tempo,<br />
+                como se fossem duas conversas paralelas.
               </p>
 
               <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
@@ -266,7 +267,8 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 Indicação da Voz-Alvo
               </h2>
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '18px', lineHeight: '1.6' }}>
-                Antes do áudio tocar, uma mensagem indicará qual voz você deve seguir. Neste exemplo, a voz-alvo é a <strong style={{ color: 'var(--color-divided)' }}>feminina</strong>.
+                Antes do áudio tocar, uma mensagem indicará qual voz você deve seguir.<br />
+                Neste exemplo, a voz-alvo é a <strong style={{ color: 'var(--color-divided)' }}>feminina</strong>.
               </p>
 
               <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-6)', marginBottom: 'var(--space-5)' }}>
@@ -325,7 +327,8 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 Ouvindo a Sequência
               </h2>
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '18px', lineHeight: '1.6' }}>
-                Cada canal reproduzirá 3 números simultaneamente. Lembre-se apenas dos dígitos da voz feminina.
+                Cada canal reproduzirá 3 números simultaneamente.<br />
+                Lembre-se apenas dos dígitos da voz feminina.
               </p>
 
               <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-6)', marginBottom: 'var(--space-5)' }}>
@@ -414,7 +417,8 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 Agora é Sua Vez!
               </h2>
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-6)', fontSize: '14px', lineHeight: '1.6' }}>
-                Digite os 3 números ditados pela <strong style={{ color: 'var(--color-divided)' }}>voz feminina</strong> na ordem correta:
+                Digite os 3 números ditados pela <strong style={{ color: 'var(--color-divided)' }}>voz feminina</strong><br />
+                na ordem correta:
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
@@ -491,7 +495,7 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
 
               <p style={{ color: '#ffffff', marginBottom: 'var(--space-5)', fontSize: '14px', lineHeight: '1.6' }}>
                 {answer === SIM_TARGET_DIGITS.join('') ? (
-                  <>Você filtrou a voz masculina distratora e gravou a sequência correta da voz feminina: <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>.</>
+                  <>Você filtrou a voz masculina distratora e gravou a sequência<br />correta da voz feminina: <strong style={{ color: 'var(--color-divided)' }}>{SIM_TARGET_DIGITS.join(' ')}</strong>.</>
                 ) : null}
               </p>
 

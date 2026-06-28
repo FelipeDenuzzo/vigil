@@ -135,14 +135,25 @@ export const SelectAttention: React.FC = () => {
 
       <Greeting name={displayName} />
 
-      {!progressData.loading && progressData.byType && Object.keys(progressData.byType).length === 4 && (
-        <>
-          <DailySuggestion byType={progressData.byType} />
-          <div style={{ display: 'flex', justifyContent: 'center', margin: 'var(--space-4) 0 var(--space-8)' }}>
-            <AttentionRadar byType={progressData.byType} />
+      {/* Container reservado para a Sugestão e o Radar (evita deslocamento do layout) */}
+      <div style={{ minHeight: 440, display: 'flex', flexDirection: 'column' }}>
+        {progressData.loading || !progressData.byType || Object.keys(progressData.byType).length < 4 ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+            <div style={{ width: 40, height: 40, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--color-primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 'var(--text-sm)', margin: 0 }}>Carregando mapa de atenção...</p>
+            <style>{`
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            `}</style>
           </div>
-        </>
-      )}
+        ) : (
+          <>
+            <DailySuggestion byType={progressData.byType} />
+            <div style={{ display: 'flex', justifyContent: 'center', margin: 'var(--space-4) 0 var(--space-8)' }}>
+              <AttentionRadar byType={progressData.byType} />
+            </div>
+          </>
+        )}
+      </div>
 
       <div style={{
         display: 'grid',

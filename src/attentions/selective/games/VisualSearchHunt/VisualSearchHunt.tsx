@@ -518,7 +518,7 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
               margin: '12px auto 0 auto',
               maxWidth: '360px',
             }}>
-              Essa é a figura que você precisa encontrar. No treino real, ela será mostrada antes da fase começar e não aparecerá durante a fase.
+              Essa é a figura que você precisa encontrar.<br /> No treino real, ela será mostrada antes da fase começar e não aparecerá durante a fase.
             </div>
           )}
           <div
@@ -614,7 +614,7 @@ function IntroScreen({ onSimulator, onSkip }: { onSimulator: () => void; onSkip:
         <h2 style={{ margin: 0 }}>Caça ao Alvo</h2>
         <p style={{ color: '#fff', fontSize: '1.15rem', lineHeight: 1.6, margin: 0 }}>
           Você verá uma grade com figuras coloridas. Encontre e clique em{' '}
-          <strong>todas as figuras que correspondem ao alvo</strong> mostrado no topo.
+          <strong>todas as figuras que correspondem ao alvo</strong> mostrado no topo.<br />
           O timer começa quando você iniciar cada fase.
         </p>
         <div style={{ display: 'grid', gap: 8 }}>
