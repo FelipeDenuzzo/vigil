@@ -84,12 +84,13 @@ async function loadReportFromFirestore(sessionId: string): Promise<GeminiReport 
 
 interface Props {
   sessionLog?: InsetosSessionLog;
+  onRepeat?: () => void;
+  onClose?: () => void;
 }
 
-export function InsetosEvaluationContainer({ sessionLog: logProp }: Props = {}) {
+export function InsetosEvaluationContainer({ sessionLog: logProp, onRepeat, onClose }: Props = {}) {
   const [searchParams] = useSearchParams();
   const sessionId = logProp?.sessionId ?? searchParams.get('sessionId') ?? '';
-  const navigate  = useNavigate();
 
   const [geminiReport, setGeminiReport] = useState<GeminiReport | undefined>(undefined);
   const [loaded, setLoaded]             = useState<LoadedState>(false);
@@ -151,8 +152,8 @@ export function InsetosEvaluationContainer({ sessionLog: logProp }: Props = {}) 
       <InsetosResult
         geminiReport={geminiReport}
         loaded={loaded}
-        onRepeat={() => navigate('/treinar/alternada/insetos')}
-        onBackToStart={() => navigate('/treinar/alternada')}
+        onRepeat={onRepeat ?? (() => {})}
+        onBackToStart={onClose ?? (() => {})}
       />
     </div>
   );

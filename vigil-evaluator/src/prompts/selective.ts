@@ -1,5 +1,6 @@
 import { Type } from '@google/genai';
 import type { SelectiveEvaluatorInput } from '../types';
+import { formatMsToSeconds } from './utils';
 
 // ─── Schema de resposta forçado via Structured Output ───────────────────────
 export const SELECTIVE_EVALUATION_SCHEMA = {
@@ -83,14 +84,14 @@ REGRAS ABSOLUTAS DE LINGUAGEM — LEIA ANTES DE TUDO:
 - NÃO feche diagnóstico.
 
 TABELA DE REFERÊNCIA POR FASE (CALIBRAÇÃO CLÍNICA):
-- Fase 1 e 2 (Símbolos Clássicos I/II): Atenção seletiva geral e discriminação visual de símbolos. RT Esperado < 5000ms.
-- Fase 3 (Triângulos e Círculos): Discriminação morfológica simples (forma vs cor). RT Esperado < 4000ms.
-- Fase 4 e 5 (Busca Q/O e O/Q): Discriminação de alto contraste e inibição de distratores de formato similar. RT Esperado < 3000ms.
-- Fase 6 (Busca Serial O/Q com Distratores): Carga atencional moderada, exigindo busca serial entre distratores. RT Esperado < 6000ms.
-- Fase 7 (Dígitos 2/7): Rastreamento simples de numerais similares. RT Esperado < 4000ms.
-- Fase 8 (Busca 2/7 com Distratores): Carga atencional complexa com distratores de dígitos. RT Esperado < 6500ms.
-- Fase 9 (Letras Espelhadas d/p): Alta complexidade visuoespacial e discriminação de simetria (d vs p). RT Esperado < 5000ms.
-- Fase 10 (Estímulos Mistos): Flexibilidade cognitiva extrema (Switching). Exige transição rápida entre símbolos, letras e números. RT Esperado < 7000ms.
+- Fase 1 e 2 (Símbolos Clássicos I/II): Atenção seletiva geral e discriminação visual de símbolos. RT Esperado < 5 segundos.
+- Fase 3 (Triângulos e Círculos): Discriminação morfológica simples (forma vs cor). RT Esperado < 4 segundos.
+- Fase 4 e 5 (Busca Q/O e O/Q): Discriminação de alto contraste e inibição de distratores de formato similar. RT Esperado < 3 segundos.
+- Fase 6 (Busca Serial O/Q com Distratores): Carga atencional moderada, exigindo busca serial entre distratores. RT Esperado < 6 segundos.
+- Fase 7 (Dígitos 2/7): Rastreamento simples de numerais similares. RT Esperado < 4 segundos.
+- Fase 8 (Busca 2/7 com Distratores): Carga atencional complexa com distratores de dígitos. RT Esperado < 6,5 segundos.
+- Fase 9 (Letras Espelhadas d/p): Alta complexidade visuoespacial e discriminação de simetria (d vs p). RT Esperado < 5 segundos.
+- Fase 10 (Estímulos Mistos): Flexibilidade cognitiva extrema (Switching). Exige transição rápida entre símbolos, letras e números. RT Esperado < 7 segundos.
 
 GUIA DE INTERPRETAÇÃO DAS FLAGS CLÍNICAS E MÉTRICAS:
 - flagImpulsividade: Indica aceleração motora inadequada com erros de comissão nas fases complexas.
@@ -98,7 +99,7 @@ GUIA DE INTERPRETAÇÃO DAS FLAGS CLÍNICAS E MÉTRICAS:
 - flagSwitchCost: Custo de transição elevado, indicando lentificação marcante na fase mista 10 comparado às fases 8 e 9.
 - flagFadigaAtencional: Indica queda severa de consistência (SDRT) e aumento de omissões na segunda metade do treino.
 - d' (d-prime): Nível de discriminação de estímulos. Valores > 2.0 indicam excelente sensibilidade discriminativa. < 1.0 indicam dificuldade severa em separar estímulos corretos de distratores.
-- PES (Desaceleração Pós-Erro): Aumento do tempo de resposta após cometer um erro, refletindo monitoramento de performance preservado. Valores positivos e moderados (ex: 200ms a 800ms) são esperados e normais.
+- PES (Desaceleração Pós-Erro): Aumento do tempo de resposta após cometer um erro, refletindo monitoramento de performance preservado. Valores positivos e moderados (ex: 0,2 a 0,8 segundos) são esperados e normais.
 
 FORMATO E EXIGÊNCIAS POR CAMPO (siga a estrutura de schema):
 - generalSummary: 2-3 frases acessíveis sobre o que ocorreu (velocidade, acertos, erros).
@@ -121,7 +122,7 @@ Métricas globais:
   Omissões (omissions): ${input.totalOmissions ?? 0}
   Falsos positivos: ${input.totalFalsePositives ?? 0}
   Eficiência (acertos/min): ${input.accuracyPerMinute ?? 0}
-  Tempo médio de busca: ${input.averageResponseMs ?? 0} ms
+  Tempo médio de busca: ${formatMsToSeconds(input.averageResponseMs)}
   Estilo de resposta (speedStyle): ${input.speedStyle ?? 'indeterminado'}
   Sinal de fadiga atencional (hasFatigue): ${input.hasFatigue ? 'Sim (declínio na segunda metade)' : 'Não (estável)'}
   Assimetria espacial de omissões (spatialAsymmetryDominant): ${input.spatialAsymmetryDominant ?? 'indeterminado'} (taxa: ${input.asymmetryRatio ?? 0}, omissões esquerda: ${input.leftOmissions ?? 0}, omissões direita: ${input.rightOmissions ?? 0})
@@ -135,16 +136,16 @@ Flags clínicas calculadas:
   Flag Fadiga Atencional: ${input.flagFadigaAtencional ? 'Sim' : 'Não'}
 
 Indicadores de Time-on-Task (Split-Half):
-  Primeira metade (Fases 1–5): RT médio: ${input.firstHalfRtMean ?? 0} ms | SDRT: ${input.firstHalfSdrt ?? 0} ms
-  Segunda metade (Fases 6–10): RT médio: ${input.secondHalfRtMean ?? 0} ms | SDRT: ${input.secondHalfSdrt ?? 0} ms
+  Primeira metade (Fases 1–5): RT médio: ${formatMsToSeconds(input.firstHalfRtMean)} | SDRT: ${formatMsToSeconds(input.firstHalfSdrt)}
+  Segunda metade (Fases 6–10): RT médio: ${formatMsToSeconds(input.secondHalfRtMean)} | SDRT: ${formatMsToSeconds(input.secondHalfSdrt)}
 
 Detalhamento da Performance por Fase:
 ${(input.phaseMetrics ?? []).map(pm => `
 * Fase ${pm.phase} - ${pm.phaseLabel}:
   - Rodadas completadas: ${pm.roundsInPhase}
   - Acertos: ${pm.hits} | Omissões: ${pm.omissions} | Falsos Positivos: ${pm.falsePositives}
-  - RT Médio: ${pm.rtMean} ms | SDRT: ${pm.rtSdrt} ms | d' (d-prime): ${pm.dPrime}
-  - Desaceleração Pós-Erro (PES): ${pm.postErrorSlowing !== null ? `${pm.postErrorSlowing} ms` : 'N/A'}
+  - RT Médio: ${formatMsToSeconds(pm.rtMean)} | SDRT: ${formatMsToSeconds(pm.rtSdrt)} | d' (d-prime): ${pm.dPrime}
+  - Desaceleração Pós-Erro (PES): ${pm.postErrorSlowing !== null ? formatMsToSeconds(pm.postErrorSlowing) : 'N/A'}
 `).join('\n')}
 ─────────────────────────────────────────────────────────────────────────────
 
@@ -184,7 +185,7 @@ REGRAS ABSOLUTAS DE LINGUAGEM — LEIA ANTES DE TUDO:
 - NÃO feche diagnóstico.
 
 GUIA DE INTERPRETAÇÃO DAS MÉTRICAS:
-- Velocidade de resposta (meanReactionTimeMs): Média de tempo para clicar nos alvos. <800ms: muito rápido. 800ms-1500ms: adequado. 1500ms-2500ms: um pouco lento. >2500ms: notavelmente lento.
+- Velocidade de resposta (meanReactionTimeMs): Média de tempo para clicar nos alvos. <0,8 segundos: muito rápido. 0,8 a 1,5 segundos: adequado. 1,5 a 2,5 segundos: um pouco lento. >2,5 segundos: notavelmente lento.
 - Erros por omissão (omissionRate): >20% = muitos alvos passaram despercebidos.
 - Cliques em excesso (commissionRate): >15% = clicou em elementos errados.
 - Organização da busca (meanOrganizationIndex / predominantScanPattern): próximo de 1.0 ou row-wise/column-wise = organizado. Abaixo de 0.4 ou mixed = pouco organizado.
@@ -206,8 +207,8 @@ severity (calculada localmente): ${displaySeverity}
 
 Métricas globais:
   totalClicks: ${totalClicks}
-  meanReactionTimeMs: ${input.meanReactionTimeMs ?? 'indisponível'} ms
-  reactionTimeStdDev: ${input.reactionTimeStdDev ?? 'indisponível'} ms
+  meanReactionTimeMs: ${formatMsToSeconds(input.meanReactionTimeMs)}
+  reactionTimeStdDev: ${formatMsToSeconds(input.reactionTimeStdDev)}
   commissionRate: ${(commissionRate * 100).toFixed(1)}%
   omissionRate: ${(omissionRate * 100).toFixed(1)}%
   dPrime: ${input.dPrime ?? 'indisponível'}

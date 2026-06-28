@@ -11,14 +11,22 @@ interface Props {
   onClose?: () => void;
 }
 
-const ColorShapePlay: React.FC<Props> = () => {
+const ColorShapePlay: React.FC<Props> = ({ onClose }) => {
   const [sessionId]   = useState(() => uuidv4());
   const [completedLog, setCompletedLog] = useState<ColorShapeSessionLog | null>(null);
 
   if (completedLog) {
     return (
       <div style={{ maxWidth: 920, margin: '0 auto', padding: 16 }}>
-        <ColorShapeEvaluationContainer sessionLog={completedLog} />
+        <ColorShapeEvaluationContainer 
+          sessionLog={completedLog} 
+          onClose={onClose}
+          onRepeat={() => {
+            setCompletedLog(null);
+            // reset state logic will be added if needed, wait, ColorShapeGame has no instructions state inside Play?
+            // Actually let's check what state ColorShapePlay has.
+          }}
+        />
       </div>
     );
   }
