@@ -83,6 +83,13 @@ function resumeInsect(ins: Insect, nowMs: number, speed: number) {
   ins.collisionFrame = 0;
 }
 
+function releasePair(ins: Insect, insects: Insect[], nowMs: number, speed: number) {
+  const t = ins.alertStartMs;
+  resumeInsect(ins, nowMs, speed);
+  const partner = insects.find(o => o !== ins && o.frozen && o.alertStartMs === t);
+  if (partner) resumeInsect(partner, nowMs, speed);
+}
+
 /* ── Componente ── */
 interface Props {
   sessionId: string;
@@ -107,6 +114,8 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
 
   const [phase, setPhase]       = useState(0);
   const [done, setDone]         = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [score, setScore]       = useState(0);
 
   useEffect(() => {
     const srcs = [
@@ -141,14 +150,13 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
     for (const ins of insects) {
       if (ins.frozen) {
         if (ins.alertStartMs > 0 && nowMs - ins.alertStartMs > ALERT_MS) {
-          const partner = insects.find(o => o !== ins && o.frozen && o.alertStartMs === ins.alertStartMs);
-          
-          eventsRef.current.push({
-            type: 'omission', timestamp: ins.alertStartMs,
-            phase: curPhase, activeGroup: group, alertState: 1,
-          });
-          resumeInsect(ins, nowMs, speed);
-          if (partner) resumeInsect(partner, nowMs, speed);
+          if (ins.group === group) {
+            eventsRef.current.push({
+              type: 'omission', timestamp: ins.alertStartMs,
+              phase: curPhase, activeGroup: group, alertState: 1,
+            });
+          }
+          releasePair(ins, insects, nowMs, speed);
         }
         continue;
       }
@@ -186,6 +194,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
 
     /* ─ Fase ─ */
     const remaining = phaseDurMs.current - (nowMs - phaseStartMs.current);
+    setTimeLeft(Math.max(0, remaining));
 
     if (remaining <= 0) {
       const next = curPhase + 1;
@@ -319,36 +328,20 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
       const dx = ins.x - cx, dy = ins.y - cy;
       if (Math.sqrt(dx * dx + dy * dy) >= HIT_RADIUS) continue;
 
-      if (!ins.frozen) {
-        // Interação com inseto em movimento (se for do grupo ativo, muda direção)
-        if (ins.group === group) {
-          const others = DIRS.filter(d => d !== ins.dir);
-          ins.dir = others[Math.floor(Math.random() * others.length)];
-          ins.nextTurnMs = nowMs + rTurn();
-        }
-        continue;
-      }
+      if (!ins.frozen) break;  // ← clique em movimento = ignorado
 
       if (ins.group === group) {
-        eventsRef.current.push({
-          type: 'hit', timestamp: nowMs,
+        eventsRef.current.push({ type: 'hit', timestamp: nowMs,
           phase: curPhase, activeGroup: group,
-          rt: nowMs - ins.alertStartMs,
-          isPostSwitch: isPost, alertState: 1,
-        });
+          rt: nowMs - ins.alertStartMs, isPostSwitch: isPost, alertState: 1 });
         scoreRef.current += 1;
+        setScore(scoreRef.current);
       } else {
-        eventsRef.current.push({
-          type: 'commission_error', timestamp: nowMs,
-          phase: curPhase, activeGroup: group,
-        });
+        eventsRef.current.push({ type: 'commission_error',
+          timestamp: nowMs, phase: curPhase, activeGroup: group });
       }
-      
-      // Libera o clicado e o parceiro da colisão
-      resumeInsect(ins, nowMs, speed);
-      const partner = insectsRef.current.find(o => o !== ins && o.frozen && o.alertStartMs === ins.alertStartMs);
-      if (partner) resumeInsect(partner, nowMs, speed);
-      
+
+      releasePair(ins, insectsRef.current, nowMs, speed);  // libera o par sempre
       break;
     }
   }, [done, ARENA]); // eslint-disable-line
@@ -363,12 +356,18 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
         display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative',
         padding: '12px 14px', background: 'rgba(0,0,0,0.6)', borderRadius: '12px 12px 0 0',
       }}>
+        <div style={{ position: 'absolute', left: 16, color: '#e8e9f0', fontSize: 14, fontWeight: 600 }}>
+          {Math.ceil(timeLeft / 1000)}s
+        </div>
         <span style={{
           fontSize: 14, fontWeight: 700, padding: '4px 12px', borderRadius: 99,
           background: ACTIVE_COL + '22', color: ACTIVE_COL, border: `1px solid ${ACTIVE_COL}`,
         }}>
           {curGroup === 'formiga' ? '🐜 Formigas' : '🐞 Joaninhas'}
         </span>
+        <div style={{ position: 'absolute', right: 48, color: '#e8e9f0', fontSize: 14, fontWeight: 600 }}>
+          ⭐ {score}
+        </div>
         {onClose && (
           <button onClick={onClose} style={{ position: 'absolute', right: 16, background: 'none', border: 'none', cursor: 'pointer', color: '#e8e9f0', fontSize: 24, lineHeight: 1, padding: 0 }} aria-label="Fechar">×</button>
         )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { SalaDeVigiliaRawSession, LampadaEvent } from '../../../assessment/salaDeVigilia/types';
+import { SalaDeVigiliaRawSession, LampadaEvent } from '../../../../assessment/salaDeVigilia/types';
 
 interface Lampada {
   id: string;
