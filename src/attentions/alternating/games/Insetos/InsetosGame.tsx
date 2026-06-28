@@ -15,7 +15,6 @@ import type { InsetosRawEvent } from '../../../../assessment/insetos/types';
 
 /* ── Constantes ── */
 const TOTAL_PHASES      = 6;
-const PHASE_DURATION_MS = 30_000;
 const NUM_EACH          = 4;
 const SPEED_BASE        = 80;
 const SPEED_RAMP        = 8;
@@ -104,10 +103,9 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
   const rafRef       = useRef(0);
   const imgsRef      = useRef<Record<string, HTMLImageElement>>({});
   const startedAtRef = useRef('');
+  const phaseDurMs   = useRef(rand(10000, 20000));
 
   const [phase, setPhase]       = useState(0);
-  const [timeLeft, setTimeLeft] = useState(PHASE_DURATION_MS);
-  const [score, setScore]       = useState(0);
   const [done, setDone]         = useState(false);
 
   useEffect(() => {
@@ -163,10 +161,10 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
       ins.x += dx * ins.speed * dt;
       ins.y += dy * ins.speed * dt;
 
-      if (ins.x < MARGIN)     { ins.x = MARGIN;     ins.dir = 'right'; ins.nextTurnMs = nowMs + rTurn(); }
-      if (ins.x > W - MARGIN) { ins.x = W - MARGIN; ins.dir = 'left';  ins.nextTurnMs = nowMs + rTurn(); }
-      if (ins.y < MARGIN)     { ins.y = MARGIN;      ins.dir = 'down';  ins.nextTurnMs = nowMs + rTurn(); }
-      if (ins.y > H - MARGIN) { ins.y = H - MARGIN;  ins.dir = 'up';    ins.nextTurnMs = nowMs + rTurn(); }
+      if (ins.x < -INSECT_SIZE)     { ins.x = W + INSECT_SIZE; }
+      if (ins.x > W + INSECT_SIZE)  { ins.x = -INSECT_SIZE; }
+      if (ins.y < -INSECT_SIZE)     { ins.y = H + INSECT_SIZE; }
+      if (ins.y > H + INSECT_SIZE)  { ins.y = -INSECT_SIZE; }
     }
 
     /* ─ Detecta encontros APENAS entre insetos do MESMO grupo ─ */
@@ -184,8 +182,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
     }
 
     /* ─ Fase ─ */
-    const remaining = PHASE_DURATION_MS - (nowMs - phaseStartMs.current);
-    setTimeLeft(Math.max(0, remaining));
+    const remaining = phaseDurMs.current - (nowMs - phaseStartMs.current);
 
     if (remaining <= 0) {
       const next = curPhase + 1;
@@ -200,6 +197,7 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
       }
       phaseRef.current     = next;
       phaseStartMs.current = nowMs;
+      phaseDurMs.current   = rand(10000, 20000);
       for (const ins of insects) resumeInsect(ins, nowMs, SPEED_BASE + next * SPEED_RAMP);
       setPhase(next);
       eventsRef.current.push({
@@ -315,9 +313,18 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
     const isPost   = curPhase > 0 && (nowMs - phaseStartMs.current) < 3000;
 
     for (const ins of insectsRef.current) {
-      if (!ins.frozen) continue;
       const dx = ins.x - cx, dy = ins.y - cy;
       if (Math.sqrt(dx * dx + dy * dy) >= HIT_RADIUS) continue;
+
+      if (!ins.frozen) {
+        // Interação com inseto em movimento (se for do grupo ativo, muda direção)
+        if (ins.group === group) {
+          const others = DIRS.filter(d => d !== ins.dir);
+          ins.dir = others[Math.floor(Math.random() * others.length)];
+          ins.nextTurnMs = nowMs + rTurn();
+        }
+        continue;
+      }
 
       if (ins.group === group) {
         eventsRef.current.push({
@@ -327,7 +334,6 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
           isPostSwitch: isPost, alertState: 1,
         });
         scoreRef.current += 1;
-        setScore(scoreRef.current);
       } else {
         eventsRef.current.push({
           type: 'commission_error', timestamp: nowMs,
@@ -341,33 +347,24 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
 
   /* ── HUD ── */
   const curGroup   = activeGroup(phase);
-  const phaseSec   = Math.ceil(timeLeft / 1000);
+  const phaseSec   = 0; // Removido do HUD
   const ACTIVE_COL = curGroup === 'formiga' ? '#f97316' : '#ef4444';
 
   return (
     <div style={{ maxWidth: 520, margin: '0 auto', fontFamily: 'Inter, sans-serif', userSelect: 'none' }}>
       <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '8px 14px', background: 'rgba(0,0,0,0.6)', borderRadius: '12px 12px 0 0',
+        display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative',
+        padding: '12px 14px', background: 'rgba(0,0,0,0.6)', borderRadius: '12px 12px 0 0',
       }}>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: '#a0a4be' }}>
-            Fase <strong style={{ color: '#fff' }}>{phase + 1}</strong>/{TOTAL_PHASES}
-          </span>
-          <span style={{
-            fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
-            background: ACTIVE_COL + '22', color: ACTIVE_COL, border: `1px solid ${ACTIVE_COL}`,
-          }}>
-            {curGroup === 'formiga' ? '🐜 Formigas' : '🐞 Joaninhas'}
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: '#a0a4be' }}>⭐ <strong style={{ color: '#fff' }}>{score}</strong></span>
-          <span style={{ fontSize: 14, fontWeight: 700, color: phaseSec <= 5 ? '#f08080' : '#e8e9f0' }}>{phaseSec}s</span>
-          {onClose && (
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a0a4be', fontSize: 18, lineHeight: 1, padding: 0 }} aria-label="Fechar">×</button>
-          )}
-        </div>
+        <span style={{
+          fontSize: 14, fontWeight: 700, padding: '4px 12px', borderRadius: 99,
+          background: ACTIVE_COL + '22', color: ACTIVE_COL, border: `1px solid ${ACTIVE_COL}`,
+        }}>
+          {curGroup === 'formiga' ? '🐜 Formigas' : '🐞 Joaninhas'}
+        </span>
+        {onClose && (
+          <button onClick={onClose} style={{ position: 'absolute', right: 16, background: 'none', border: 'none', cursor: 'pointer', color: '#a0a4be', fontSize: 22, lineHeight: 1, padding: 0 }} aria-label="Fechar">×</button>
+        )}
       </div>
 
       <canvas

@@ -105,19 +105,15 @@ export const InsetosInstructions: React.FC<Props> = ({ onStart, onBack }) => (
           },
           {
             num: '2',
-            text: 'Uma instrução no topo indica o grupo ativo: 🐜 Formigas ou 🐞 Joaninhas.',
+            text: <>Uma instrução no topo indica o grupo ativo:<br/>🐜 Formigas ou 🐞 Joaninhas.</>,
           },
           {
             num: '3',
-            text: 'Quando um inseto do grupo ativo PISCAR com brilho dourado, toque nele rapidamente!',
+            text: 'Quando um inseto do grupo ativo PISCAR, toque nele rapidamente!',
           },
           {
             num: '4',
-            text: 'A cada 30 segundos o grupo ativo muda — fique atento à troca!',
-          },
-          {
-            num: '5',
-            text: 'Não toque em insetos do grupo errado, pois isso conta como erro.',
+            text: 'De tempos em tempos o grupo ativo muda — fique atento à troca!',
           },
         ].map(step => (
           <div key={step.num} style={s.stepRow}>
