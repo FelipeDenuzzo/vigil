@@ -416,6 +416,19 @@ O problema se manifesta principalmente em emojis e caracteres acentuados do port
 - Textos com opacidade reduzida (ex: `rgba(255,255,255,0.4)`) são reservados apenas para labels secundários de métricas ou timestamps.
 - Disclaimers e avisos legais seguem a mesma regra: cor primária, nunca cor sutil.
 
+### Padronização Visual de Hubs e Menus
+
+Para garantir consistência na navegação e apresentação de cada modalidade de atenção, todas as telas principais (Hubs) devem adotar a seguinte estrutura de cabeçalho, **seguindo o modelo visual do Hub de Atenção Sustentada**:
+
+1. **Alinhamento e Contêiner:** O Botão de Retorno, o Título e a Descrição devem estar agrupados e alinhados à esquerda dentro de um bloco de conteúdo centralizado na tela. O botão de voltar **não** deve ficar solto no canto superior esquerdo da tela inteira.
+2. **Botão de Retorno:** Posicionado imediatamente acima do título da atenção. Botão transparente, sem bordas, com texto "← Voltar" na cor branca.
+   - *Padrão:* `<button style="display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); background: transparent; border: none; color: rgb(255, 255, 255); margin-bottom: var(--space-4); padding: 0; cursor: pointer; font-size: var(--text-base);">← Voltar</button>`
+3. **Título da Atenção:** Título principal (`<h1>`) utilizando a variável de cor da respectiva categoria de atenção.
+   - *Padrão:* `<h1 style="font-size: var(--text-2xl); color: var(--color-{categoria});">Atenção {Categoria}</h1>`
+4. **Descrição da Modalidade:** Breve parágrafo explicativo logo abaixo do título, na cor branca.
+   - *Padrão:* `<p style="color: rgb(255, 255, 255); margin-top: var(--space-2);">Esta modalidade treina sua capacidade de...</p>`
+5. **Prevenção de Duplicidade (Jogos Embutidos no Hub):** Se o treino for renderizado dentro da própria tela do Hub (sem navegar para uma rota de tela cheia separada), eventuais botões de "Voltar" internos do componente do jogo devem ser ocultados/retirados. A ação de sair do jogo embutido deve ser delegada exclusivamente ao Botão de Retorno do Hub (que fica do lado de fora) para evitar que a tela fique com botões de voltar duplicados.
+
 ---
 
 ### Checklist de conformidade — aplicar antes de criar qualquer novo artefato
