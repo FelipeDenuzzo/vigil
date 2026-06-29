@@ -45,7 +45,7 @@ export async function useMentalVaultEvaluation(
   const scaleResult = buildMentalVaultScaleResult(metrics);
 
   // 4. Monta o payload do GCP
-  const evaluatorInput = buildMentalVaultTechnicalReport(sessionId, metrics);
+  const evaluatorInput = buildMentalVaultTechnicalReport(sessionId, startedAt, metrics);
 
   // Salva score e level localmente antes do Gemini, garantindo que o Histórico funcione mesmo em caso de falha de IA
   try {
