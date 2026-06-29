@@ -2,10 +2,11 @@ import React from 'react';
 
 interface SalaDeVigiliaInstructionsProps {
   onNext: () => void;
+  onSkipToPlay: () => void;
   onClose: () => void;
 }
 
-export const SalaDeVigiliaInstructions: React.FC<SalaDeVigiliaInstructionsProps> = ({ onNext, onClose }) => {
+export const SalaDeVigiliaInstructions: React.FC<SalaDeVigiliaInstructionsProps> = ({ onNext, onSkipToPlay, onClose }) => {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
       <button 
@@ -41,21 +42,39 @@ export const SalaDeVigiliaInstructions: React.FC<SalaDeVigiliaInstructionsProps>
           <strong>Instrução:</strong> Observe as lâmpadas na tela. Quando uma delas acender, toque nela rapidamente.
         </p>
         
-        <button 
-          onClick={onNext}
-          style={{
-            padding: '12px 24px',
-            fontSize: '1.1rem',
-            backgroundColor: 'var(--color-sustained, #2563eb)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
-        >
-          Ir para Simulação
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+          <button 
+            onClick={onNext}
+            style={{
+              padding: '12px 24px',
+              fontSize: '1.1rem',
+              backgroundColor: 'var(--color-sustained, #2563eb)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            Fazer o Simulado
+          </button>
+          
+          <button 
+            onClick={onSkipToPlay}
+            style={{
+              padding: '12px 24px',
+              fontSize: '1.1rem',
+              backgroundColor: 'transparent',
+              color: 'white',
+              border: '2px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            Ir para o Treino
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -36,6 +36,7 @@ export const SalaDeVigilia: React.FC<SalaDeVigiliaProps> = ({ onClose, onRepeat 
       {phase === 'instructions' && (
         <SalaDeVigiliaInstructions
           onNext={() => setPhase('simulation')}
+          onSkipToPlay={() => setPhase('play')}
           onClose={onClose}
         />
       )}
