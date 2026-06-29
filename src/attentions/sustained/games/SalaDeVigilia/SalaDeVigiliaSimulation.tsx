@@ -16,9 +16,32 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
   const [activeLampId, setActiveLampId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'acerto' | 'erro' | 'omisso' | null>(null);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [simulationFinished, setSimulationFinished] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const sessionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Start or restart simulation
+  const startSimulation = () => {
+    setSimulationFinished(false);
+    setTimeLeft(30);
+    setActiveLampId(null);
+    setFeedback(null);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (sessionTimeoutRef.current) clearTimeout(sessionTimeoutRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    // End simulation after 30s
+    sessionTimeoutRef.current = setTimeout(() => {
+      setSimulationFinished(true);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    }, 30000);
+
+    // Tick the timer every second
+    intervalRef.current = setInterval(() => {
+      setTimeLeft(prev => Math.max(0, prev - 1));
+    }, 1000);
+  };
 
   // Simulation setup
   useEffect(() => {
@@ -30,26 +53,18 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
     }));
     setLampadas(initialLamps);
 
-    // End simulation after 30s
-    sessionTimeoutRef.current = setTimeout(() => {
-      onNext();
-    }, 30000);
-
-    // Tick the timer every second
-    intervalRef.current = setInterval(() => {
-      setTimeLeft(prev => Math.max(0, prev - 1));
-    }, 1000);
+    startSimulation();
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (sessionTimeoutRef.current) clearTimeout(sessionTimeoutRef.current);
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [onNext]);
+  }, []);
 
   // Lamp scheduling logic for simulation
   useEffect(() => {
-    if (lampadas.length === 0) return;
+    if (lampadas.length === 0 || simulationFinished) return;
     
     const scheduleNextLamp = () => {
       const delay = 2000 + Math.random() * 4000; // faster for simulation (2-6s)
@@ -73,9 +88,10 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [lampadas]);
+  }, [lampadas, simulationFinished]);
 
   const handleContainerClick = () => {
+    if (simulationFinished) return;
     if (!activeLampId && feedback !== 'acerto' && feedback !== 'erro') {
       setFeedback('erro'); // False alarm
     }
@@ -83,6 +99,7 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
 
   const handleLampClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
+    if (simulationFinished) return;
     if (activeLampId === id) {
       setFeedback('acerto');
       setActiveLampId(null);
@@ -155,6 +172,35 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
           />
         );
       })}
+
+      {/* Overlay de Fim de Simulado */}
+      {simulationFinished && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          zIndex: 50, padding: '2rem', textAlign: 'center'
+        }}>
+          <h2 style={{ color: 'white', fontSize: '2rem', marginBottom: '1rem' }}>Simulado Concluído!</h2>
+          <p style={{ color: '#d1d5db', fontSize: '1.2rem', marginBottom: '2rem', maxWidth: '600px' }}>
+            Você completou a fase de treino livre. Sente-se confortável para iniciar a tarefa oficial com a medição de métricas?
+          </p>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button
+              onClick={startSimulation}
+              style={{ padding: '12px 24px', background: '#374151', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem' }}
+            >
+              Repetir Simulado
+            </button>
+            <button
+              onClick={onNext}
+              style={{ padding: '12px 24px', background: 'var(--color-sustained, #2563eb)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 'bold' }}
+            >
+              Iniciar Treino
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
