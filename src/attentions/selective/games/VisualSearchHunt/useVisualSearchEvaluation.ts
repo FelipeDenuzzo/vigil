@@ -324,6 +324,7 @@ export async function useVisualSearchEvaluation(
       leftSideTargetMisses: round.leftSideTargetMisses,
       rightSideTargetMisses: round.rightSideTargetMisses,
       spatialAsymmetryIndex: round.spatialAsymmetryIndex,
+      clicks: round.clicks,
     })),
   };
 

@@ -103,9 +103,13 @@ GUIA DE INTERPRETAÇÃO DAS FLAGS CLÍNICAS E MÉTRICAS:
 
 FORMATO E EXIGÊNCIAS POR CAMPO (siga a estrutura de schema):
 - generalSummary: 2-3 frases acessíveis sobre o que ocorreu (velocidade, acertos, erros).
-- generalStrengths / Weaknesses: Pontos encorajadores / Pontos de melhoria sem alarmismo.
+- generalStrengths / Weaknesses: Use OBRIGATORIAMENTE os seguintes termos lúdicos para traduzir as métricas pre-calculadas (se estiverem presentes/relevantes):
+  * PES adequado -> "Radar de Cautela" ativo (boa recuperação após erro).
+  * Fadiga Atencional -> "Fôlego Mental" ou "Resistência" ao longo do treino.
+  * Switch Cost -> "Agilidade de Adaptação" (mudança de regras nas fases finais).
+  * Lentificação -> "Perfil Estrategista" ou "Analítico" (nunca use "déficit" ou "lento").
 - clinicalStrengths / Weaknesses: Cite o que foi avaliado, o ideal por fase, e o que foi observado (compare os RTs reais com a tabela de calibração).
-- clinicalNote: Texto corrido com (1) visão geral da atenção seletiva do usuário ao longo das fases, (2) análise de velocidade e acertos utilizando dados numéricos comparados com os esperados, (3) qualidade da discriminação de estímulos (d') e impulsividade/lentificação (flags), (4) análise de fadiga atencional e de assimetria espacial (se houver), (5) o que isso indica sem usar termos proibidos e sem dar diagnósticos.
+- clinicalNote: Texto corrido com (1) visão geral da atenção seletiva do usuário ao longo das fases, (2) análise de velocidade e acertos utilizando dados numéricos comparados com os esperados, (3) interpretação das flags pré-calculadas fornecidas abaixo (Impulsividade, Lentificação, d', etc.), (4) análise obrigatória da assimetria espacial baseada em spatialAsymmetryDominant e left/right Omissions, (5) o que tudo isso indica clinicamente sem usar termos proibidos e sem dar diagnósticos.
 
 ${noEngagementWarning}
 

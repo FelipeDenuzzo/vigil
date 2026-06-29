@@ -236,6 +236,30 @@ export function calculateVisualSearchMetrics(
     .filter((v): v is number => v !== undefined);
   const meanSpatialAsymmetryIndex = mean(asymmetryIndexes);
 
+  // ── Perfil de Erros (Atributos) ──
+  let shapeErrors = 0;
+  let colorErrors = 0;
+  let doubleErrors = 0;
+
+  for (const r of rounds) {
+    if (!r.clicks) continue;
+    for (const click of r.clicks) {
+      if (click.isTarget) continue;
+      // Trata cliques que não são alvos (erros)
+      const shapeMatch = click.clickedShape === click.targetShape;
+      const colorMatch = click.clickedColor === click.targetColor;
+
+      if (!shapeMatch && colorMatch) shapeErrors++;
+      else if (shapeMatch && !colorMatch) colorErrors++;
+      else doubleErrors++;
+    }
+  }
+
+  const totalAnalyzedErrors = shapeErrors + colorErrors + doubleErrors;
+  const shapeErrorRate = totalAnalyzedErrors > 0 ? shapeErrors / totalAnalyzedErrors : 0;
+  const colorErrorRate = totalAnalyzedErrors > 0 ? colorErrors / totalAnalyzedErrors : 0;
+  const doubleErrorRate = totalAnalyzedErrors > 0 ? doubleErrors / totalAnalyzedErrors : 0;
+
   // ── Métricas por rodada ──
   const roundMetrics: VisualSearchRoundMetrics[] = rounds.map((r, i) =>
     buildRoundMetrics(r, i)
@@ -271,6 +295,9 @@ export function calculateVisualSearchMetrics(
     totalRightMisses,
     meanSpatialAsymmetryIndex,
     hasSpatialAsymmetry: meanSpatialAsymmetryIndex !== null,
+    shapeErrorRate,
+    colorErrorRate,
+    doubleErrorRate,
     rounds: roundMetrics,
   };
 }
