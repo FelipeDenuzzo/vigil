@@ -110,8 +110,51 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  // ── Atenção Sustentada — Sala de Vigília ───────────────────────────────────
+  if (game === 'SalaDeVigilia') {
+    const input = body as any;
+    if (!input.severity || input.durationMs === undefined) {
+      res.status(400).json({ error: 'Invalid payload for SalaDeVigilia: missing severity or durationMs' });
+      return;
+    }
+
+    try {
+      const uid: string | undefined = typeof body.uid === 'string' ? body.uid : undefined;
+      const aiReport = await evaluateWithGemini(input, uid) as any;
+      const level = (aiReport.level as string) === 'minimo' ? 'mínimo' : aiReport.level;
+
+      res.json({
+        score:    aiReport.score,
+        severity: level,
+        report: {
+          ludic: {
+            score: aiReport.score,
+            label: levelToLabel(level),
+            emoji: levelToEmoji(level),
+          },
+          general: {
+            summary:        aiReport.generalSummary        ?? '',
+            strengths:      aiReport.generalStrengths      ?? [],
+            weaknesses:     aiReport.generalWeaknesses     ?? [],
+            recommendation: aiReport.generalRecommendation ?? '',
+          },
+          clinical: {
+            strengths:      aiReport.clinicalStrengths      ?? [],
+            weaknesses:     aiReport.clinicalWeaknesses     ?? [],
+            recommendation: aiReport.clinicalRecommendation ?? '',
+            clinicalNote:   aiReport.clinicalNote           ?? '',
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Erro ao gerar laudo Gemini (SalaDeVigilia):', error);
+      res.status(500).json({ error: 'Gemini evaluation failed' });
+    }
+    return;
+  }
+
   // ── Atenção Sustentada — Long Mazes ──────────────────────────────────────────
-  if (game === 'long-mazes' || (attentionType === 'sustentada' && game !== 'fruit-watch')) {
+  if (game === 'long-mazes' || (attentionType === 'sustentada' && game !== 'fruit-watch' && game !== 'SalaDeVigilia')) {
     const input = body as any;
     if (!input.severity || input.completedPhases === undefined) {
       res.status(400).json({ error: 'Invalid payload for long-mazes: missing severity or completedPhases' });
