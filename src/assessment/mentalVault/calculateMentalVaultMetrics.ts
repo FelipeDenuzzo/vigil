@@ -158,20 +158,4 @@ export function calculateSessionMetrics(
   };
 }
 
-/**
- * Monta o objeto final estruturado de relatório técnico para o laudo clínico.
- */
-export function buildMentalVaultTechnicalReport(
-  sessionId: string,
-  startedAt: string,
-  nivelMaximo: number,
-  rodadas: RegistroRodada[]
-): MentalVaultTechnicalReport {
-  return {
-    sessionId,
-    startedAt,
-    attentionType: 'dividida',
-    game: 'cofre-mental',
-    metrics: calculateSessionMetrics(nivelMaximo, rodadas),
-  };
-}
+
