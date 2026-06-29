@@ -1,7 +1,7 @@
 // src/assessment/mentalVault/calculateMentalVaultMetrics.ts
 
 import { RegistroRodada, TentativaFase2 } from '../../attentions/divided/games/MentalVault/types';
-import { MentalVaultRoundMetrics, MentalVaultSessionMetrics, MentalVaultTechnicalReport } from './types';
+import { MentalVaultRoundMetrics, MentalVaultSessionMetrics } from './types';
 
 /**
  * Calcula a proporção de letras corretas na posição exata (Absolute Recall).

@@ -5,10 +5,12 @@ import type { EvaluatorInput } from '../../lib/evaluatorClient';
 
 export function buildMentalVaultTechnicalReport(
   sessionId: string,
+  startedAt: string,
   metrics: MentalVaultSessionMetrics
 ): EvaluatorInput {
   return {
     sessionId,
+    startedAt,
     attentionType: 'dividida',
     game: 'cofre-mental',
     
