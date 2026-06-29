@@ -120,6 +120,16 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 | `buildSelectiveListeningTechnicalReport.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/selectiveListening/buildSelectiveListeningTechnicalReport.ts) |
 | `types.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/selectiveListening/types.ts) |
 
+**Atenção Dividida (Cofre Mental):**
+
+| Arquivo | Link |
+|---|---|
+| `adaptSessionToMentalVault.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/mentalVault/adaptSessionToMentalVault.ts) |
+| `calculateMentalVaultMetrics.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/mentalVault/calculateMentalVaultMetrics.ts) |
+| `buildMentalVaultScaleResult.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/mentalVault/buildMentalVaultScaleResult.ts) |
+| `buildMentalVaultTechnicalReport.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/mentalVault/buildMentalVaultTechnicalReport.ts) |
+| `types.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/mentalVault/types.ts) |
+
 ---
 
 ## Artefato 3 — Interface de Envio ao Gemini
