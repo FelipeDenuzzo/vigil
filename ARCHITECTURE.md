@@ -230,6 +230,12 @@ O laudo emitido pela inteligência artificial segue uma estrutura de **Camada Du
 * **Público-Alvo**: O próprio usuário/jogador do Vigil.
 * **Objetivo**: Reforçar o engajamento, incentivar a continuidade das sessões e evitar sentimentos de frustração.
 * **Linguagem**: Extremamente simples, encorajadora, amigável e desprovida de jargões técnicos de saúde.
+* **Tradução de Conceitos (Gamificação)**: O prompt deve instruir o Gemini a traduzir métricas neuropsicológicas puras para narrativas lúdicas e sem viés de déficit. Exemplos em uso:
+  - *Post-Error Slowing (PES)* → "Radar de Cautela" ativado.
+  - *Fadiga Atencional* → "Fôlego Mental" ou "Resistência".
+  - *Switch Cost* → "Agilidade de Adaptação".
+  - *Mind-wandering (Lapsos)* → "Divagação Mental" ou o cérebro "viajando".
+  - *Lentificação* → Perfil "Estrategista" ou "Analítico" (nunca chamando de lento ou déficit).
 * **Elementos**: Classificação por score gamificado (0 a 100), medalhas ou emojis (ex: 🦊, 🦅), indicação de nível de jogo e mensagens de progresso motivacionais.
 
 ### 🏥 Camada Clínica (Técnica / Profissional)
@@ -253,6 +259,7 @@ Como a regulamentação do CFP (ex: Resoluções sobre Avaliação Psicológica)
    - **Proibição Absoluta de Diagnósticos**: As instruções nos prompts enviados ao Gemini (ex: [divided.ts](file:///Users/felipedenuzzo/VIGIL/vigil/vigil-evaluator/src/prompts/divided.ts)) proíbem explicitamente o modelo de concluir, sugerir ou fechar diagnósticos específicos de transtornos clínicos ou de aprendizagem (ex: TDAH, DPAC, TEA).
    - **Aviso Legal e Recomendação**: O campo `clinicalRecommendation` deve incluir obrigatoriamente um alerta afirmando que as informações contidas no laudo são resultantes de um treino cognitivo virtual e não substituem exames especializados ou avaliações clínicas formais, direcionando o profissional a prosseguir com avaliações padronizadas e profissionais credenciados caso note discrepâncias importantes.
    - **Foco Funcional**: As notas clínicas emitidas focam no desempenho da tarefa e na descrição de subfunções cognitivas específicas (ex: "dificuldade de inibição de estímulo sonoro lateral"), sem rotular o paciente.
+   - **Prevenção de Citações Acadêmicas (APA)**: Para proteger a fluidez narrativa e evitar alucinações baseadas em excesso de formalidade, os prompts do Gemini bloqueiam preventivamente citações do tipo "(Parasuraman, 1979)". O embasamento deve ser repassado com frases orgânicas ("Estudos em neurociência mostram que...").
 3. **Privacidade e Isolamento (LGPD)**: Todo o armazenamento de sessões e laudos é protegido com regras de segurança rígidas isoladas pelo `uid` do usuário autenticado no Firestore e no Firebase Storage, impedindo o acesso não autorizado a dados sensíveis de desempenho cognitivo.
 
 ---
