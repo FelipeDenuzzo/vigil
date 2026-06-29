@@ -6,6 +6,8 @@ interface Lampada {
   id: string;
   x: number; // percentage (0-100)
   y: number; // percentage (0-100)
+  vx: number;
+  vy: number;
 }
 
 interface SalaDeVigiliaPlayProps {
@@ -13,7 +15,7 @@ interface SalaDeVigiliaPlayProps {
 }
 
 const SESSION_DURATION_MS = 180000; // 3 minutes
-const RESPONSE_WINDOW_MS = 1200;
+const RESPONSE_WINDOW_MS = 3000;
 
 export const SalaDeVigiliaPlay: React.FC<SalaDeVigiliaPlayProps> = ({ onFinish }) => {
   const [lampadas, setLampadas] = useState<Lampada[]>([]);
@@ -32,13 +34,19 @@ export const SalaDeVigiliaPlay: React.FC<SalaDeVigiliaPlayProps> = ({ onFinish }
   const windowTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const finishTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isFinished = useRef(false);
+  const animationRef = useRef<number>();
+  const lampsPhysicsRef = useRef<Lampada[]>([]);
 
+  // Configuração inicial das lâmpadas e timer da sessão
   useEffect(() => {
     const initialLamps: Lampada[] = Array.from({ length: 12 }).map((_, i) => ({
       id: `lamp-${i}`,
       x: 10 + Math.random() * 80,
       y: 10 + Math.random() * 80,
+      vx: (Math.random() - 0.5) * 0.1, // velocidade bem lenta
+      vy: (Math.random() - 0.5) * 0.1,
     }));
+    lampsPhysicsRef.current = initialLamps;
     setLampadas(initialLamps);
     sessionData.current.startedAt = Date.now();
 
@@ -50,12 +58,70 @@ export const SalaDeVigiliaPlay: React.FC<SalaDeVigiliaPlayProps> = ({ onFinish }
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (windowTimeoutRef.current) clearTimeout(windowTimeoutRef.current);
       if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Loop de física
+  useEffect(() => {
+    const loop = () => {
+      if (isFinished.current) return;
+      const newLamps = lampsPhysicsRef.current.map(l => ({...l}));
+      const radius = 4; // 4% de raio para cálculo de colisão e borda
+
+      for (let i = 0; i < newLamps.length; i++) {
+        let lamp = newLamps[i];
+        lamp.x += lamp.vx;
+        lamp.y += lamp.vy;
+
+        // Bounce nas paredes
+        if (lamp.x < radius) { lamp.x = radius; lamp.vx *= -1; }
+        if (lamp.x > 100 - radius) { lamp.x = 100 - radius; lamp.vx *= -1; }
+        if (lamp.y < radius) { lamp.y = radius; lamp.vy *= -1; }
+        if (lamp.y > 100 - radius) { lamp.y = 100 - radius; lamp.vy *= -1; }
+      }
+
+      // Colisões entre lâmpadas
+      for (let i = 0; i < newLamps.length; i++) {
+        for (let j = i + 1; j < newLamps.length; j++) {
+           const dx = newLamps[i].x - newLamps[j].x;
+           const dy = newLamps[i].y - newLamps[j].y;
+           const dist = Math.sqrt(dx*dx + dy*dy);
+           if (dist < radius * 2) {
+              // Troca simples de velocidade
+              const tempVx = newLamps[i].vx;
+              const tempVy = newLamps[i].vy;
+              newLamps[i].vx = newLamps[j].vx;
+              newLamps[i].vy = newLamps[j].vy;
+              newLamps[j].vx = tempVx;
+              newLamps[j].vy = tempVy;
+
+              // Afasta levemente para evitar grudar
+              const overlap = (radius * 2) - dist;
+              const nx = dx / dist;
+              const ny = dy / dist;
+              newLamps[i].x += (nx * overlap) / 2;
+              newLamps[i].y += (ny * overlap) / 2;
+              newLamps[j].x -= (nx * overlap) / 2;
+              newLamps[j].y -= (ny * overlap) / 2;
+           }
+        }
+      }
+
+      lampsPhysicsRef.current = newLamps;
+      setLampadas(newLamps);
+      animationRef.current = requestAnimationFrame(loop);
+    };
+
+    animationRef.current = requestAnimationFrame(loop);
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, []);
+
   const scheduleNextLamp = () => {
-    if (isFinished.current || lampadas.length === 0) return;
+    if (isFinished.current || lampsPhysicsRef.current.length === 0) return;
 
     // Random delay between 8s and 20s
     const delay = 8000 + Math.random() * 12000; 
@@ -63,7 +129,7 @@ export const SalaDeVigiliaPlay: React.FC<SalaDeVigiliaPlayProps> = ({ onFinish }
     timeoutRef.current = setTimeout(() => {
       if (isFinished.current) return;
 
-      const randomLamp = lampadas[Math.floor(Math.random() * lampadas.length)];
+      const randomLamp = lampsPhysicsRef.current[Math.floor(Math.random() * lampsPhysicsRef.current.length)];
       setActiveLampId(randomLamp.id);
 
       const newEvent: LampadaEvent = {
@@ -90,11 +156,11 @@ export const SalaDeVigiliaPlay: React.FC<SalaDeVigiliaPlayProps> = ({ onFinish }
   };
 
   useEffect(() => {
-    if (lampadas.length > 0) {
+    if (lampadas.length > 0 && !activeEventRef.current && !timeoutRef.current) {
       scheduleNextLamp();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lampadas]);
+  }, [lampadas.length]);
 
   const endSession = () => {
     if (isFinished.current) return;
@@ -168,16 +234,22 @@ export const SalaDeVigiliaPlay: React.FC<SalaDeVigiliaPlayProps> = ({ onFinish }
               position: 'absolute',
               left: `${lamp.x}%`,
               top: `${lamp.y}%`,
+              // Aumentamos a área de clique usando um padding interno invisível
+              padding: '12px',
+              transform: 'translate(-50%, -50%)',
+              cursor: 'pointer'
+            }}
+          >
+            {/* O visual da lâmpada */}
+            <div style={{
               width: '24px',
               height: '24px',
               borderRadius: '50%',
               backgroundColor: isActive ? '#fbbf24' : '#374151',
               boxShadow: isActive ? '0 0 20px 10px rgba(251, 191, 36, 0.5)' : 'none',
-              transform: 'translate(-50%, -50%)',
               transition: 'background-color 0.1s, box-shadow 0.1s',
-              cursor: 'pointer'
-            }}
-          />
+            }} />
+          </div>
         );
       })}
     </div>
