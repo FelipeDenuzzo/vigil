@@ -15,8 +15,10 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
   const [lampadas, setLampadas] = useState<Lampada[]>([]);
   const [activeLampId, setActiveLampId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'acerto' | 'erro' | 'omisso' | null>(null);
+  const [timeLeft, setTimeLeft] = useState(30);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const sessionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Simulation setup
   useEffect(() => {
@@ -33,9 +35,15 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
       onNext();
     }, 30000);
 
+    // Tick the timer every second
+    intervalRef.current = setInterval(() => {
+      setTimeLeft(prev => Math.max(0, prev - 1));
+    }, 1000);
+
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (sessionTimeoutRef.current) clearTimeout(sessionTimeoutRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [onNext]);
 
@@ -50,14 +58,10 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
         setActiveLampId(randomLamp.id);
         setFeedback(null);
 
-        // Turn off lamp after 250ms
-        setTimeout(() => {
-          setActiveLampId(null);
-        }, 250);
-
         // Omission window (1200ms)
         timeoutRef.current = setTimeout(() => {
           setFeedback('omisso');
+          setActiveLampId(null);
           scheduleNextLamp();
         }, 1200);
 
@@ -110,7 +114,7 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
       </div>
 
       <div style={{ position: 'absolute', top: '1rem', right: '1rem', textAlign: 'right', zIndex: 10 }}>
-        <div style={{ color: 'white', opacity: 0.8 }}>SIMULAÇÃO (30s)</div>
+        <div style={{ color: 'white', opacity: 0.8 }}>SIMULAÇÃO ({timeLeft}s)</div>
         <button 
           onClick={onNext}
           style={{ marginTop: '8px', padding: '6px 12px', background: 'var(--color-sustained, #2563eb)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
