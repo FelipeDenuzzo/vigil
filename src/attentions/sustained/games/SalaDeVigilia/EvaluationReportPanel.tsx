@@ -51,11 +51,14 @@ export const EvaluationReportPanel: React.FC<EvaluationReportPanelProps> = ({
           </div>
         </header>
 
-        {/* Camada Lúdica */}
+        {/* Camada Lúdica / Geral */}
         <section style={{ marginBottom: '2rem' }}>
-          <h2 style={{ color: 'white', fontSize: '1.25rem', marginBottom: '1rem' }}>Feedback</h2>
+          <h2 style={{ color: 'white', fontSize: '1.25rem', marginBottom: '1rem' }}>Feedback Geral</h2>
           <div style={{ backgroundColor: '#252538', padding: '1.5rem', borderRadius: '8px', color: '#d1d5db', fontSize: '1.1rem', lineHeight: '1.6' }}>
-            {geminiReport?.userMessage || "Excelente esforço! Você concluiu a tarefa focada na manutenção da atenção em ambiente monótono."}
+            <p><strong>Resumo:</strong> {geminiReport?.general?.summary || "Excelente esforço! Você concluiu a tarefa focada na manutenção da atenção em ambiente monótono."}</p>
+            {geminiReport?.general?.recommendation && (
+              <p style={{ marginTop: '0.5rem', fontStyle: 'italic', color: '#9ca3af' }}>Dica: {geminiReport.general.recommendation}</p>
+            )}
           </div>
         </section>
 
@@ -72,18 +75,23 @@ export const EvaluationReportPanel: React.FC<EvaluationReportPanelProps> = ({
         </section>
 
         {/* Camada Clínica (se o gemini retornar) */}
-        {geminiReport && (
+        {geminiReport && geminiReport.clinical && (
           <section style={{ marginBottom: '2rem', borderTop: '1px solid #333', paddingTop: '2rem' }}>
             <h2 style={{ color: 'white', fontSize: '1.25rem', marginBottom: '1rem' }}>Nota Clínica (Profissional)</h2>
             <div style={{ color: '#a1a1aa', fontSize: '0.95rem', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <p><strong>Análise de Omissões:</strong> {geminiReport.omissionAnalysis}</p>
-              <p><strong>Análise de Comissões:</strong> {geminiReport.commissionAnalysis}</p>
-              <p><strong>Análise de Decremento de Vigilância:</strong> {geminiReport.vigilanceDecrementAnalysis}</p>
-              <p><strong>Análise de Variabilidade RT:</strong> {geminiReport.rtVariabilityAnalysis}</p>
-              <p><strong>Velocidade de Processamento:</strong> {geminiReport.processingSpeedNote}</p>
+              <p><strong>Análise:</strong> {geminiReport.clinical.clinicalNote}</p>
+              
+              {geminiReport.clinical.weaknesses && geminiReport.clinical.weaknesses.length > 0 && (
+                <div>
+                  <strong>Pontos de Atenção:</strong>
+                  <ul style={{ margin: '0.5rem 0 0 1.5rem', padding: 0 }}>
+                    {geminiReport.clinical.weaknesses.map((w: string, i: number) => <li key={i}>{w}</li>)}
+                  </ul>
+                </div>
+              )}
               
               <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: 'rgba(251, 191, 36, 0.1)', borderLeft: '4px solid #fbbf24', color: '#fbbf24' }}>
-                <strong>Recomendação Clínica:</strong> {geminiReport.clinicalRecommendation}
+                <strong>Recomendação Clínica:</strong> {geminiReport.clinical.recommendation}
               </div>
             </div>
           </section>

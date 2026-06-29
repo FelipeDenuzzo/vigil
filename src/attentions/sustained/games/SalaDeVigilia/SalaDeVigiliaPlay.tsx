@@ -75,17 +75,13 @@ export const SalaDeVigiliaPlay: React.FC<SalaDeVigiliaPlayProps> = ({ onFinish }
       activeEventRef.current = newEvent;
       sessionData.current.totalTargets += 1;
 
-      // Visual flash lasts 250ms
-      setTimeout(() => {
-        setActiveLampId(null);
-      }, 250);
-
       // Window to respond
       windowTimeoutRef.current = setTimeout(() => {
         if (activeEventRef.current) {
           // Omission
           sessionData.current.events.push(activeEventRef.current);
           activeEventRef.current = null;
+          setActiveLampId(null);
         }
         scheduleNextLamp();
       }, RESPONSE_WINDOW_MS);

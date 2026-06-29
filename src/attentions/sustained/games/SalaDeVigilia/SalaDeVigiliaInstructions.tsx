@@ -38,8 +38,7 @@ export const SalaDeVigiliaInstructions: React.FC<SalaDeVigiliaInstructionsProps>
         </p>
         
         <p style={{ color: 'white', marginBottom: '2rem' }}>
-          <strong>Instrução:</strong> Observe as lâmpadas na tela. Quando uma delas acender, toque nela rapidamente.<br />
-          Não toque se nenhuma lâmpada estiver acesa.
+          <strong>Instrução:</strong> Observe as lâmpadas na tela. Quando uma delas acender, toque nela rapidamente.
         </p>
         
         <button 
