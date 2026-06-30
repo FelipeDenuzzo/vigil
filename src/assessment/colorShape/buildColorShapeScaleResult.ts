@@ -23,7 +23,6 @@ import {
   MIXED_ACCURACY,
   SWITCH_COST_RT,
   MIXING_COST_RT,
-  SEVERITY_BASE_SCORE,
   SEVERITY_UX_REPORT,
   PERSEVERATION_NOTES,
   SWITCH_COST_NOTES,
@@ -74,12 +73,6 @@ function classifySeverity(
 
   // Passo 4 — Tudo dentro do esperado
   return 'minimo';
-}
-
-function computeScore(severity: ColorShapeSeverity, mixedAccuracyPct: number): number {
-  let score = SEVERITY_BASE_SCORE[severity];
-  if (mixedAccuracyPct >= 90) score = Math.min(100, score + 5);
-  return score;
 }
 
 export function buildColorShapeScaleResult(

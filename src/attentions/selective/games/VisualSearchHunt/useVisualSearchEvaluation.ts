@@ -383,7 +383,7 @@ export async function useVisualSearchEvaluation(
 
   const [, geminiResult] = await Promise.allSettled([
     Promise.resolve(technicalReport),
-    callEvaluator(evaluatorInput),
+    callEvaluator({ ...evaluatorInput, ludicScore: metrics.ludicScore ?? undefined } as any),
   ]);
 
   const geminiReport: GeminiReport | undefined =

@@ -60,7 +60,7 @@ export function useSalaDeVigiliaEvaluation() {
       let geminiReport = null;
       try {
         // Assume callEvaluator is standard
-        geminiReport = await callEvaluator(evaluatorInput);
+        geminiReport = await callEvaluator({ ...evaluatorInput, ludicScore: metrics.ludicScore ?? undefined } as any);
       } catch (e) {
         console.warn('Backend indisponível:', e);
       }

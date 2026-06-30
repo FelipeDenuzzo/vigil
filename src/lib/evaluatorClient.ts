@@ -9,6 +9,7 @@ import { auth } from './firebase';
 // ── Tipos de entrada ───────────────────────────────────────────────────────────────
 export interface EvaluatorInput {
   sessionId: string;
+  ludicScore?: number;
   attentionType: 'seletiva' | 'sustentada' | 'alternada' | 'dividida' | 'onboarding';
   severity?: 'minimo' | 'leve' | 'moderado' | 'importante';
   [key: string]: any;
