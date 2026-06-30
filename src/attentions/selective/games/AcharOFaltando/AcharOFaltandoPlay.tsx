@@ -83,6 +83,7 @@ export default function AcharOFaltandoPlay({ onClose }: Props) {
     setPhase('playing');
   }
 
+  const isSubmittingRef = useRef(false);
   const submitRoundRef = useRef(submitRound);
   submitRoundRef.current = submitRound;
 
@@ -129,7 +130,9 @@ export default function AcharOFaltandoPlay({ onClose }: Props) {
   }
 
   function submitRound() {
+    if (isSubmittingRef.current) return;
     if (!currentRound) return;
+    isSubmittingRef.current = true;
     const responseTimeMs = Date.now() - roundStartRef.current;
     const result = buildRoundResult({
       config,
@@ -141,6 +144,7 @@ export default function AcharOFaltandoPlay({ onClose }: Props) {
     setFeedbackResult(result);
     setPhase('feedback');
     setTimeout(() => {
+      isSubmittingRef.current = false;
       if (roundNumber >= config.roundLimit) {
         finishGame(updated);
       } else {
