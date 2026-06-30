@@ -78,6 +78,7 @@ function buildNoEngagementReport(
       totalLeftMisses: m.totalLeftMisses,
       totalRightMisses: m.totalRightMisses,
       score: 0,
+      ludicScore: 0,
     },
   };
 }
@@ -316,6 +317,7 @@ export function buildVisualSearchTechnicalReport(
       totalLeftMisses: m.totalLeftMisses,
       totalRightMisses: m.totalRightMisses,
       score: scale.score,
+      ludicScore: m.ludicScore,
     },
   };
 }

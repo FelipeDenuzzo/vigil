@@ -37,6 +37,7 @@ export function buildSalaDeVigiliaTechnicalReport(
       vigilanceDecrementSeverity: scales.vigilanceDecrementSeverity,
       rtVariabilitySeverity: scales.rtVariabilitySeverity,
       score: scales.score,
+      ludicScore: metrics.ludicScore,
       level: scales.level,
     }
   };

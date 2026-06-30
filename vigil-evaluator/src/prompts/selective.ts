@@ -153,6 +153,8 @@ ${(input.phaseMetrics ?? []).map(pm => `
 `).join('\n')}
 ─────────────────────────────────────────────────────────────────────────────
 
+INSTRUÇÃO CRÍTICA DO SCORE: O score OBRIGATÓRIO desta sessão é de ${input.ludicScore ?? 0}/100. Você NÃO DEVE tentar recalcular ou deduzir o score. Retorne EXATAMENTE este valor numérico na propriedade 'score'.
+
 Gere o laudo nos 3 níveis do schema (pontuação, geral e clínica) rigorosamente seguindo as instruções e proibições de palavras.
 `.trim();
   }
@@ -234,6 +236,8 @@ Perfil espacial:
 Detalhamento por quadrante:
 ${quadrantLines}
 ─────────────────────────────────────────────────────────────────────────────
+
+INSTRUÇÃO CRÍTICA DO SCORE: O score OBRIGATÓRIO desta sessão é de ${input.ludicScore ?? 0}/100. Você NÃO DEVE tentar recalcular ou deduzir o score. Retorne EXATAMENTE este valor numérico na propriedade 'score'.
 
 Gere o laudo nos 3 níveis do schema (pontuação, geral e clínica) rigorosamente seguindo as instruções e proibições de palavras.
 `.trim();

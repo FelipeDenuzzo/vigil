@@ -117,7 +117,7 @@ export async function useInsetosEvaluation(
     console.error('[Insetos] erro ao salvar sessão localmente:', err);
   }
 
-  const geminiReport = await callEvaluator(payload);
+  const geminiReport = await callEvaluator({ ...payload, ludicScore: metrics.ludicScore ?? undefined });
   if (geminiReport) {
     await saveWithRetry(geminiReport, payload);
   }

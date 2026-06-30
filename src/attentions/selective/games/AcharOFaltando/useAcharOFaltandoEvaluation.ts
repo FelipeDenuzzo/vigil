@@ -69,7 +69,7 @@ export async function useAcharOFaltandoEvaluation(
 
   let geminiReport: GeminiReport | undefined;
   try {
-    const res = await callEvaluator(evaluatorInput as any);
+    const res = await callEvaluator({ ...evaluatorInput, ludicScore: metrics.ludicScore ?? undefined } as any);
     if (res) geminiReport = res;
   } catch (err) {
     console.warn('vigil-evaluator/Gemini indisponível:', err);
