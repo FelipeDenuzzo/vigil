@@ -48,6 +48,9 @@ export interface AcharOFaltandoMetrics {
   secondHalfRtMean: number;  // média RT fases 6–10
   firstHalfSdrt: number;
   secondHalfSdrt: number;
+  // Conversão Lúdica
+  fatigueIndex: number;
+  ludicScore: number;
 }
 
 export interface AcharOFaltandoScaleResult {

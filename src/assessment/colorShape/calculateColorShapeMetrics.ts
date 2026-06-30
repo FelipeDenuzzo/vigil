@@ -69,6 +69,10 @@ export function calculateColorShapeMetrics(
   const avgRt        = avg(rtOf(allTrials));
   const timedOut     = allTrials.filter(t => t.timedOut);
 
+  // Conversão Lúdica (Agilidade de Adaptação)
+  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
+  const ludicScore = Math.round(clamp(100 - ((switchCostRt - 200) / 6), 0, 100));
+
   return {
     totalTrials:         allTrials.length,
     accuracy,
@@ -94,5 +98,6 @@ export function calculateColorShapeMetrics(
     shapeAvgRtMs:        avg(rtOf(shapes)),
     timeoutCount:        timedOut.length,
     timeoutPct:          pct(timedOut.length, allTrials.length),
+    ludicScore,
   };
 }

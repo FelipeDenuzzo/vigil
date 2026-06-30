@@ -39,6 +39,10 @@ export function calculateSalaDeVigiliaMetrics(
   const block1MeanRT = blockMeanRT(block1Events);
   const block2MeanRT = blockMeanRT(block2Events);
 
+  // Conversão Lúdica (Modo Foco)
+  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
+  const ludicScore = Math.round(clamp(100 - ((sdRT - 100) / 3), 0, 100));
+
   return {
     omissions,
     commissions,
@@ -52,5 +56,6 @@ export function calculateSalaDeVigiliaMetrics(
     block1MeanRT,
     block2MeanRT,
     rtDecrement: block2MeanRT - block1MeanRT,
+    ludicScore,
   };
 }

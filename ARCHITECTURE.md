@@ -264,6 +264,90 @@ Como a regulamentação do CFP (ex: Resoluções sobre Avaliação Psicológica)
 
 ---
 
+## Balizadores Clínicos (Métricas Gamificadas)
+
+O Vigil unifica métricas clínicas comprovadas (Balizadores) com feedback lúdico para gerar o Histórico de Evolução de forma coerente e gamificada, ocultando a complexidade neurológica bruta do paciente. Todos esses cálculos de nível superior são derivados e computados obrigatoriamente no Back-end (na pasta `assessment/` ou no `vigil-evaluator`), sem intervenção ou dedução analítica do LLM (Gemini).
+
+**Mapeamento Obrigatório por Treino:**
+
+| Treino | Métrica Lúdica (UX) | Balizador Clínico (Back-end) | Matemática / Origem |
+|---|---|---|---|
+| **Foco Ninja** | Foco Multitarefa | Custo de Dupla-Tarefa (DTC) | `% Acertos Fases 1-2` MENOS `% Acertos Fases 5-6` |
+| **Caça ao Alvo** | Filtro de Distração | Índice d' (dPrime) | `Z(Taxa de Acertos) - Z(Taxa de Falsos Positivos)` |
+| **Achar o Faltando** | Fôlego Mental / Resistência | Fadiga Atencional (Split-Half) | `Média de RT Fases 6-10` MENOS `Média de RT Fases 1-5` |
+| **Escuta Seletiva** | Fôlego de Memória | Custo de Carga Cognitiva | Variável pronta na engine: `loadCost` |
+| **Cofre Mental** | Índice de Malabarismo | IES & Custo TBRS | Variáveis prontas na engine: `avgDigitIes` / `tbrsCost` |
+| **Sala de Vigília** | Modo Foco / Na Zona | Variabilidade do RT (sdRT) | Variáveis prontas na engine: `vigilanceDecrement` / `sdRT` |
+| **Cor ou Forma** | Agilidade de Adaptação | Custo de Alternância Global | Variável pronta na engine: `switchCostRtMs` |
+| **Insetos** | Agilidade de Reconfiguração | Custo de Transição Dinâmica | `Média RT nos primeiros 10s após inversão de regra` MENOS `Média RT Global` |
+| **Labirintos** | Bússola Mental / Eficiência | Índice de Eficiência de Rota (IER) | `Tempo Total Conclusão * (1 + (Qtd de Batidas e Erros / 10))` |
+
+> **Nota Crítica de Arquitetura:** O Gemini nunca inventará ou deduzirá essas pontuações. Os arquivos TypeScript do avaliador (artefato 2) farão a matemática precisa baseada nos logs de eventos, enviarão esses números exatos para o payload do prompt e a IA os usará estritamente como balizadores irrefutáveis. O Front-end também utilizará esses dados absolutos para plotar os Gráficos de Evolução de forma determinística.
+
+---
+
+## Matriz de Conversão Lúdica (0 a 100)
+
+O objetivo desta matriz é entregar ao Back-end a fórmula matemática exata e embasada clinicamente para pegar a métrica bruta (milissegundos, dPrime, etc.) e convertê-la em uma pontuação gamificada de 0 a 100 para ser exibida nos Gráficos de Evolução.
+
+> **Nota de Implementação:** Sempre aplique uma função limitadora `clamp(resultado, 0, 100)` para que a nota convertida nunca ultrapasse 100 e nunca fique negativa.
+
+### 🟢 1. Foco Ninja (Métrica UX: Foco Multitarefa)
+* **A Variável no Back-end:** `dualTaskCost` (Queda de acertos entre as Fases 1+2 e as Fases 5+6, em %).
+* **O Baseline Saudável (100 pts):** Queda de $\le$ 5%. (O cérebro neurotípico perde pouquíssima precisão quando a tarefa é dividida).
+* **O Pior Cenário (0 pts):** Queda de $\ge$ 50% (Colapso executivo).
+* **Fórmula:** `Nota = 100 - ((dualTaskCost - 5) * 2.22)`
+
+### 🟢 2. Caça ao Alvo (Métrica UX: Filtro de Distração)
+* **A Variável no Back-end:** `dPrime` (Índice de Sensibilidade que já está na engine).
+* **O Baseline Saudável (100 pts):** dPrime $\ge$ 4.0. (Para a grade complexa 10x10, 4.0 é excelente).
+* **O Pior Cenário (0 pts):** dPrime $\le$ 0 (Significa "chute" ao acaso).
+* **Fórmula:** `Nota = (dPrime / 4.0) * 100`
+
+### 🟢 3. Achar o Faltando (Métrica UX: Fôlego Mental)
+* **A Variável no Back-end:** `fatigueIndex` (Média RT das Rodadas 6 a 10 menos Média RT das Rodadas 1 a 5).
+* **O Baseline Saudável (100 pts):** $\le$ 0 ms. O normal em 2 minutos é não haver fadiga e o usuário ficar mais rápido (índice negativo).
+* **O Pior Cenário (0 pts):** Lentificação de $\ge$ 500 ms na segunda metade.
+* **Fórmula:** `Nota = 100 - (fatigueIndex / 5)`
+
+### 🟢 4. Escuta Seletiva (Métrica UX: Fôlego de Memória)
+* **A Variável no Back-end:** `loadCost` (Queda percentual de acerto do áudio de 3 para 5 dígitos sob ruído).
+* **O Baseline Saudável (100 pts):** $\le$ 0% de queda. Reter 5 dígitos na memória de trabalho auditiva é normal para adultos.
+* **O Pior Cenário (0 pts):** Queda de $\ge$ 60% na precisão.
+* **Fórmula:** `Nota = 100 - (loadCost * 1.66)`
+
+### 🟢 5. Cofre Mental (Métrica UX: Índice de Malabarismo)
+* **A Variável no Back-end:** `tbrsCost` (% de queda no acerto das letras devido à pressão do cálculo matemático).
+* **O Baseline Saudável (100 pts):** Queda de $\le$ 10%. 
+* **O Pior Cenário (0 pts):** Queda de $\ge$ 60% na retenção das letras.
+* **Fórmula:** `Nota = 100 - ((tbrsCost - 10) * 2)`
+
+### 🟢 6. Sala de Vigília (Métrica UX: Modo Foco)
+* **A Variável no Back-end:** `sdRT` (Desvio Padrão do Tempo de Reação em milissegundos).
+* **O Baseline Saudável (100 pts):** $\le$ 100 ms. A flutuação normal "na zona" fica em torno de 76 a 96ms.
+* **O Pior Cenário (0 pts):** `sdRT` $\ge$ 400 ms (Apagões e mind-wandering severo).
+* **Fórmula:** `Nota = 100 - ((sdRT - 100) / 3)`
+
+### 🟢 7. Cor ou Forma (Métrica UX: Agilidade de Adaptação)
+* **A Variável no Back-end:** `switchCostRtMs` (O atraso em tempo na jogada onde a regra inverte).
+* **O Baseline Saudável (100 pts):** $\le$ 200 ms. 
+* **O Pior Cenário (0 pts):** $\ge$ 800 ms de paralisia na hora da troca.
+* **Fórmula:** `Nota = 100 - ((switchCostRtMs - 200) / 6)`
+
+### 🟢 8. Insetos (Métrica UX: Agilidade de Reconfiguração)
+* **A Variável no Back-end:** `dynamicTransitionCost` (Lentificação nos 10s seguintes após as regras trocarem).
+* **O Baseline Saudável (100 pts):** $\le$ 300 ms de atraso na retomada.
+* **O Pior Cenário (0 pts):** $\ge$ 1.500 ms de paralisia motora após o bipe.
+* **Fórmula:** `Nota = 100 - ((dynamicTransitionCost - 300) / 12)`
+
+### 🟢 9. Labirintos Prolongados (Métrica UX: Bússola Mental)
+* **A Variável no Back-end:** `IER` (Índice de Eficiência de Rota: Tempo ponderado pelos erros).
+* **O Baseline Saudável (100 pts):** `IER` $\le$ 180 segundos.
+* **O Pior Cenário (0 pts):** `IER` $\ge$ 480 segundos (Estourou o tempo e bateu muito).
+* **Fórmula:** `Nota = 100 - ((IER - 180) / 3)`
+
+---
+
 ## Fluxo de Simulação de Jogo Pré-Treino (Onboarding)
 
 Para neutralizar variáveis que possam distorcer as métricas cognitivas reais do usuário — como ansiedade, desconforto com a interface ou dúvidas na mecânica do jogo —, todos os treinos do Vigil devem implementar um fluxo de onboarding em fases:
