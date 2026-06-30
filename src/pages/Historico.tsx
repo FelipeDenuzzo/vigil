@@ -41,7 +41,7 @@ export const Historico: React.FC = () => {
       </Button>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-        <h1 style={{ fontSize: 'var(--text-2xl)', margin: 0 }}>📊 Histórico de {displayName ? displayName.split(' ')[0] : 'treinos'}</h1>
+        <h1 style={{ fontSize: 'var(--text-2xl)', margin: 0 }}>🎮 Jornada de {displayName ? displayName.split(' ')[0] : 'treinos'}</h1>
 
         {/* Streak */}
         {!loading && streak.current > 0 && (

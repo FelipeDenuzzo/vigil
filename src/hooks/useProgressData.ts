@@ -117,7 +117,7 @@ export function useProgressData(): ProgressData {
               .map((d) => {
                 const sd = d.data();
                 const iso = sd.createdAt?.toDate?.()?.toISOString() ?? '';
-                return { date: iso, score: sd.score ?? 0, level: sd.level ?? '', sessionId: d.id };
+                return { date: iso, score: sd.ludicScore ?? sd.score ?? 0, level: sd.level ?? '', sessionId: d.id };
               })
               .filter((s) => s.date)
               .reverse(); // mais antigo primeiro para o gráfico
