@@ -24,4 +24,7 @@ export interface MazeAggregatedMetrics {
   totalLongStops: number;
   avgPostErrorPauseMs: number;
   severity: LongMazesSeverity;
+  // Conversão Lúdica (Bússola Mental)
+  ier: number;                 // Índice de Eficiência de Rota
+  ludicScore: number;
 }

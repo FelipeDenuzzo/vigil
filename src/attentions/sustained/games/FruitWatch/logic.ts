@@ -78,13 +78,16 @@ export function calculateFruitWatchScore(results: PhaseRawResult[]): FruitWatchS
   // 2. Controle e Calma — Falsos positivos (supercontagem) nas fases de alta semelhança (3 e 4) + toques de comissão
   const controleCalma = calcControlScore([byPhase(3), byPhase(4)]);
 
-  // 3. Foco Multitarefa — Custo de Dupla Tarefa (DTC) entre a fase 5 e fase 6
-  // Fase 5: pergunta bônus vem depois (memória de trabalho exigida no final)
-  // Fase 6: pergunta bônus vem antes (interferência imediata)
-  const prec5 = precisionOf(byPhase(5));
-  const prec6 = precisionOf(byPhase(6));
-  const dtc = prec5 > 0 ? Math.abs(prec5 - prec6) / prec5 : 0;
-  const focoMultitarefa = Math.max(0, Math.round(100 - dtc * 100));
+  // 3. Foco Multitarefa — Custo de Dupla Tarefa (DTC)
+  // Balizador: Queda de acertos entre as Fases 1+2 e as Fases 5+6, em %
+  const prec12 = (precisionOf(byPhase(1)) + precisionOf(byPhase(2))) / 2;
+  const prec56 = (precisionOf(byPhase(5)) + precisionOf(byPhase(6))) / 2;
+  const dualTaskCost = prec12 > 0 ? Math.max(0, ((prec12 - prec56) / prec12) * 100) : 0;
+  
+  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
+  
+  // Fórmula da Matriz de Conversão: 100 - ((dualTaskCost - 5) * 2.22)
+  const focoMultitarefa = Math.round(clamp(100 - ((dualTaskCost - 5) * 2.22), 0, 100));
 
   // 4. Conquista secreta — Se o usuário acertou a contagem bônus na Fase 5 (atenção periférica)
   const r5 = byPhase(5);
@@ -98,6 +101,7 @@ export function calculateFruitWatchScore(results: PhaseRawResult[]): FruitWatchS
     focoContinuo,
     controleCalma,
     focoMultitarefa,
+    dualTaskCost,
     conquistaSecreta,
     rawResults: results,
   };

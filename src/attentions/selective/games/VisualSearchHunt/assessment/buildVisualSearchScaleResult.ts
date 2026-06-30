@@ -270,6 +270,7 @@ export function buildVisualSearchScaleResult(
     answer,
     dominantPattern: m.dominantPattern,
     dPrimeBand: m.dPrimeBand,
+    ludicScore: m.ludicScore,
     subscales: {
       selectiveAttention,
       visualScanning,

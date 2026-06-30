@@ -13,6 +13,7 @@ export function calculateSelectiveListeningMetrics(rounds: TentativaRodada[]): S
       distractorIntrusionRate: 0,
       loadCost: 0,
       avgReplayCount: 0,
+      ludicScore: 0,
     };
   }
 
@@ -99,6 +100,11 @@ export function calculateSelectiveListeningMetrics(rounds: TentativaRodada[]): S
   const avgHighLoad = highLoadAcc.length > 0 ? highLoadAcc.reduce((a, b) => a + b, 0) / highLoadAcc.length : 0;
   const loadCost = Math.max(0, avgLowLoad - avgHighLoad);
 
+  // Conversão Lúdica (Fôlego de Memória)
+  // loadCost = Queda percentual (0 a 1)
+  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
+  const ludicScore = Math.round(clamp(100 - ((loadCost * 100) * 1.66), 0, 100));
+
   return {
     totalRounds,
     serialAccuracy: omissionsCount === totalRounds ? 0 : avgSerial,
@@ -108,5 +114,6 @@ export function calculateSelectiveListeningMetrics(rounds: TentativaRodada[]): S
     distractorIntrusionRate: omissionsCount === totalRounds ? 0 : avgIntrusion,
     loadCost,
     avgReplayCount: totalReplay / totalRounds,
+    ludicScore,
   };
 }

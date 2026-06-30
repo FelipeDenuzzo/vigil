@@ -18,7 +18,7 @@ export function buildSelectiveListeningScaleResult(
   }
 
   // Pontuação principal é baseada na precisão serial
-  const score = Math.round(serialAccuracy * 100);
+  const score = metrics.ludicScore;
 
   // Determinação da severidade baseada na precisão serial
   let level: 'mínimo' | 'leve' | 'moderado' | 'importante';

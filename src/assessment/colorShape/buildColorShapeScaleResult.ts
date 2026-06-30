@@ -100,7 +100,7 @@ export function buildColorShapeScaleResult(
   const accuracyKey = resolveAccuracyKey(mixedAccuracyPct);
 
   const severity = classifySeverity(persevKey, switchKey, mixingKey, accuracyKey);
-  const score    = computeScore(severity, mixedAccuracyPct);
+  const score    = metrics.ludicScore;
 
   return {
     severity,

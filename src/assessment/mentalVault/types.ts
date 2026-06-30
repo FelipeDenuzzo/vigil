@@ -26,6 +26,7 @@ export interface MentalVaultSessionMetrics {
   avgAbsoluteRecallPuras: number;  // Média do recall absoluto nas rodadas puras
   avgAbsoluteRecallMistas: number; // Média do recall absoluto nas rodadas mistas
   tbrsCost: number;                // Custo TBRS: média puras - média mistas
+  ludicScore: number;              // Calculado via Matriz de Conversão (UX)
 
   // Métricas acumuladas e médias de processamento de dígitos
   avgDigitAccuracy: number;        // Média geral da acurácia de dígitos

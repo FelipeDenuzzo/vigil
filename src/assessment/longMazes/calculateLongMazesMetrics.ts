@@ -68,6 +68,15 @@ export function calculateLongMazesMetrics(
     totalLongStops
   );
 
+  // Conversão Lúdica (Bússola Mental)
+  // IER = Tempo Total (s) * (1 + (Qtd de Erros / 10))
+  // Erros = deadEndEntries + revisits
+  const totalElapsedSec = phases.reduce((acc, p) => acc + p.elapsedSec, 0);
+  const totalErrors = totalDeadEndEntries + totalRevisits;
+  const ier = totalElapsedSec * (1 + (totalErrors / 10));
+
+  const ludicScore = Math.round(clamp(100 - ((ier - 180) / 3), 0, 100));
+
   return {
     phases,
     completedPhases,
@@ -78,5 +87,7 @@ export function calculateLongMazesMetrics(
     totalLongStops,
     avgPostErrorPauseMs,
     severity,
+    ier,
+    ludicScore,
   };
 }

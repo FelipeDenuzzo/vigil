@@ -49,7 +49,8 @@ export interface PhaseRawResult {
 export interface FruitWatchScore {
   focoContinuo: number;       // 0–100 — omissões fases 1+2
   controleCalma: number;      // 0–100 — falsos positivos fases 3+4 e comissões
-  focoMultitarefa: number;    // 0–100 — Custo de Dupla Tarefa (DTC) fase 5 vs 6
+  focoMultitarefa: number;    // 0–100 — Calculado via Matriz de Conversão (UX)
+  dualTaskCost: number;       // Custo de Dupla-Tarefa (Balizador Clínico)
   conquistaSecreta: boolean;  // verdadeiro se acertou o bônus da fase 5
   rawResults: PhaseRawResult[];
 }

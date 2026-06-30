@@ -15,9 +15,9 @@ export function buildMentalVaultScaleResult(
     metrics.avgAbsoluteRecall >= 3.5 ? 'leve' :
     metrics.avgAbsoluteRecall >= 2.5 ? 'moderado' : 'importante';
 
-  const score = metrics.avgDigitIes
-    ? Math.max(0, Math.round(100 - (metrics.avgDigitIes / 50)))
-    : 50;
+  const score = metrics.ludicScore; // metrics.avgDigitIes
+    
+    
 
   return {
     score,
