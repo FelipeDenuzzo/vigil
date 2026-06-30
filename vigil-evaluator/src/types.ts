@@ -8,7 +8,6 @@ export interface SelectiveEvaluatorInput {
   attentionType: 'seletiva';
   sessionId: string;
   ludicScore?: number;
-  ludicScore?:   number;
   game?:         'visual-search' | 'achar-o-faltando';
   roundCount?:   number;
   totalClicks?:  number;
@@ -151,7 +150,6 @@ export interface DividedEvaluatorInput {
   attentionType: 'dividida';
   sessionId: string;
   ludicScore?: number;
-  ludicScore?:   number;
   severity?:     'minimo' | 'leve' | 'moderado' | 'importante';
   // TODO: campos do treino de atenção dividida
   [key: string]: unknown;
