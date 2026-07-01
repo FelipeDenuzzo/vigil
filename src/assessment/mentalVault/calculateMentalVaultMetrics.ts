@@ -137,12 +137,6 @@ export function calculateSessionMetrics(
     ? roundsWithIes.reduce((acc, r) => acc + r.digitIes, 0) / roundsWithIes.length
     : 0;
 
-  // Conversão Lúdica (Índice de Malabarismo)
-  // tbrsCost = % de queda no acerto (0 a 1)
-  const tbrsCostPct = tbrsCost * 100;
-  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
-  const ludicScore = Math.round(clamp(100 - ((tbrsCostPct - 10) * 2), 0, 100));
-
   return {
     totalRodadas,
     rodadasPuras,
@@ -153,7 +147,6 @@ export function calculateSessionMetrics(
     avgAbsoluteRecallPuras: Math.round(avgAbsoluteRecallPuras * 10000) / 10000,
     avgAbsoluteRecallMistas: Math.round(avgAbsoluteRecallMistas * 10000) / 10000,
     tbrsCost: Math.round(tbrsCost * 10000) / 10000,
-    ludicScore,
     
     avgDigitAccuracy: Math.round(avgDigitAccuracy * 10000) / 10000,
     totalCommissionErrors,

@@ -26,9 +26,6 @@ export interface InsetosMetrics {
   totalHits: number;
   totalTrials: number;              // hits + omissions
   accuracyPct: number | null;
-  // Conversão Lúdica (Agilidade de Reconfiguração)
-  dynamicTransitionCost: number | null; // = switchCostMs
-  ludicScore: number | null;
 }
 
 export interface InsetosScaleResult {

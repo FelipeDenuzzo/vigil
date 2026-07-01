@@ -141,7 +141,7 @@ export async function useColorShapeEvaluation(
     console.error('[ColorShape] erro ao salvar sessão localmente:', err);
   }
 
-  const geminiReport = await callEvaluator({ ...payload, ludicScore: metrics.ludicScore ?? undefined });
+  const geminiReport = await callEvaluator(payload);
   if (geminiReport) {
     await saveWithRetry(geminiReport, payload);
   }

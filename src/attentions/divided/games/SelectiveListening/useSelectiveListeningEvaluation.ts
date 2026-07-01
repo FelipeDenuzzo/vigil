@@ -74,7 +74,7 @@ export async function useSelectiveListeningEvaluation(
   }
 
   // Chama o evaluator (Gemini)
-  const geminiReport = await callEvaluator({ ...evaluatorInput, ludicScore: metrics.ludicScore ?? undefined } as any);
+  const geminiReport = await callEvaluator(evaluatorInput);
 
   if (geminiReport) {
     await saveWithRetry(geminiReport, evaluatorInput);

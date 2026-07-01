@@ -62,8 +62,6 @@ export interface ColorShapeMetrics {
   // Abandono / tempo esgotado
   timeoutCount:        number;
   timeoutPct:          number;
-  // Conversão Lúdica (Agilidade de Adaptação)
-  ludicScore:          number;
 }
 
 export interface ColorShapeScaleResult {

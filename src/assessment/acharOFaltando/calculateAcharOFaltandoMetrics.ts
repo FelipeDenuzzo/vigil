@@ -237,11 +237,6 @@ export function calculateAcharOFaltandoMetrics(
   const hasFatigue = detectFatigue(m.roundCurve);
   const spatialAsymmetry = detectSpatialAsymmetry(results);
 
-  // Conversão Lúdica (Fôlego Mental)
-  const fatigueIndex = secondHalfRtMean - firstHalfRtMean;
-  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
-  const ludicScore = Math.round(clamp(100 - (fatigueIndex / 5), 0, 100));
-
   return {
     roundsPlayed: m.roundsPlayed,
     totalHits: m.totalHits,
@@ -263,7 +258,5 @@ export function calculateAcharOFaltandoMetrics(
     secondHalfRtMean,
     firstHalfSdrt,
     secondHalfSdrt,
-    fatigueIndex,
-    ludicScore,
   };
 }

@@ -64,7 +64,6 @@ export type VisualSearchScaleResult = {
   answer: 'sim' | 'parcial' | 'nao' | 'insuficiente';
   dominantPattern: VisualSearchDominantPattern;
   dPrimeBand: VisualSearchDPrimeBand;
-  ludicScore: number | null; // Calculado via Matriz de Conversão (UX)
   subscales: {
     selectiveAttention: SubscaleResult;
     visualScanning: SubscaleResult;
@@ -147,7 +146,6 @@ export type VisualSearchMetrics = {
   falseAlarmRate: number | null;
   dPrime: number | null;
   dPrimeBand: VisualSearchDPrimeBand;
-  ludicScore: number | null;
   dominantPattern: VisualSearchDominantPattern;
   hasRelevantDifficulty: boolean;
   engagementStatus: EngagementStatus;
@@ -203,7 +201,6 @@ export type VisualSearchTechnicalReport = {
     falseAlarmRate: number | null;
     dPrime: number | null;
     dPrimeBand: VisualSearchDPrimeBand;
-    ludicScore: number | null;
     meanReactionTimeMs: number | null;
     reactionTimeStdDev: number | null;
     meanOrganizationIndex: number | null;

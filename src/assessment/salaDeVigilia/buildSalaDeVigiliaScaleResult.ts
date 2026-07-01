@@ -14,7 +14,15 @@ export function buildSalaDeVigiliaScaleResult(
   const vigilanceDecrementSeverity = getVigilanceDecrementSeverity(metrics.vigilanceDecrement);
   const rtVariabilitySeverity = getRtVariabilitySeverity(metrics.sdRT);
 
-  const score = metrics.ludicScore;
+  // Calcula um score de 0 a 100 gamificado
+  // TODO: Refinar o cálculo do score pela equipe científica
+  let score = 100;
+  score -= metrics.omissions * 10;
+  score -= metrics.commissions * 5;
+  if (metrics.vigilanceDecrement > 0.1) score -= 10;
+  if (metrics.vigilanceDecrement > 0.2) score -= 10;
+  
+  score = Math.max(0, Math.min(100, Math.round(score)));
 
   let level = 'Vigilância Estável';
   if (score < 50) level = 'Vigilância Oscilante';

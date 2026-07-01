@@ -28,7 +28,6 @@ export interface SelectiveListeningMetrics {
   distractorIntrusionRate: number; // Porcentagem de dígitos do distrator presentes na resposta (0 a 1)
   loadCost: number;               // Queda de precisão entre sequências menores (3) e maiores (4 ou 5)
   avgReplayCount: number;         // Média de repetições solicitadas
-  ludicScore: number;             // Calculado via Matriz de Conversão (UX)
 }
 
 export interface SelectiveListeningScaleResult {

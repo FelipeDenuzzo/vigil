@@ -113,8 +113,6 @@ Comparação Primeira vs Segunda Metade:
   Bloco 2 - Hit Rate: ${input.metrics?.block2HitRate ?? 0}, Mean RT: ${input.metrics?.block2MeanRT ?? 0}s
 ─────────────────────────────────────────────────────────────────────────────
 
-INSTRUÇÃO CRÍTICA DO SCORE: O score OBRIGATÓRIO desta sessão é de ${input.ludicScore ?? 0}/100. Você NÃO DEVE tentar recalcular ou deduzir o score. Retorne EXATAMENTE este valor numérico na propriedade 'score'.
-
 Gere o laudo JSON estrito de acordo com o schema de duas camadas.
     `.trim();
   }

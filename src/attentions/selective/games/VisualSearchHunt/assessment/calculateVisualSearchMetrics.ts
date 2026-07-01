@@ -279,7 +279,6 @@ export function calculateVisualSearchMetrics(
     falseAlarmRate,
     dPrime,
     dPrimeBand: getDPrimeBand(dPrime),
-    ludicScore: dPrime !== null ? Math.max(0, Math.min(100, Math.round((dPrime / 4.0) * 100))) : null,
     dominantPattern,
     hasRelevantDifficulty,
     engagementStatus,

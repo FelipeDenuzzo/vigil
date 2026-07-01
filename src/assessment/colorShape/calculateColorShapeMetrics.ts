@@ -40,7 +40,6 @@ export function calculateColorShapeMetrics(
     colorAccuracy: 0, shapeAccuracy: 0,
     colorAvgRtMs: 0, shapeAvgRtMs: 0,
     timeoutCount: 0, timeoutPct: 0,
-    ludicScore: 0,
   };
   if (allTrials.length === 0) return empty;
 
@@ -70,10 +69,6 @@ export function calculateColorShapeMetrics(
   const avgRt        = avg(rtOf(allTrials));
   const timedOut     = allTrials.filter(t => t.timedOut);
 
-  // Conversão Lúdica (Agilidade de Adaptação)
-  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
-  const ludicScore = Math.round(clamp(100 - ((switchCostRt - 200) / 6), 0, 100));
-
   return {
     totalTrials:         allTrials.length,
     accuracy,
@@ -99,6 +94,5 @@ export function calculateColorShapeMetrics(
     shapeAvgRtMs:        avg(rtOf(shapes)),
     timeoutCount:        timedOut.length,
     timeoutPct:          pct(timedOut.length, allTrials.length),
-    ludicScore,
   };
 }
