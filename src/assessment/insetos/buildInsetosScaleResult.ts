@@ -17,7 +17,7 @@ export function buildInsetosScaleResult(metrics: InsetosMetrics): InsetosScaleRe
     level = 'leve';
   }
 
-  const score = metrics.ludicScore ?? SEVERITY_BASE_SCORE[level];
+  const score = SEVERITY_BASE_SCORE[level];
 
   let accuracyNote = 'Acurácia preservada. Bom controle e foco no grupo ativo.';
   if (acc < 60) {

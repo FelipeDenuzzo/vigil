@@ -98,7 +98,7 @@ export async function useLongMazesEvaluation(
   }
 
   // Artefato 3: envia ao Gemini
-  const geminiReport = await callEvaluatorSustained({ ...evaluatorInput, ludicScore: metrics.ludicScore ?? undefined } as any);
+  const geminiReport = await callEvaluatorSustained(evaluatorInput);
 
   if (geminiReport) {
     await saveWithRetry(geminiReport, evaluatorInput);

@@ -6,8 +6,7 @@
 // ─── Seletiva (VisualSearchHunt ou Achar o Faltando) ─────────────────────────────
 export interface SelectiveEvaluatorInput {
   attentionType: 'seletiva';
-  sessionId: string;
-  ludicScore?: number;
+  sessionId:     string;
   game?:         'visual-search' | 'achar-o-faltando';
   roundCount?:   number;
   totalClicks?:  number;
@@ -80,8 +79,7 @@ export interface SelectiveEvaluatorInput {
 // ─── Sustentada (LongMazes) ──────────────────────────────────────────────────
 export interface SustainedEvaluatorInput {
   attentionType:        'sustentada';
-  sessionId: string;
-  ludicScore?: number;
+  sessionId:            string;
   severity?:            'minimo' | 'leve' | 'moderado' | 'importante';
   completedPhases?:     number;
   totalPhases?:         number;
@@ -105,8 +103,7 @@ export interface SustainedEvaluatorInput {
 // ─── Alternada (ColorShape) ──────────────────────────────────────────────────
 export interface AlternatingEvaluatorInput {
   attentionType:       'alternada';
-  sessionId: string;
-  ludicScore?: number;
+  sessionId:           string;
   startedAt?:          string;
   severity?:           'minimo' | 'leve' | 'moderado' | 'importante';
   // Métricas globais
@@ -148,8 +145,7 @@ export interface AlternatingEvaluatorInput {
 // ─── Dividida (placeholder — campos definidos quando o jogo existir) ──────────
 export interface DividedEvaluatorInput {
   attentionType: 'dividida';
-  sessionId: string;
-  ludicScore?: number;
+  sessionId:     string;
   severity?:     'minimo' | 'leve' | 'moderado' | 'importante';
   // TODO: campos do treino de atenção dividida
   [key: string]: unknown;
@@ -158,7 +154,6 @@ export interface DividedEvaluatorInput {
 // ─── Onboarding (Avaliação Inicial Gamificada) ──────────────────────────────
 export interface OnboardingEvaluatorInput {
   sessionId: string;
-  ludicScore?: number;
   attentionType: 'onboarding';
   exercicio_1_calibragem: any;
   exercicio_2_gonogo: any;
@@ -171,8 +166,7 @@ export interface OnboardingEvaluatorInput {
 export interface FruitWatchEvaluatorInput {
   attentionType:        'sustentada';
   game:                 'fruit-watch';
-  sessionId: string;
-  ludicScore?: number;
+  sessionId:            string;
   severity?:            'minimo' | 'leve' | 'moderado' | 'importante';
   focoContinuo?:        number;
   controleCalma?:       number;
@@ -258,7 +252,6 @@ export interface BaselineRef {
 
 export interface RecentSession {
   sessionId: string;
-  ludicScore?: number;
   score: number;
   level: string;
   createdAt: string;

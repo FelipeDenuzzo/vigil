@@ -29,7 +29,6 @@ export interface SalaDeVigiliaMetrics {
   block1MeanRT: number;
   block2MeanRT: number;
   rtDecrement: number;         // block2MeanRT - block1MeanRT (positivo = lentidão)
-  ludicScore: number;          // Calculado via Matriz de Conversão (UX)
 }
 
 export interface SalaDeVigiliaScaleResult {

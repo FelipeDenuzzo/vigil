@@ -61,13 +61,6 @@ export function calculateInsetosMetrics(events: InsetosRawEvent[]): InsetosMetri
     ? omRateLast - omRateFirst  // positivo = piorou no final
     : null;
 
-  // Conversão Lúdica (Agilidade de Reconfiguração)
-  const dynamicTransitionCost = switchCostMs;
-  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
-  const ludicScore = dynamicTransitionCost != null 
-    ? Math.round(clamp(100 - ((dynamicTransitionCost - 300) / 12), 0, 100))
-    : null;
-
   return {
     meanRT,
     omissions: totalOmissions,
@@ -78,7 +71,5 @@ export function calculateInsetosMetrics(events: InsetosRawEvent[]): InsetosMetri
     totalHits,
     totalTrials,
     accuracyPct,
-    dynamicTransitionCost,
-    ludicScore,
   };
 }

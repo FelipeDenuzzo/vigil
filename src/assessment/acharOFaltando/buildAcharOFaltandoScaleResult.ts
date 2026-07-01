@@ -8,6 +8,7 @@ export function buildAcharOFaltandoScaleResult(
   metrics: AcharOFaltandoMetrics
 ): AcharOFaltandoScaleResult {
   const {
+    totalCorrectRounds,
     roundsPlayed,
     totalOmissions,
     flagImpulsividade,
@@ -26,7 +27,8 @@ export function buildAcharOFaltandoScaleResult(
     };
   }
 
-  const score = metrics.ludicScore;
+  const accuracyRate = totalCorrectRounds / roundsPlayed;
+  const score = Math.round(accuracyRate * 100);
 
   // --- DERIVAÇÃO DO NÍVEL DE SEVERIDADE BASEADO EM FLAGS ---
   let activeFlagsCount = 0;

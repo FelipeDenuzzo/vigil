@@ -23,6 +23,7 @@ import {
   MIXED_ACCURACY,
   SWITCH_COST_RT,
   MIXING_COST_RT,
+  SEVERITY_BASE_SCORE,
   SEVERITY_UX_REPORT,
   PERSEVERATION_NOTES,
   SWITCH_COST_NOTES,
@@ -75,6 +76,12 @@ function classifySeverity(
   return 'minimo';
 }
 
+function computeScore(severity: ColorShapeSeverity, mixedAccuracyPct: number): number {
+  let score = SEVERITY_BASE_SCORE[severity];
+  if (mixedAccuracyPct >= 90) score = Math.min(100, score + 5);
+  return score;
+}
+
 export function buildColorShapeScaleResult(
   metrics: ColorShapeMetrics,
 ): ColorShapeScaleResult {
@@ -93,7 +100,7 @@ export function buildColorShapeScaleResult(
   const accuracyKey = resolveAccuracyKey(mixedAccuracyPct);
 
   const severity = classifySeverity(persevKey, switchKey, mixingKey, accuracyKey);
-  const score    = metrics.ludicScore;
+  const score    = computeScore(severity, mixedAccuracyPct);
 
   return {
     severity,
