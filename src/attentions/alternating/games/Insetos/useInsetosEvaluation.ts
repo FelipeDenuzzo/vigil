@@ -118,7 +118,7 @@ export async function useInsetosEvaluation(
   }
 
   const geminiReport = await callEvaluator(payload);
-  if (geminiReport) { geminiReport.score = s.score; if (geminiReport.ludic) geminiReport.ludic.score = s.score; }
+  if (geminiReport) { geminiReport.score = scale.score; if (geminiReport.ludic) geminiReport.ludic.score = scale.score; }
   if (geminiReport) {
     await saveWithRetry(geminiReport, payload);
   }

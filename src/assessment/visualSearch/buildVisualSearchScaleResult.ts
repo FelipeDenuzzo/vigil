@@ -50,7 +50,7 @@ function resolveColorToken(score: number): EagleColorToken {
 export function buildVisualSearchScaleResult(
   roundClicks: VisualSearchAnalysisInput['roundClicks']
 ): VisualSearchScaleResult {
-  const { errorProfile, spatialProfile } = calculateVisualSearchMetrics(roundClicks);
+  const { errorProfile } = calculateVisualSearchMetrics(roundClicks);
 
   // Score baseado nos perfis disponíveis
   const totalAnalyzed = errorProfile.totalAnalyzedErrors;
@@ -58,11 +58,6 @@ export function buildVisualSearchScaleResult(
 
   // Taxa de comissão: erros / total de cliques
   const commissionRate = totalClicks > 0 ? totalAnalyzed / totalClicks : 0;
-
-  // Negligencia espacial degrada score
-  const hasNeglect =
-    spatialProfile.spatialNeglectSide === 'esquerda' ||
-    spatialProfile.spatialNeglectSide === 'direita';
 
   // Score simples: base 100 - penalidade por erros - penalidade por neglect
   // Formula B: Caça ao Alvo (dPrime)
