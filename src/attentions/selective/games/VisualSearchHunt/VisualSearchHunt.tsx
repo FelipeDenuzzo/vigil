@@ -644,6 +644,7 @@ export default function VisualSearchHunt({
   const [status, setStatus] = useState<RoundStatus>('intro');
   const [targetShape, setTargetShape] = useState<Shape>('triangle');
   const [targetColor, setTargetColor] = useState<Color>('red');
+  const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [remainingTime, setRemainingTime] = useState(FIXED_TIME_SECONDS);
   const [roundResults, setRoundResults] = useState<RoundResult[]>([]);
@@ -772,7 +773,6 @@ export default function VisualSearchHunt({
       lastLevelReached: results[results.length - 1]?.level ?? level,
       accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
     };
-    try {
       if (sessionLogRef.current) {
         sessionLogRef.current.completedAt = completedAt;
         sessionLogRef.current.abandoned = false;
@@ -780,8 +780,11 @@ export default function VisualSearchHunt({
       }
       saveResult(gameResult, uidRef.current);
     } catch (e) {}
-    onEnd?.(gameResult, sessionId);
-  }, [roundIndex, level, onEnd]);
+    
+    setCompletedSessionId(sessionId);
+    // Cast 'finished' to any since it's not in RoundStatus, or just let completedSessionId override rendering
+    setStatus('intro'); // Status doesn't matter much if completedSessionId takes over
+  }, [roundIndex, level]);
 
   const finishRound = useCallback(
     (resultStatus: 'won' | 'lost') => {
@@ -965,6 +968,22 @@ export default function VisualSearchHunt({
   const gridTemplateColumns = `repeat(${config.gridSize}, minmax(0, 1fr))`;
   const nextPhaseNumber = roundIndex + 1;
   const tileGap = config.gridSize <= 5 ? 6 : config.gridSize <= 6 ? 5 : 3;
+
+  if (completedSessionId) {
+    return (
+      <VisualSearchEvaluationContainer
+        sessionId={completedSessionId}
+        onRepeat={() => {
+          setCompletedSessionId(null);
+          setStatus('intro');
+          setLevel(1);
+          setRoundIndex(1);
+          setRoundResults([]);
+        }}
+        onClose={() => onEnd?.({} as any, completedSessionId)}
+      />
+    );
+  }
 
   return (
     <div style={{ 
