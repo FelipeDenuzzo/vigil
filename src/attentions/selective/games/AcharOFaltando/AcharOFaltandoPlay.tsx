@@ -56,6 +56,7 @@ export default function AcharOFaltandoPlay({ onClose }: Props) {
   const [elapsedSec, setElapsedSec] = useState(0);
   const [feedbackResult, setFeedbackResult] = useState<MissingItemRoundResult | null>(null);
   const [visibleBoard, setVisibleBoard] = useState<'A' | 'B'>('A');
+  const [isTimeoutFeedback, setIsTimeoutFeedback] = useState(false);
 
   const roundStartRef = useRef<number>(Date.now());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -98,7 +99,7 @@ export default function AcharOFaltandoPlay({ onClose }: Props) {
 
   useEffect(() => {
     if (phase === 'playing' && remainingSec === 0) {
-      submitRoundRef.current();
+      submitRoundRef.current(true);
     }
   }, [phase, remainingSec]);
   useEffect(() => {
@@ -129,11 +130,28 @@ export default function AcharOFaltandoPlay({ onClose }: Props) {
     );
   }
 
-  function submitRound() {
+  function proceedToNextRound(currentResults?: MissingItemRoundResult[]) {
+    isSubmittingRef.current = false;
+    if (roundNumber >= config.roundLimit) {
+      finishGame(currentResults);
+    } else {
+      const next = roundNumber + 1;
+      setRoundNumber(next);
+      startRound(next);
+      setPhase('playing');
+    }
+  }
+
+  function submitRound(isTimeout: boolean = false) {
     if (isSubmittingRef.current) return;
     if (!currentRound) return;
     isSubmittingRef.current = true;
-    const responseTimeMs = Date.now() - roundStartRef.current;
+    
+    let responseTimeMs = Date.now() - roundStartRef.current;
+    if (isTimeout && clickTimestamps.length > 0) {
+      responseTimeMs = clickTimestamps[clickTimestamps.length - 1];
+    }
+    
     const result = buildRoundResult({
       config,
       round: currentRound,
@@ -143,17 +161,13 @@ export default function AcharOFaltandoPlay({ onClose }: Props) {
     setResults(updated);
     setFeedbackResult(result);
     setPhase('feedback');
-    setTimeout(() => {
-      isSubmittingRef.current = false;
-      if (roundNumber >= config.roundLimit) {
-        finishGame(updated);
-      } else {
-        const next = roundNumber + 1;
-        setRoundNumber(next);
-        startRound(next);
-        setPhase('playing');
-      }
-    }, 1500);
+    setIsTimeoutFeedback(isTimeout);
+
+    if (!isTimeout) {
+      setTimeout(() => {
+        proceedToNextRound(updated);
+      }, 1500);
+    }
   }
 
   function finishGame(finalResults?: MissingItemRoundResult[]) {
@@ -389,20 +403,39 @@ export default function AcharOFaltandoPlay({ onClose }: Props) {
         )}
 
         {phase === 'feedback' && feedbackResult && (
-          <div style={{
-            textAlign: 'center', padding: 12, borderRadius: 'var(--radius-md)',
-            background: feedbackResult.correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-            border: `1px solid ${feedbackResult.correct ? '#22c55e' : '#ef4444'}`,
-            marginBottom: 16,
-          }}>
-            Rodada {feedbackResult.roundNumber}: <strong>{feedbackResult.correct ? '✅ Correto' : '❌ Incorreto'}</strong>
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <div style={{
+              padding: 12, borderRadius: 'var(--radius-md)',
+              background: feedbackResult.correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+              border: `1px solid ${feedbackResult.correct ? '#22c55e' : '#ef4444'}`,
+              marginBottom: 16,
+            }}>
+              Rodada {feedbackResult.roundNumber}: <strong>{feedbackResult.correct ? '✅ Correto' : '❌ Incorreto'}</strong>
+            </div>
+            {isTimeoutFeedback && (
+              <button
+                onClick={() => proceedToNextRound()}
+                style={{
+                  padding: '12px 40px',
+                  background: 'var(--color-primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: 'var(--text-base)',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                {roundNumber >= config.roundLimit ? 'Finalizar' : 'Próxima fase'}
+              </button>
+            )}
           </div>
         )}
 
         {phase === 'playing' && (
           <div style={{ textAlign: 'center', marginTop: 16 }}>
             <button
-              onClick={submitRound}
+              onClick={() => submitRound(false)}
               style={{
                 padding: '12px 40px',
                 background: 'var(--color-primary)',
