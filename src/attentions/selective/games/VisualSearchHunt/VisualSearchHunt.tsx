@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 // useNavigate removed
 import { Button } from '../../../../shared/components/Button';
 import { Card } from '../../../../shared/components/Card';
+import { VisualSearchEvaluationContainer } from './VisualSearchEvaluationContainer';
 import type { GameResult } from '../../../../shared/types';
 import { saveSession, saveResult } from '../../../../shared/storage';
 import { auth } from '../../../../lib/firebase';
