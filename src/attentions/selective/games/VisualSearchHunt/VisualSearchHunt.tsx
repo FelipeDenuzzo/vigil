@@ -773,6 +773,7 @@ export default function VisualSearchHunt({
       lastLevelReached: results[results.length - 1]?.level ?? level,
       accuracy: totalSelections > 0 ? Number(((totalHits / totalSelections) * 100).toFixed(2)) : 0,
     };
+    try {
       if (sessionLogRef.current) {
         sessionLogRef.current.completedAt = completedAt;
         sessionLogRef.current.abandoned = false;
