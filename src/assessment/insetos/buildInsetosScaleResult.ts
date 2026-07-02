@@ -1,7 +1,6 @@
 // src/assessment/insetos/buildInsetosScaleResult.ts
 
 import type { InsetosMetrics, InsetosScaleResult } from './types';
-import { SEVERITY_BASE_SCORE } from './insetosScaleDefinitions';
 
 export function buildInsetosScaleResult(metrics: InsetosMetrics): InsetosScaleResult {
   // Lógica de fallback para cálculo de score/level enquanto as faixas científicas são TODO.

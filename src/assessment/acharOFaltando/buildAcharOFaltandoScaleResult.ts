@@ -8,7 +8,6 @@ export function buildAcharOFaltandoScaleResult(
   metrics: AcharOFaltandoMetrics
 ): AcharOFaltandoScaleResult {
   const {
-    totalCorrectRounds,
     roundsPlayed,
     totalOmissions,
     flagImpulsividade,
@@ -27,7 +26,6 @@ export function buildAcharOFaltandoScaleResult(
     };
   }
 
-  const accuracyRate = totalCorrectRounds / roundsPlayed;
   function clamp(v: number, min = 0, max = 100): number {
     return Math.max(min, Math.min(max, v));
   }
