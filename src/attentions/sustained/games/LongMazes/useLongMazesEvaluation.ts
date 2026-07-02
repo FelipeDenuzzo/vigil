@@ -99,6 +99,7 @@ export async function useLongMazesEvaluation(
 
   // Artefato 3: envia ao Gemini
   const geminiReport = await callEvaluatorSustained(evaluatorInput);
+  if (geminiReport) { geminiReport.score = metrics.avgEfficiencyPct; if (geminiReport.ludic) geminiReport.ludic.score = metrics.avgEfficiencyPct; }
 
   if (geminiReport) {
     await saveWithRetry(geminiReport, evaluatorInput);

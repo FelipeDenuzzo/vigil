@@ -397,6 +397,8 @@ export async function useVisualSearchEvaluation(
 
   // Salva laudo no Firebase Storage + URL no Firestore, com retry único em falha
   if (geminiReport) {
+    geminiReport.score = scaleResult.score;
+    if (geminiReport.ludic) geminiReport.ludic.score = scaleResult.score;
     await saveReportWithRetry(geminiReport, evaluatorInput);
   }
 

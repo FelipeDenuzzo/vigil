@@ -28,7 +28,11 @@ export function buildAcharOFaltandoScaleResult(
   }
 
   const accuracyRate = totalCorrectRounds / roundsPlayed;
-  const score = Math.round(accuracyRate * 100);
+  function clamp(v: number, min = 0, max = 100): number {
+    return Math.max(min, Math.min(max, v));
+  }
+  const fadigaMs = Math.max(0, metrics.secondHalfRtMean - metrics.firstHalfRtMean);
+  const score = Math.round(clamp(100 - ((fadigaMs - 0) / (800 - 0)) * 100));
 
   // --- DERIVAÇÃO DO NÍVEL DE SEVERIDADE BASEADO EM FLAGS ---
   let activeFlagsCount = 0;

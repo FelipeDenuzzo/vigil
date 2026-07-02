@@ -2,7 +2,7 @@
 // Nível lúdico: Olho de Águia (score + nível 1–4 + emoji)
 // Lê apenas errorProfile e spatialProfile — único output de calculateVisualSearchMetrics.
 
-import { calculateVisualSearchMetrics } from './calculateVisualSearchMetrics';
+import { calculateVisualSearchMetrics, calculateDPrimeVS } from './calculateVisualSearchMetrics';
 import type { VisualSearchAnalysisInput } from './types';
 
 export type EagleLevel = 1 | 2 | 3 | 4;
@@ -65,10 +65,9 @@ export function buildVisualSearchScaleResult(
     spatialProfile.spatialNeglectSide === 'direita';
 
   // Score simples: base 100 - penalidade por erros - penalidade por neglect
-  let score = 100;
-  score -= clamp(commissionRate * 50, 0, 50);
-  if (hasNeglect) score -= 10;
-  score = clamp(Math.round(score));
+  // Formula B: Caça ao Alvo (dPrime)
+  const dPrime = calculateDPrimeVS(roundClicks);
+  let score = Math.round(clamp(((dPrime - (-1.0)) / (3.0 - (-1.0))) * 100, 0, 100));
 
   const engagementStatus: VisualSearchScaleResult['engagementStatus'] =
     totalClicks < 3 ? 'insuficiente' : 'suficiente';

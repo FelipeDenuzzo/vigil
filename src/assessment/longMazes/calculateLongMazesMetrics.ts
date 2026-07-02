@@ -50,10 +50,14 @@ export function calculateLongMazesMetrics(
   const totalDeadEndEntries = phases.reduce((s, p) => s + p.deadEndEntries, 0);
   const totalLongStops      = phases.reduce((s, p) => s + p.longStops, 0);
 
-  const avgEfficiencyPct =
+  const rawAvgEfficiencyPct =
     phases.length > 0
       ? Math.round(phases.reduce((s, p) => s + p.efficiencyPct, 0) / phases.length)
       : 0;
+
+  // Formula B: Labirintos Longos (Efficiency)
+  const clampScore = (v: number, min = 0, max = 100) => Math.max(min, Math.min(max, v));
+  const avgEfficiencyPct = Math.round(clampScore(((rawAvgEfficiencyPct - 40) / (100 - 40)) * 100, 0, 100));
 
   const pauseValues = phases.map((p) => p.postErrorPauseMs).filter((v) => v > 0);
   const avgPostErrorPauseMs =

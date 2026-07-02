@@ -130,6 +130,7 @@ export async function useFruitWatchEvaluation(
 
   // 3. Solicita a avaliação qualitativa à IA (Gemini)
   const geminiReport = await callEvaluatorFruitWatch(sessionId, metrics);
+  if (geminiReport) { geminiReport.score = metrics.focoContinuo; if (geminiReport.ludic) geminiReport.ludic.score = metrics.focoContinuo; }
 
   if (geminiReport) {
     await saveWithRetry(geminiReport, sessionId, metrics);

@@ -61,6 +61,7 @@ export function useSalaDeVigiliaEvaluation() {
       try {
         // Assume callEvaluator is standard
         geminiReport = await callEvaluator(evaluatorInput);
+        if (geminiReport) { geminiReport.score = scaleResult.score; if (geminiReport.ludic) geminiReport.ludic.score = scaleResult.score; }
       } catch (e) {
         console.warn('Backend indisponível:', e);
       }

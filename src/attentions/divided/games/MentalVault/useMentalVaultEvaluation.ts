@@ -66,6 +66,7 @@ export async function useMentalVaultEvaluation(
 
   // Chama o evaluator (Gemini)
   const geminiReport = await callEvaluator(evaluatorInput);
+  if (geminiReport) { geminiReport.score = scaleResult.score; if (geminiReport.ludic) geminiReport.ludic.score = scaleResult.score; }
 
   if (geminiReport) {
     await saveWithRetry(geminiReport, evaluatorInput);

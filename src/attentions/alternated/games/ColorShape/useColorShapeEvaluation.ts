@@ -142,6 +142,7 @@ export async function useColorShapeEvaluation(
   }
 
   const geminiReport = await callEvaluator(payload);
+  if (geminiReport) { geminiReport.score = s.score; if (geminiReport.ludic) geminiReport.ludic.score = s.score; }
   if (geminiReport) {
     await saveWithRetry(geminiReport, payload);
   }
