@@ -982,7 +982,6 @@ export default function VisualSearchHunt({
           setRoundIndex(1);
           setRoundResults([]);
         }}
-        onClose={() => onEnd?.({} as any, completedSessionId)}
       />
     );
   }
