@@ -637,7 +637,6 @@ function IntroScreen({ onSimulator, onSkip }: { onSimulator: () => void; onSkip:
 export default function VisualSearchHunt({
   onCorrectSound,
   onErrorSound,
-  onEnd,
 }: VisualSearchHuntProps) {
 
   const [level, setLevel] = useState(1);
