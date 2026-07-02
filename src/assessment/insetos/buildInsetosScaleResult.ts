@@ -17,7 +17,12 @@ export function buildInsetosScaleResult(metrics: InsetosMetrics): InsetosScaleRe
     level = 'leve';
   }
 
-  const score = SEVERITY_BASE_SCORE[level];
+  // Formula A: Insetos (Flanker Effect)
+  function clamp(v: number, min = 0, max = 100): number {
+    return Math.max(min, Math.min(max, v));
+  }
+  const flankerEffectMs = metrics.flankerEffectMs || 50;
+  const score = Math.round(clamp(100 - ((flankerEffectMs - 50) / (600 - 50)) * 100));
 
   let accuracyNote = 'Acurácia preservada. Bom controle e foco no grupo ativo.';
   if (acc < 60) {

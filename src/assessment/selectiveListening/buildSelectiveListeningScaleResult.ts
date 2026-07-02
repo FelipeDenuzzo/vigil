@@ -17,8 +17,12 @@ export function buildSelectiveListeningScaleResult(
     };
   }
 
-  // Pontuação principal é baseada na precisão serial
-  const score = Math.round(serialAccuracy * 100);
+  // Formula A: Escuta Seletiva (Load Cost)
+  function clamp(v: number, min = 0, max = 100): number {
+    return Math.max(min, Math.min(max, v));
+  }
+  const loadCostPct = Math.max(0, (metrics.loadCost || 0) * 100);
+  const score = Math.round(clamp(100 - ((loadCostPct - 0) / (40 - 0)) * 100));
 
   // Determinação da severidade baseada na precisão serial
   let level: 'mínimo' | 'leve' | 'moderado' | 'importante';

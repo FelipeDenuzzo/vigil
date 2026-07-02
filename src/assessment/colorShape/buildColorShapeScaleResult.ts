@@ -100,7 +100,8 @@ export function buildColorShapeScaleResult(
   const accuracyKey = resolveAccuracyKey(mixedAccuracyPct);
 
   const severity = classifySeverity(persevKey, switchKey, mixingKey, accuracyKey);
-  const score    = computeScore(severity, mixedAccuracyPct);
+  const clamp = (v: number, min = 0, max = 100) => Math.max(min, Math.min(max, v));
+  const score = Math.round(clamp(100 - ((metrics.switchCostRtMs - 150) / (1200 - 150)) * 100, 0, 100));
 
   return {
     severity,
