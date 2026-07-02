@@ -16,6 +16,7 @@ export interface SessionPoint {
   score: number;
   level: string;
   sessionId: string;
+  game?: string;
 }
 
 export interface AttentionProgress {
@@ -117,7 +118,7 @@ export function useProgressData(): ProgressData {
               .map((d) => {
                 const sd = d.data();
                 const iso = sd.createdAt?.toDate?.()?.toISOString() ?? '';
-                return { date: iso, score: sd.ludicScore ?? sd.score ?? 0, level: sd.level ?? '', sessionId: d.id };
+                return { date: iso, score: sd.ludicScore ?? sd.score ?? 0, level: sd.level ?? '', sessionId: d.id, game: sd.game };
               })
               .filter((s) => s.date)
               .reverse(); // mais antigo primeiro para o gráfico

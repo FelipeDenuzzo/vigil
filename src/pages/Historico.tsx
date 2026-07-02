@@ -26,6 +26,23 @@ function formatShortDate(iso: string): string {
   return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+const GAME_NAMES: Record<string, string> = {
+  'visual-search-hunt': 'Caça ao Alvo',
+  'achar-o-faltando': 'Achar o Faltando',
+  'mental-vault': 'Cofre Mental',
+  'selective-listening': 'Escuta Seletiva',
+  'color-shape': 'Cores e Formas',
+  'fruit-watch': 'Vigia de Frutas',
+  'long-mazes': 'Labirintos Longos',
+  'insetos': 'Insetos',
+  'color-shape-alternated': 'Cores e Formas',
+};
+
+function formatGameName(gameId?: string) {
+  if (!gameId) return '';
+  return GAME_NAMES[gameId] || gameId;
+}
+
 export const Historico: React.FC = () => {
   const navigate = useNavigate();
   const { displayName } = useAuth();
@@ -127,6 +144,7 @@ export const Historico: React.FC = () => {
                 <Card key={s.sessionId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)', marginBottom: 'var(--space-3)', padding: 'var(--space-4) var(--space-5)' }}>
                   <span style={{ fontSize: 'var(--text-sm)', color: '#ffffff' }}>
                     {new Date(s.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    {s.game && ` • ${formatGameName(s.game)}`}
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                     <span style={{ fontWeight: 800, fontSize: 'var(--text-xl)' }}>{s.score}</span>

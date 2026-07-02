@@ -185,6 +185,15 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 - [AcharOFaltandoReportPanel.tsx](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/AcharOFaltando/AcharOFaltandoReportPanel.tsx): Exibição local das métricas calculadas (rodadas, acertos, omissões, falsos positivos e curva por rodada).
 - [AcharOFaltandoEvaluationContainer.tsx](https://github.com/FelipeDenuzzo/vigil/blob/main/src/attentions/selective/games/AcharOFaltando/AcharOFaltandoEvaluationContainer.tsx): Orquestrador local integrado ao Firestore (`sessionReports`).
 
+### Padronização Visual de Painéis de Avaliação (EvaluationReportPanel)
+
+Para garantir consistência em toda a aplicação, todos os painéis de avaliação dos treinos (`EvaluationReportPanel`) devem seguir uma estrutura visual padronizada, conforme refatorado nos componentes de `VisualSearchHunt` e `SalaDeVigilia`:
+- O layout principal deve ser um container escuro (`rgb(22, 24, 32)`), com bordas arredondadas e limitador de largura.
+- O topo deve exibir o componente de resguardo `<ReportDisclaimer />` alertando sobre a natureza não-diagnóstica do teste.
+- O painel deve ser dividido em sistema de abas (`Tab = 'ludic' | 'analysis'`), isolando o feedback motivacional do feedback clínico.
+- A aba "Régua" (Lúdica) deve renderizar a `<ReguaLudica />` priorizando o impacto visual da pontuação.
+- A aba "Análise" (Clínica) estrutura o `geminiReport` em blocos: "O que foi bem" (Strengths), "Pontos de atenção" (Weaknesses) e "Métricas Locais" (renderizadas como Cards simplificados contendo valores crus e `severity`).
+
 ---
 
 ## Fluxo de Persistência de Laudos
