@@ -26,7 +26,8 @@ export function LongMazesEvaluationLoadingAnimation({
     return () => clearInterval(t);
   }, [list.length]);
 
-  const { icon, text } = list[idx];
+  const safeIdx = idx % list.length;
+  const { icon, text } = list[safeIdx];
 
   return (
     <div style={s.wrap}>

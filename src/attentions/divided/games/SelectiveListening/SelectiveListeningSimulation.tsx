@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../../../shared/components/Button';
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 import { Card } from '../../../../shared/components/Card';
 
 interface Props {
@@ -241,13 +242,13 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 />
               </div>
 
-              <Button
+              <DedoNervosoButton
                 variant="primary"
-                onClick={advance}
+                onConfirm={advance}
                 style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
               >
                 Entendi →
-              </Button>
+              </DedoNervosoButton>
             </Card>
           </motion.div>
         )}
@@ -301,13 +302,13 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                 🎧 Preste atenção na voz feminina! Ignore o homem.
               </div>
 
-              <Button
+              <DedoNervosoButton
                 variant="primary"
-                onClick={advance}
+                onConfirm={advance}
                 style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
               >
                 Próximo →
-              </Button>
+              </DedoNervosoButton>
             </Card>
           </motion.div>
         )}
@@ -390,13 +391,13 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
                   Repetir Áudio ({1 - replayCount}/1)
                 </Button>
                 
-                <Button
+                <DedoNervosoButton
                   variant="primary"
-                  onClick={advance}
+                  onConfirm={advance}
                   style={{ flex: 1, backgroundColor: 'var(--color-divided)' }}
                 >
                   Tentar Responder →
-                </Button>
+                </DedoNervosoButton>
               </div>
             </Card>
           </motion.div>
@@ -500,13 +501,13 @@ export default function SelectiveListeningSimulation({ onDone }: Props) {
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <Button
+                <DedoNervosoButton
                   variant="primary"
-                  onClick={advance}
+                  onConfirm={advance}
                   style={{ backgroundColor: 'var(--color-divided)', width: '100%', padding: '12px 16px', fontSize: '15px' }}
                 >
                   Ir para o Treino de Atenção →
-                </Button>
+                </DedoNervosoButton>
                 <Button
                   variant="secondary"
                   onClick={() => {

@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 // useNavigate removed
 import { Button } from '../../../../shared/components/Button';
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 import { Card } from '../../../../shared/components/Card';
 import { VisualSearchEvaluationContainer } from './VisualSearchEvaluationContainer';
 import type { GameResult } from '../../../../shared/types';
@@ -417,9 +418,9 @@ function SimulatorScreen({ onFinish }: { onFinish: () => void }) {
             <h2 style={{ margin: 0 }}>Prática concluída!</h2>
             <h2 style={{ margin: 0, textTransform: 'uppercase' }}>Você entendeu como funciona?</h2>
             <div style={{ marginTop: '8px', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <Button onClick={onFinish} style={{ width: '100%', padding: '12px 16px', fontSize: '15px' }}>
+              <DedoNervosoButton onConfirm={onFinish} style={{ width: '100%', padding: '12px 16px', fontSize: '15px' }}>
                 Ir para o Treino de Atenção →
-              </Button>
+              </DedoNervosoButton>
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -619,13 +620,13 @@ function IntroScreen({ onSimulator, onSkip }: { onSimulator: () => void; onSkip:
           O timer começa quando você iniciar cada fase.
         </p>
         <div style={{ display: 'grid', gap: 8 }}>
-          <Button onClick={onSimulator}>Veja como o treino funciona</Button>
-          <button
-            onClick={onSkip}
+          <DedoNervosoButton onConfirm={onSimulator}>Veja como o treino funciona</DedoNervosoButton>
+          <DedoNervosoButton
+            onConfirm={onSkip}
             style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
           >
             Pular e começar direto
-          </button>
+          </DedoNervosoButton>
         </div>
       </div>
     </Card>

@@ -2,7 +2,7 @@
 // Atualizado: substitui loading simples pela EvaluationLoadingAnimation em 2 fases.
 
 import { EvaluationReportPanel } from "./EvaluationReportPanel";
-import { EvaluationLoadingAnimation } from "./EvaluationLoadingAnimation";
+import { EvaluationLoadingAnimation } from "../../../../shared/EvaluationLoadingAnimation";
 import type { EvaluationReport as GeminiReport } from "../../../../lib/evaluatorClient";
 import type { VisualSearchSessionMetricsInput } from "./assessment/visualSearchScale.types";
 

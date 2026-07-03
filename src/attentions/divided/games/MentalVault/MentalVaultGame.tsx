@@ -45,7 +45,8 @@ const CONFIG_BY_LEVEL: Record<number, LevelConfig> = {
 
 export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClose, onComplete }) => {
   const [level, setLevel] = useState(1);
-  const [phase, setPhase] = useState<MentalVaultFase>('instrucoes');
+  const [phase, setPhase] = useState<MentalVaultFase | 'preparo'>('instrucoes');
+  const [countdown, setCountdown] = useState(3);
 
   // Estado da sessão (6 rodadas: 3 puras e 3 mistas balanceadas)
   const [sessionConditions, setSessionConditions] = useState<CondicaoRodada[]>([]);
@@ -131,7 +132,18 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
     const nextRoundIdx = currentRoundIndex + 1;
     if (nextRoundIdx < 6) {
       setCurrentRoundIndex(nextRoundIdx);
-      startRound(nextRoundIdx, nextLevel, sessionConditions[nextRoundIdx]);
+      setPhase('preparo');
+      setCountdown(3);
+      const timer = setInterval(() => {
+        setCountdown((c) => {
+          if (c <= 1) {
+            clearInterval(timer);
+            startRound(nextRoundIdx, nextLevel, sessionConditions[nextRoundIdx]);
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1000);
     } else {
       // Fim das 6 rodadas: Conclui a sessão completa
       handleFinishSession(nextLevel);
@@ -204,6 +216,19 @@ export const MentalVaultGame: React.FC<Props> = ({ sessionId: _sessionId, onClos
             targetLetters={targetLetters}
             onComplete={handleRecallComplete}
           />
+        );
+
+      case 'preparo':
+        return (
+          <Card style={{ padding: 'var(--space-8)', textAlign: 'center', maxWidth: '420px', margin: '0 auto' }}>
+            <h2 style={{ color: '#ffffff', marginBottom: 'var(--space-4)', fontSize: '24px' }}>
+              Prepare-se...
+            </h2>
+            <div style={{ fontSize: '64px', fontWeight: 800, color: 'var(--color-divided)' }}>
+              {countdown}
+            </div>
+            <p style={{ color: 'var(--color-text-faint)', marginTop: 'var(--space-4)' }}>A próxima rodada vai começar</p>
+          </Card>
         );
 
       case 'resumo': {

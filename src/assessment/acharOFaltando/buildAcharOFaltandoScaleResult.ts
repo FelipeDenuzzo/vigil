@@ -29,8 +29,17 @@ export function buildAcharOFaltandoScaleResult(
   function clamp(v: number, min = 0, max = 100): number {
     return Math.max(min, Math.min(max, v));
   }
+  
+  // O score agora começa baseado na acurácia geral
+  const accuracyScore = metrics.roundsPlayed > 0 
+    ? (metrics.totalCorrectRounds / metrics.roundsPlayed) * 100 
+    : 0;
+
+  // Penalidade por lentificação/fadiga na segunda metade do treino
   const fadigaMs = Math.max(0, metrics.secondHalfRtMean - metrics.firstHalfRtMean);
-  const score = Math.round(clamp(100 - ((fadigaMs - 0) / (800 - 0)) * 100));
+  const fatiguePenalty = clamp((fadigaMs / 1000) * 20, 0, 20); // 1000ms = -20pts
+
+  const score = Math.round(clamp(accuracyScore - fatiguePenalty, 0, 100));
 
   // --- DERIVAÇÃO DO NÍVEL DE SEVERIDADE BASEADO EM FLAGS ---
   let activeFlagsCount = 0;

@@ -21,8 +21,22 @@ export function buildSelectiveListeningScaleResult(
   function clamp(v: number, min = 0, max = 100): number {
     return Math.max(min, Math.min(max, v));
   }
-  const loadCostPct = Math.max(0, (metrics.loadCost || 0) * 100);
-  const score = Math.round(clamp(100 - ((loadCostPct - 0) / (40 - 0)) * 100));
+
+  // Nova Matriz UX: Baseada na acurácia serial (pesos por posição corretos)
+  const baseScore = metrics.serialAccuracy * 100;
+  let penalty = 0;
+
+  // Penaliza se houve alto custo de carga (diferença grande entre pouca/muita carga)
+  if (metrics.loadCost > 0) {
+    penalty += (metrics.loadCost * 100) * 0.5; 
+  }
+
+  // Penaliza se houve muita intrusão do distrator
+  if (metrics.distractorIntrusionRate > 0) {
+    penalty += (metrics.distractorIntrusionRate * 100) * 0.5;
+  }
+
+  const score = Math.round(clamp(baseScore - penalty, 0, 100));
 
   // Determinação da severidade baseada na precisão serial
   let level: 'mínimo' | 'leve' | 'moderado' | 'importante';

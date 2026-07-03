@@ -72,21 +72,33 @@ export function countFiguresInSequence(
 export function calculateFruitWatchScore(results: PhaseRawResult[]): FruitWatchScore {
   const byPhase = (p: number) => results.find(r => r.phase === p)!;
 
-  // 1. Foco Contínuo — Omissões (subcontagem) nas fases fáceis (1 e 2)
-  const focoContinuo = calcOmissionScore([byPhase(1), byPhase(2)]);
+  const getAcc = (p: PhaseRawResult) => getPartialAccuracy(p.targetCount, p.userAnswer);
 
-  // 2. Controle e Calma — Falsos positivos (supercontagem) nas fases de alta semelhança (3 e 4) + toques de comissão
-  const controleCalma = calcControlScore([byPhase(3), byPhase(4)]);
+  // Média de Acurácia das Fases 1 e 2
+  const acc1 = getAcc(byPhase(1));
+  const acc2 = getAcc(byPhase(2));
+  const avg12 = (acc1 + acc2) / 2;
 
-  // 3. Foco Multitarefa — Custo de Dupla Tarefa (DTC) entre a fase 5 e fase 6
-  // Fase 5: pergunta bônus vem depois (memória de trabalho exigida no final)
-  // Fase 6: pergunta bônus vem antes (interferência imediata)
-  const prec5 = precisionOf(byPhase(5));
-  const prec6 = precisionOf(byPhase(6));
-  const dtc = prec5 > 0 ? Math.abs(prec5 - prec6) / prec5 : 0;
-  const focoMultitarefa = Math.max(0, Math.round(100 - dtc * 100));
+  // Média de Acurácia das Fases 5 e 6
+  const acc5 = getAcc(byPhase(5));
+  const acc6 = getAcc(byPhase(6));
+  const avg56 = (acc5 + acc6) / 2;
 
-  // 4. Conquista secreta — Se o usuário acertou a contagem bônus na Fase 5 (atenção periférica)
+  // Custo de Dupla-Tarefa (DTC)
+  const dtc = Math.max(0, avg12 - avg56);
+
+  // Fórmula da Matriz (Nota de 0 a 100)
+  const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+  const finalScore = Math.round(clamp(100 - (dtc / 40) * 100, 0, 100));
+
+  // Como finalScore agora é o balizador (antes era o focoContinuo), mantemos a variável para compatibilidade
+  const focoContinuo = finalScore;
+  
+  // Mantemos as outras métricas baseadas na acurácia parcial para o laudo
+  const controleCalma = Math.round((getAcc(byPhase(3)) + getAcc(byPhase(4))) / 2);
+  const focoMultitarefa = Math.round(avg56);
+
+  // 4. Conquista secreta — Se o usuário acertou a contagem bônus na Fase 5
   const r5 = byPhase(5);
   const conquistaSecreta =
     r5.bonusUserAnswer !== undefined &&
@@ -103,41 +115,15 @@ export function calculateFruitWatchScore(results: PhaseRawResult[]): FruitWatchS
   };
 }
 
-function precisionOf(r: PhaseRawResult): number {
-  if (r.targetCount === 0) return 1;
-  const diff = Math.abs(r.userAnswer - r.targetCount);
-  return Math.max(0, 1 - diff / r.targetCount);
-}
-
-function calcOmissionScore(phases: PhaseRawResult[]): number {
-  let totalOmissions = 0;
-  let totalTargets = 0;
-  for (const p of phases) {
-    // Subcontagem = omissões
-    const omission = Math.max(0, p.targetCount - p.userAnswer);
-    totalOmissions += omission;
-    totalTargets += p.targetCount;
-    // Comissões motoras (cliques extras) também penalizam levemente a estabilidade atencional
-    totalOmissions += p.commissionErrors * 0.5;
-  }
-  if (totalTargets === 0) return 100;
-  const rate = totalOmissions / totalTargets;
-  return Math.max(0, Math.round(100 - rate * 120)); // Fator de escala 1.2
-}
-
-function calcControlScore(phases: PhaseRawResult[]): number {
-  let totalFalsePos = 0;
-  let totalTargets = 0;
-  let totalCommission = 0;
-  for (const p of phases) {
-    // Supercontagem = falsos positivos (impulsividade de contar distratores semelhantes)
-    const falsePos = Math.max(0, p.userAnswer - p.targetCount);
-    totalFalsePos += falsePos;
-    totalTargets += p.targetCount;
-    totalCommission += p.commissionErrors;
-  }
-  if (totalTargets === 0) return 100;
-  const fpRate = totalFalsePos / totalTargets;
-  const commissionPenalty = Math.min(totalCommission * 3, 30); // Limita penalidade direta de cliques a 30 pontos
-  return Math.max(0, Math.round(100 - fpRate * 100 - commissionPenalty));
+export function getPartialAccuracy(targetCount: number, userAnswer: number): number {
+  if (targetCount === 0 && userAnswer === 0) return 100;
+  const diff = userAnswer - targetCount;
+  
+  if (diff === 0) return 100;
+  if (diff === -1) return 80;
+  if (diff === 1) return 70;
+  if (diff === -2) return 50;
+  if (diff === 2) return 40;
+  
+  return 0;
 }

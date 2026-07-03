@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../../../shared/components/Button';
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 import { Card } from '../../../../shared/components/Card';
 import { useScaleToFit } from '../../../../hooks/useScaleToFit';
 
@@ -83,13 +84,13 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
               </p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
-                <Button
+                <DedoNervosoButton
                   variant="primary"
-                  onClick={advance}
+                  onConfirm={advance}
                   style={{ width: '100%' }}
                 >
                   Vamos ver como funciona
-                </Button>
+                </DedoNervosoButton>
                 <Button
                   variant="ghost"
                   onClick={onBack}
@@ -231,13 +232,13 @@ export default function AcharOFaltandoSimulation({ onDone, onBack }: Props) {
               </p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                <Button
+                <DedoNervosoButton
                   variant="primary"
-                  onClick={advance}
+                  onConfirm={advance}
                   style={{ width: '100%', backgroundColor: 'var(--color-primary)', padding: '12px 16px', fontSize: '15px' }}
                 >
                   Ir para o Treino de Atenção →
-                </Button>
+                </DedoNervosoButton>
                 <Button
                   variant="secondary"
                   onClick={() => {

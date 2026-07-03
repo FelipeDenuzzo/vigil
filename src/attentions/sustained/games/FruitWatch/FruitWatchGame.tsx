@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { PHASE_CONFIGS, FIGURES, pickTargetAndDistractorsForSession, shuffleColorCategories } from './levels';
 import { generateFigureSequence, countFiguresInSequence } from './logic';
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 import type { FlyingFigure, PhaseRawResult } from './types';
 
 interface Props {
@@ -258,9 +259,9 @@ function SimulationScreen({ onDone, onClose }: { onDone: () => void; onClose?: (
               Anterior
             </button>
           )}
-          <button style={s.nextBtn} onClick={() => (isLast ? onDone() : setStepIndex(s => s + 1))}>
+          <DedoNervosoButton style={s.nextBtn} onConfirm={() => (isLast ? onDone() : setStepIndex(s => s + 1))}>
             {isLast ? 'Começar Treino' : 'Próximo'}
-          </button>
+          </DedoNervosoButton>
         </div>
       </div>
     </div>
@@ -323,9 +324,9 @@ function BetweenPhasesScreen({ phase, onDone }: { phase: number; onDone: () => v
       <p style={s.phaseCompletedLabel}>Fase {phase - 1} de 6 Concluída</p>
       <h3 style={s.betweenTitle}>Pronto para a próxima fase?</h3>
 
-      <button style={s.continueBtn} onClick={onDone}>
+      <DedoNervosoButton style={s.continueBtn} onConfirm={onDone}>
         Iniciar Rodada {phase}
-      </button>
+      </DedoNervosoButton>
     </div>
   );
 }
@@ -552,7 +553,7 @@ const s: Record<string, any> = {
   revealSub: {
     color: '#c8cad8',
     fontSize: 14,
-    maxWidth: 320,
+    maxWidth: 380,
     lineHeight: 1.5,
     margin: 0,
   },

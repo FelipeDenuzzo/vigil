@@ -7,7 +7,7 @@ import { useLongMazesEvaluation } from './useLongMazesEvaluation';
 import type { LongMazesEvaluationResult } from './useLongMazesEvaluation';
 import type { MazeFullSessionLog } from './types';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
-import { LongMazesEvaluationLoadingAnimation } from './LongMazesEvaluationLoadingAnimation';
+import { EvaluationLoadingAnimation } from '../../../../shared/EvaluationLoadingAnimation';
 import { LongMazesReportPanel } from './LongMazesReportPanel';
 
 type LoadedState = false | 'organizing' | true;
@@ -104,8 +104,8 @@ export function LongMazesEvaluationContainer({ log, sessionId, onRepeat, onBack 
   if (loaded === false || loaded === 'organizing') {
     return (
       <div style={s.screen}>
-        <LongMazesEvaluationLoadingAnimation
-          phase={loaded === false ? 'analyzing' : 'organizing'}
+        <EvaluationLoadingAnimation
+          organizing={loaded === 'organizing'}
         />
       </div>
     );
@@ -141,10 +141,22 @@ export function LongMazesEvaluationContainer({ log, sessionId, onRepeat, onBack 
           report={geminiReport}
           metrics={result.metrics}
         />
-      </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        {onRepeat && <button style={s.btn}     onClick={onRepeat}>↺ Repetir treino</button>}
-        {onBack   && <button style={s.btnBack} onClick={onBack}>Voltar</button>}
+        
+        <section style={s.section}>
+          <h3 style={s.sectionTitle}>Próximos passos</h3>
+          <div style={s.actions}>
+            {onRepeat && (
+              <button type="button" onClick={onRepeat} style={s.primaryButton}>
+                Repetir o treino
+              </button>
+            )}
+            {onBack && (
+              <button type="button" onClick={onBack} style={s.secondaryButton}>
+                Voltar ao começo
+              </button>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -164,6 +176,25 @@ const s: Record<string, React.CSSProperties> = {
     borderRadius: 12, padding: '12px 20px', width: '100%', maxWidth: 320,
   },
   fallbackLine: { fontSize: 13, color: '#c8cad8', margin: '4px 0' },
+  section: {
+    background: '#161820',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    padding: 16,
+    color: '#e8e9f0',
+    marginTop: 16,
+  },
+  sectionTitle: { marginBottom: 8, color: '#e8e9f0', fontSize: 16, fontWeight: 700 },
+  actions: { display: 'grid', gap: 12, marginTop: 8 },
+  primaryButton: {
+    minHeight: 48, border: 'none', borderRadius: 12, padding: '12px 16px',
+    background: '#6c8ef5', color: '#ffffff', fontSize: 16, fontWeight: 700, cursor: 'pointer',
+  },
+  secondaryButton: {
+    minHeight: 48, border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12,
+    padding: '12px 16px', background: '#1c1f2a', color: '#e8e9f0',
+    fontSize: 16, fontWeight: 700, cursor: 'pointer',
+  },
   btn: {
     padding: '10px 28px', borderRadius: 99, fontSize: 14, fontWeight: 700,
     background: '#6c8ef5', color: '#fff', border: 'none', cursor: 'pointer',

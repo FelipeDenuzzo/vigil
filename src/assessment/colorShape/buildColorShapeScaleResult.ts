@@ -94,7 +94,17 @@ export function buildColorShapeScaleResult(
 
   const severity = classifySeverity(persevKey, switchKey, mixingKey, accuracyKey);
   const clamp = (v: number, min = 0, max = 100) => Math.max(min, Math.min(max, v));
-  const score = Math.round(clamp(100 - ((metrics.switchCostRtMs - 150) / (1200 - 150)) * 100, 0, 100));
+  
+  // O score agora é balizado pela acurácia no bloco misto
+  let score = mixedAccuracyPct;
+  
+  // Penaliza lentidão excessiva no Switch Cost (até -20 pontos)
+  if (metrics.switchCostRtMs > 150) {
+    const penalty = ((metrics.switchCostRtMs - 150) / (1200 - 150)) * 20;
+    score -= clamp(penalty, 0, 20);
+  }
+  
+  score = Math.round(clamp(score, 0, 100));
 
   return {
     severity,

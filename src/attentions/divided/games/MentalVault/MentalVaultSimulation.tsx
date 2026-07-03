@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../../../shared/components/Button';
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 import { Card } from '../../../../shared/components/Card';
 
 interface Props {
@@ -91,13 +92,13 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 ))}
               </div>
 
-              <Button
+              <DedoNervosoButton
                 variant="primary"
-                onClick={advance}
+                onConfirm={advance}
                 style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
               >
                 Entendi, continuar →
-              </Button>
+              </DedoNervosoButton>
             </Card>
           </motion.div>
         )}
@@ -174,13 +175,13 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 </div>
               </div>
 
-              <Button
+              <DedoNervosoButton
                 variant="primary"
-                onClick={advance}
+                onConfirm={advance}
                 style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
               >
                 Entendi as regras →
-              </Button>
+              </DedoNervosoButton>
             </Card>
           </motion.div>
         )}
@@ -226,13 +227,13 @@ export default function MentalVaultSimulation({ onDone }: Props) {
                 </div>
               </div>
 
-              <Button
+              <DedoNervosoButton
                 variant="primary"
-                onClick={advance}
+                onConfirm={advance}
                 style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
               >
                 Fazer teste rápido →
-              </Button>
+              </DedoNervosoButton>
             </Card>
           </motion.div>
         )}
@@ -358,13 +359,13 @@ export default function MentalVaultSimulation({ onDone }: Props) {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <Button
+                <DedoNervosoButton
                   variant="primary"
-                  onClick={advance}
+                  onConfirm={advance}
                   style={{ backgroundColor: 'var(--color-divided)', width: '100%', padding: '12px 16px', fontSize: '15px' }}
                 >
                   Ir para o Treino de Atenção →
-                </Button>
+                </DedoNervosoButton>
                 <Button
                   variant="secondary"
                   onClick={() => {

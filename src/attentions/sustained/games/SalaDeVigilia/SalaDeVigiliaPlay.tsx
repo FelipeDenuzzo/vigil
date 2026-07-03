@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SalaDeVigiliaRawSession, LampadaEvent } from '../../../../assessment/salaDeVigilia/types';
 
 interface Lampada {
@@ -20,6 +21,7 @@ const RESPONSE_WINDOW_MS = 3000;
 export const SalaDeVigiliaPlay: React.FC<SalaDeVigiliaPlayProps> = ({ onFinish }) => {
   const [lampadas, setLampadas] = useState<Lampada[]>([]);
   const [activeLampId, setActiveLampId] = useState<string | null>(null);
+  const [hitEffect, setHitEffect] = useState<{id: string, x: number, y: number} | null>(null);
   
   const sessionData = useRef({
     sessionId: uuidv4(),
@@ -199,6 +201,12 @@ export const SalaDeVigiliaPlay: React.FC<SalaDeVigiliaPlayProps> = ({ onFinish }
 
     if (activeEventRef.current && activeLampId === id) {
       // Hit!
+      const clickedLamp = lampadas.find(l => l.id === id);
+      if (clickedLamp) {
+        setHitEffect({ id, x: clickedLamp.x, y: clickedLamp.y });
+        setTimeout(() => setHitEffect(null), 400);
+      }
+      
       activeEventRef.current.respondedAt = Date.now();
       sessionData.current.events.push(activeEventRef.current);
       activeEventRef.current = null;
@@ -223,6 +231,31 @@ export const SalaDeVigiliaPlay: React.FC<SalaDeVigiliaPlayProps> = ({ onFinish }
       <div style={{ position: 'absolute', top: '1rem', right: '1rem', textAlign: 'right', zIndex: 10, color: 'white', opacity: 0.5 }}>
         TREINO ATIVO
       </div>
+
+      <AnimatePresence>
+        {hitEffect && (
+          <motion.div
+            initial={{ scale: 0.8, opacity: 1 }}
+            animate={{ scale: 2.5, opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            style={{
+              position: 'absolute',
+              left: `${hitEffect.x}%`,
+              top: `${hitEffect.y}%`,
+              x: '-50%',
+              y: '-50%',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(251, 191, 36, 1)',
+              boxShadow: '0 0 20px 10px rgba(251, 191, 36, 0.8)',
+              zIndex: 5,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {lampadas.map((lamp) => {
         const isActive = lamp.id === activeLampId;

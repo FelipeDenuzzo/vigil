@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '../../../../shared/components/Button';
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 import { Card } from '../../../../shared/components/Card';
 
 interface Props {
@@ -29,13 +30,13 @@ export const SelectiveListeningInstructions: React.FC<Props> = ({ onStart, onClo
           Você ouvirá duas vozes simultâneas (uma masculina e outra feminina) ditando números diferentes.<br />
           Preste atenção apenas à voz solicitada no início de cada rodada e digite a sequência correspondente.
         </p>
-        <Button
+        <DedoNervosoButton
           variant="primary"
-          onClick={onStart}
+          onConfirm={onStart}
           style={{ backgroundColor: 'var(--color-divided)', width: '100%' }}
         >
           Iniciar
-        </Button>
+        </DedoNervosoButton>
       </Card>
     </div>
   );

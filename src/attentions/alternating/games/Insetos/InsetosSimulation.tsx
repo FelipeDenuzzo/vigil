@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../../../shared/components/Button';
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 import { Card } from '../../../../shared/components/Card';
 
 interface Props {
@@ -104,9 +105,9 @@ export default function InsetosSimulation({ onDone, onBack }: Props) {
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                  <Button variant="primary" onClick={() => setStep('done')} style={{ width: '100%' }}>
+                  <DedoNervosoButton variant="primary" onConfirm={() => setStep('done')} style={{ width: '100%' }}>
                     Entendi, ver mais →
-                  </Button>
+                  </DedoNervosoButton>
                   <Button variant="ghost" onClick={onBack} style={{ width: '100%' }}>
                     ← Voltar
                   </Button>
@@ -132,9 +133,9 @@ export default function InsetosSimulation({ onDone, onBack }: Props) {
                   Lembre-se: toque <em>apenas</em> nos insetos do grupo ativo<br />quando eles pararem e piscarem. Velocidade e precisão contam!
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                  <Button variant="primary" onClick={onDone} style={{ width: '100%', fontSize: 15 }}>
+                  <DedoNervosoButton variant="primary" onConfirm={onDone} style={{ width: '100%', fontSize: 15 }}>
                     Ir para o Treino →
-                  </Button>
+                  </DedoNervosoButton>
                   <Button variant="secondary" onClick={() => setStep(1)} style={{ width: '100%', fontSize: 15 }}>
                     Repetir o Simulado
                   </Button>

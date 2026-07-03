@@ -305,7 +305,17 @@ export const ProcessingPhase: React.FC<Props> = ({
 
       {/* Dígito centralizado com alto contraste e flash de feedback */}
       <div style={styles.digitWrapper}>
-        <div style={styles.digitDisplay}>{digit}</div>
+        <style>
+          {`
+            @keyframes mvFadeIn {
+              0% { opacity: 0; transform: scale(0.9); }
+              100% { opacity: 1; transform: scale(1); }
+            }
+          `}
+        </style>
+        <div key={currentTrial} style={{ ...styles.digitDisplay, animation: 'mvFadeIn 0.3s ease-out forwards' }}>
+          {digit}
+        </div>
       </div>
 
       {/* Dois botões largos e fixos na base */}

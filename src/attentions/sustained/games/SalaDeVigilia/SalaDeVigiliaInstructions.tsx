@@ -1,4 +1,5 @@
 import React from 'react';
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 
 interface SalaDeVigiliaInstructionsProps {
   onNext: () => void;
@@ -43,8 +44,8 @@ export const SalaDeVigiliaInstructions: React.FC<SalaDeVigiliaInstructionsProps>
         </p>
         
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <button 
-            onClick={onNext}
+          <DedoNervosoButton 
+            onConfirm={onNext}
             style={{
               padding: '12px 24px',
               fontSize: '1.1rem',
@@ -57,10 +58,10 @@ export const SalaDeVigiliaInstructions: React.FC<SalaDeVigiliaInstructionsProps>
             }}
           >
             Fazer o Simulado
-          </button>
+          </DedoNervosoButton>
           
-          <button 
-            onClick={onSkipToPlay}
+          <DedoNervosoButton 
+            onConfirm={onSkipToPlay}
             style={{
               padding: '12px 24px',
               fontSize: '1.1rem',
@@ -73,7 +74,7 @@ export const SalaDeVigiliaInstructions: React.FC<SalaDeVigiliaInstructionsProps>
             }}
           >
             Ir para o Treino
-          </button>
+          </DedoNervosoButton>
         </div>
       </div>
     </div>

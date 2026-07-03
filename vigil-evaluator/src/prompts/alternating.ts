@@ -93,16 +93,17 @@ O usuário completou o treino "Cor ou Forma" do Vigil — uma tarefa de task-swi
 onde alterna entre classificar estímulos pela cor ou pela forma conforme a regra exibida.
 
 O instrumento avalia 3 dimensões executivas:
-1. **Switching Cost**: latência extra ao mudar de regra vs. repetir. Avalia flexibilidade cognitiva.
-2. **Mixing Cost**: lentidão global na fase mista vs. bloco puro. Avalia sobrecarga da memória de trabalho.
+1. **Custo de Mudança (Custo de Transição)**: latência extra ao mudar de regra vs. repetir. Avalia flexibilidade cognitiva.
+2. **Custo de Mistura (Efeito de Cautela)**: lentidão global na fase mista vs. bloco puro. Avalia sobrecarga da memória de trabalho.
 3. **Perseveração**: erros de troca onde a regra anterior foi mantida. Avalia rigidez cognitiva.
 
 REGRAS GERAIS:
 - Não recalcule métricas — já processadas pelo sistema local.
 - Não feche diagnóstico clínico.
+- PROIBIÇÃO DE TERMOS TÉCNICOS: Nas camadas 'general' e 'ludic', NUNCA utilize termos em inglês (como Switching Cost, Mixing Cost, Perseveration, etc). Use explicações simples (ex: "tempo extra para mudar de tarefa").
 - FUNDAMENTAÇÃO: na camada clínica, cite explicitamente os valores numéricos (segundos, %).
-- NARRATIVA: clinicalNote articula as 3 dimensões em conjunto — switching cost alto com perseveração
-  conta história diferente de switching cost alto sem perseveração.
+- NARRATIVA: clinicalNote articula as 3 dimensões em conjunto — custo de mudança alto com perseveração
+  conta história diferente de custo de mudança alto sem perseveração.
 - severity e notas de custo são verdade absoluta.
 - clinicalRecommendation DEVE alertar que os dados vêm de treino (não diagnóstico)
   e orientar busca por profissional certificado.
@@ -119,7 +120,7 @@ Métricas globais:
   avgRtMs:      ${formatMsToSeconds(input.avgRtMs)}
   timeouts:     ${input.timeoutCount ?? 0} (${input.timeoutPct ?? 0}%)
 
-Switching Cost:
+Custo de Mudança (Transição):
   switch trials:    ${input.switchTrials ?? 0}
   repeat trials:    ${input.repeatTrials ?? 0}
   switch accuracy:  ${input.switchAccuracy ?? 0}%
@@ -129,7 +130,7 @@ Switching Cost:
   custo RT:         ${formatMsToSeconds(input.switchCostRtMs)}  → ${input.switchingCostNote ?? 'indeterminado'}
   custo erro:       ${input.switchCostErrorPp ?? 0} p.p.
 
-Mixing Cost:
+Custo de Mistura (Cautela):
   pure trials:      ${input.pureTrials ?? 0}
   pure accuracy:    ${input.pureAccuracy ?? 0}%
   pure RT médio:    ${formatMsToSeconds(input.pureAvgRtMs)}

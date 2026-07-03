@@ -100,6 +100,7 @@ O instrumento avalia as seguintes dimensões neuropsicológicas:
 REGRAS GERAIS:
 - Não recalcule métricas — já processadas pelo sistema local.
 - Não feche diagnóstico clínico.
+- PROIBIÇÃO DE TERMOS TÉCNICOS: Nas camadas 'general' e 'ludic', NUNCA utilize termos em inglês (como Load Cost, Distractor Intrusion, Serial Accuracy, TBRS Cost, etc) ou jargões clínicos pesados. Use explicações simples (ex: "dificuldade ao focar quando há muito ruído").
 - FUNDAMENTAÇÃO: na camada clínica, cite explicitamente os valores numéricos.
 - NARRATIVA: clinicalNote articula as dimensões em conjunto (ex. alta precisão de item mas alta intrusão indica boa capacidade de memória mas falha no filtro atencional periférico).
 - severity e notas de custo são verdade absoluta.
@@ -119,7 +120,7 @@ Métricas globais:
   Omissões (Silêncio):  ${input.omissions ?? 0}
   Tempo Médio de Resp:  ${formatMsToSeconds(input.meanResponseTimeMs as number)}
   Taxa de Intrusão:     ${((input.distractorIntrusionRate as number) ?? 0) * 100}% (${input.intrusionNote ?? 'sem nota'})
-  Custo de Carga:       ${((input.loadCost as number) ?? 0) * 100}%
+  Custo de Sobrecarga:  ${((input.loadCost as number) ?? 0) * 100}%
   Média Repetições:     ${input.avgReplayCount ?? 0}
 ───────────────────────────────────────────────────────────────────────────
 
@@ -163,6 +164,7 @@ O instrumento avalia as seguintes dimensões neuropsicológicas:
 REGRAS GERAIS:
 - Não recalcule métricas — já processadas pelo sistema local.
 - Não feche diagnóstico clínico.
+- PROIBIÇÃO DE TERMOS TÉCNICOS: Nas camadas 'general' e 'ludic', NUNCA utilize termos em inglês (como TBRS Cost, Time-Based Resource Sharing, Commission Errors, IES, etc). Use termos simples (ex: "Custo de dividir a atenção", "Eficiência").
 - FUNDAMENTAÇÃO: na camada clínica, cite explicitamente os valores numéricos.
 - NARRATIVA: clinicalNote articula as dimensões em conjunto (ex. alto custo TBRS com boa precisão de dígitos indica divisão desigual de recursos).
 - severity e notas são verdade absoluta.

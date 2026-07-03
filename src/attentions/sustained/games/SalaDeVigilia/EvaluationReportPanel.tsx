@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ReguaLudica } from '../../../../shared/components/ReguaLudica';
 import { ReportDisclaimer } from '../../../../shared/components/ReportDisclaimer';
+import { EvaluationLoadingAnimation } from '../../../../shared/EvaluationLoadingAnimation';
 
 interface EvaluationReportPanelProps {
   report: any;
@@ -33,6 +34,13 @@ const s = {
     border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: 16,
     overflow: 'hidden',
+  } as const,
+  section: {
+    background: '#161820',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    padding: 16,
+    color: '#e8e9f0',
   } as const,
   header: {
     padding: '16px 16px 0',
@@ -175,10 +183,8 @@ export const EvaluationReportPanel: React.FC<EvaluationReportPanelProps> = ({
 
   if (isEvaluating) {
     return (
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-        <div style={{ color: 'white', fontSize: '1.25rem', marginBottom: '1rem' }}>Analisando desempenho cognitivo...</div>
-        <div style={{ width: '40px', height: '40px', border: '4px solid rgba(255,255,255,0.2)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-        <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <EvaluationLoadingAnimation organizing={false} />
       </div>
     );
   }
@@ -291,14 +297,17 @@ export const EvaluationReportPanel: React.FC<EvaluationReportPanelProps> = ({
         </div>
       </div>
 
-      <div style={s.actions}>
-        <button type="button" onClick={onRepeat} style={s.primaryButton}>
-          Repetir o treino
-        </button>
-        <button type="button" onClick={onClose} style={s.secondaryButton}>
-          Sair
-        </button>
-      </div>
+      <section style={s.section}>
+        <h3 style={s.sectionTitle}>Próximos passos</h3>
+        <div style={s.actions}>
+          <button type="button" onClick={onRepeat} style={s.primaryButton}>
+            Repetir o treino
+          </button>
+          <button type="button" onClick={onClose} style={s.secondaryButton}>
+            Voltar ao começo
+          </button>
+        </div>
+      </section>
     </div>
   );
 };

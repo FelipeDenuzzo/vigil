@@ -6,6 +6,7 @@ import {
 } from './constants';
 import { buildPureTrials, buildMixedTrials, isCorrect } from './logic';
 import { persistColorShapeLog } from './ColorShapeEvaluationContainer';
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 import type { TrialConfig, TrialResult, ColorShapeSessionLog, RuleType, ShapeType, ColorName } from './types';
 
 type GamePhase = 'instructions' | 'tutorial' | 'fixation' | 'stimulus' | 'iti' | 'done';
@@ -104,7 +105,7 @@ function Instructions({ onStart }: { onStart: () => void }) {
         Em cada figura, uma pergunta aparecerá indicando o que deve responder.<br />
         Use os botões para dar sua resposta.
       </p>
-      <button style={css.primaryBtn} onClick={onStart}>Iniciar</button>
+      <DedoNervosoButton style={css.primaryBtn} onConfirm={onStart}>Iniciar</DedoNervosoButton>
     </div>
   );
 }
@@ -300,9 +301,9 @@ export const ColorShapeGame: React.FC<Props> = ({ sessionId, onComplete, onClose
               Você já sabe jogar! Agora o jogo real vai começar, mas sem as ajudas e balões explicativos.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-              <button style={{ ...css.primaryBtn, width: '100%', padding: '12px 16px', fontSize: '15px' }} onClick={startRealGame}>
+              <DedoNervosoButton style={{ ...css.primaryBtn, width: '100%', padding: '12px 16px', fontSize: '15px' }} onConfirm={startRealGame}>
                 Ir para o Treino de Atenção →
-              </button>
+              </DedoNervosoButton>
               <button style={{ ...css.ghostBtn, width: '100%', padding: '12px 16px', fontSize: '15px' }} onClick={() => setTutorialStep(1)}>
                 Repetir o Simulado
               </button>

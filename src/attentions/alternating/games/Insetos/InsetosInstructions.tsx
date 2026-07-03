@@ -2,6 +2,7 @@
 // Tela de instruções do jogo Insetos
 
 import React from 'react';
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 
 interface Props {
   onStart: () => void;
@@ -126,9 +127,9 @@ export const InsetosInstructions: React.FC<Props> = ({ onStart, onBack }) => (
     </div>
 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <button type="button" style={s.primaryBtn} onClick={onStart}>
+      <DedoNervosoButton style={s.primaryBtn} onConfirm={onStart}>
         Começar treino
-      </button>
+      </DedoNervosoButton>
       <button type="button" style={s.ghostBtn} onClick={onBack}>
         ← Voltar
       </button>

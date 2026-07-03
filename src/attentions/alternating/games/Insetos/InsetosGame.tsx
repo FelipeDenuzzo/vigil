@@ -238,8 +238,8 @@ export const InsetosGame: React.FC<Props> = ({ sessionId, onComplete, onClose })
 
       /* opacidade */
       ctx.globalAlpha = isAlert
-        ? (blink ? (isActive ? 1 : 0.35) : (isActive ? 0.55 : 0.15))
-        : (isActive ? 1 : 0.25);
+        ? (blink ? (isActive ? 1 : 0.45) : (isActive ? 0.7 : 0.3))
+        : (isActive ? 1 : 0.4);
 
       /* glow */
       if (isAlert && isActive) {

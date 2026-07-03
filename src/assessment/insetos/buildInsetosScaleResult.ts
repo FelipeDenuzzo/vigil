@@ -20,8 +20,16 @@ export function buildInsetosScaleResult(metrics: InsetosMetrics): InsetosScaleRe
   function clamp(v: number, min = 0, max = 100): number {
     return Math.max(min, Math.min(max, v));
   }
-  const switchCostMs = metrics.switchCostMs || 50;
-  const score = Math.round(clamp(100 - ((switchCostMs - 50) / (600 - 50)) * 100));
+  // O score agora é balizado pela acurácia
+  let score = acc;
+  
+  // Penaliza lentidão excessiva no Switch Cost (até -20 pontos)
+  if (metrics.switchCostMs && metrics.switchCostMs > 50) {
+    const penalty = ((metrics.switchCostMs - 50) / (600 - 50)) * 20;
+    score -= clamp(penalty, 0, 20);
+  }
+  
+  score = Math.round(clamp(score, 0, 100));
 
   let accuracyNote = 'Acurácia preservada. Bom controle e foco no grupo ativo.';
   if (acc < 60) {

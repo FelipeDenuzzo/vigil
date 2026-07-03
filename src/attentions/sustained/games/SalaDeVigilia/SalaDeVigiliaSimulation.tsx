@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
+import { DedoNervosoButton } from '../../../../shared/components/DedoNervosoButton';
 interface Lampada {
   id: string;
   x: number; // percentage (0-100)
@@ -198,12 +198,12 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
 
       <div style={{ position: 'absolute', top: '1rem', right: '1rem', textAlign: 'right', zIndex: 10 }}>
         <div style={{ color: 'white', opacity: 0.8 }}>SIMULAÇÃO ({timeLeft}s)</div>
-        <button 
-          onClick={onNext}
+        <DedoNervosoButton 
+          onConfirm={onNext}
           style={{ marginTop: '8px', padding: '6px 12px', background: 'var(--color-sustained, #2563eb)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
         >
           Pular Simulação
-        </button>
+        </DedoNervosoButton>
       </div>
 
       {feedback && (
@@ -262,12 +262,12 @@ export const SalaDeVigiliaSimulation: React.FC<SalaDeVigiliaSimulationProps> = (
             >
               Repetir Simulado
             </button>
-            <button
-              onClick={onNext}
+            <DedoNervosoButton
+              onConfirm={onNext}
               style={{ padding: '12px 24px', background: 'var(--color-sustained, #2563eb)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 'bold' }}
             >
               Iniciar Treino
-            </button>
+            </DedoNervosoButton>
           </div>
         </div>
       )}

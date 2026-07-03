@@ -7,7 +7,7 @@ import { useFruitWatchEvaluation } from './useFruitWatchEvaluation';
 import type { FruitWatchEvaluationResult } from './useFruitWatchEvaluation';
 import type { PhaseRawResult, FruitWatchScore } from './types';
 import type { EvaluationReport } from '../../../../lib/evaluatorClient';
-import { FruitWatchEvaluationLoadingAnimation } from './FruitWatchEvaluationLoadingAnimation';
+import { EvaluationLoadingAnimation } from '../../../../shared/EvaluationLoadingAnimation';
 import { FruitWatchReportPanel } from './FruitWatchReportPanel';
 import { calculateFruitWatchScore } from './logic';
 
@@ -164,8 +164,8 @@ export function FruitWatchEvaluationContainer({ results, sessionId, onRepeat, on
   if (loaded === false || loaded === 'organizing') {
     return (
       <div style={s.screen}>
-        <FruitWatchEvaluationLoadingAnimation
-          phase={loaded === false ? 'analyzing' : 'organizing'}
+        <EvaluationLoadingAnimation
+          organizing={loaded === 'organizing'}
         />
       </div>
     );
@@ -182,10 +182,22 @@ export function FruitWatchEvaluationContainer({ results, sessionId, onRepeat, on
             metrics={result.metrics}
           />
         )}
-      </div>
-      <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
-        {onRepeat && <button style={s.btn} onClick={onRepeat}>↺ Repetir treino</button>}
-        {onBack && <button style={s.btnBack} onClick={onBack}>Voltar</button>}
+        
+        <section style={s.section}>
+          <h3 style={s.sectionTitle}>Próximos passos</h3>
+          <div style={s.actions}>
+            {onRepeat && (
+              <button type="button" onClick={onRepeat} style={s.primaryButton}>
+                Repetir o treino
+              </button>
+            )}
+            {onBack && (
+              <button type="button" onClick={onBack} style={s.secondaryButton}>
+                Voltar ao começo
+              </button>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -204,25 +216,23 @@ const s: Record<string, React.CSSProperties> = {
     color: '#e8e9f0',
   },
   title: { fontSize: 23, fontWeight: 800, margin: 0, color: '#6c8ef5' },
-  btn: {
-    padding: '12px 28px',
-    borderRadius: 14,
-    fontSize: 15,
-    fontWeight: 700,
-    background: '#6c8ef5',
-    color: '#fff',
-    border: 'none',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(108,142,245,0.25)',
+  section: {
+    background: '#161820',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    padding: 16,
+    color: '#e8e9f0',
+    marginTop: 16,
   },
-  btnBack: {
-    padding: '12px 28px',
-    borderRadius: 14,
-    fontSize: 15,
-    fontWeight: 600,
-    background: 'rgba(255,255,255,0.06)',
-    color: '#ffffff',
-    border: '1px solid rgba(255,255,255,0.1)',
-    cursor: 'pointer',
+  sectionTitle: { marginBottom: 8, color: '#e8e9f0', fontSize: 16, fontWeight: 700 },
+  actions: { display: 'grid', gap: 12, marginTop: 8 },
+  primaryButton: {
+    minHeight: 48, border: 'none', borderRadius: 12, padding: '12px 16px',
+    background: '#6c8ef5', color: '#ffffff', fontSize: 16, fontWeight: 700, cursor: 'pointer',
+  },
+  secondaryButton: {
+    minHeight: 48, border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12,
+    padding: '12px 16px', background: '#1c1f2a', color: '#e8e9f0',
+    fontSize: 16, fontWeight: 700, cursor: 'pointer',
   },
 };
