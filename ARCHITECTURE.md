@@ -54,7 +54,12 @@ Toda nova avaliação ou treino deve seguir os mesmos padrões arquiteturais est
 | **VisualSearchHunt** (Caça ao Alvo) | Seletiva | `src/attentions/selective/games/VisualSearchHunt/VisualSearchHunt.tsx` |
 | **AcharOFaltando** (Achar o Faltando) | Seletiva | `src/attentions/selective/games/AcharOFaltando/AcharOFaltandoPlay.tsx` |
 | **SelectiveListening** (Escuta Seletiva) | Dividida | `src/attentions/divided/games/SelectiveListening/SelectiveListening.tsx` |
+| **MentalVault** (Cofre Mental) | Dividida | `src/attentions/divided/games/MentalVault/MentalVaultGame.tsx` |
 | **SalaDeVigilia** (Sala de Vigília) | Sustentada | `src/attentions/sustained/games/SalaDeVigilia/SalaDeVigilia.tsx` |
+| **FruitWatch** (Observação de Frutas) | Sustentada | `src/attentions/sustained/games/FruitWatch/FruitWatchGame.tsx` |
+| **LongMazes** (Labirintos Prolongados) | Sustentada | `src/attentions/sustained/games/LongMazes/LongMazesGame.tsx` |
+| **ColorShape** (Cor ou Forma) | Alternada | `src/attentions/alternated/games/ColorShape/ColorShapeGame.tsx` |
+| **Insetos** (Insetos) | Alternada | `src/attentions/alternating/games/Insetos/InsetosGame.tsx` |
 
 **Estrutura de pastas por tipo de atenção (já existem no repositório):**
 
@@ -129,6 +134,8 @@ Cada pasta `src/assessment/{nomeDotreino}/` deve conter **exatamente** estes arq
 | `buildMentalVaultScaleResult.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/mentalVault/buildMentalVaultScaleResult.ts) |
 | `buildMentalVaultTechnicalReport.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/mentalVault/buildMentalVaultTechnicalReport.ts) |
 | `types.ts` | [ver](https://github.com/FelipeDenuzzo/vigil/blob/main/src/assessment/mentalVault/types.ts) |
+
+> **Nota Adicional de Cobertura:** Os demais treinos ativos no repositório (Atenção Sustentada: *Sala de Vigília*, *FruitWatch*, *LongMazes*; Atenção Alternada: *ColorShape*, *Insetos*; Atenção Seletiva: *AcharOFaltando*) seguem rigorosamente este mesmo contrato arquitetural. Os arquivos estarão agrupados dentro do diretório `src/assessment/{nomeDoTreino}/`, preservando a mesma nomenclatura padrão (ex: `calculate{NomeDoTreino}Metrics.ts`, `build{NomeDoTreino}ScaleResult.ts`).
 
 ---
 
@@ -517,6 +524,14 @@ Isso ocorre quando o código é gerado ou editado por ferramentas que produzem e
 O problema se manifesta principalmente em emojis e caracteres acentuados do português (ç, ã, é, ê, í, ó, ú) quando o arquivo é gerado ou modificado por agentes de IA ou ferramentas que serializam strings com escapes.
 
 **Regra:** todo arquivo `.tsx` e `.jsx` deve conter **caracteres UTF-8 literais** — nunca sequências `\uXXXX` dentro de JSX. Ao revisar código gerado automaticamente, verificar se os textos visíveis ao usuário estão em UTF-8 direto antes de fazer commit.
+
+---
+
+### 11 — Prevenção de Cliques Antecipados e "Dedo Nervoso"
+
+Muitos jogos cognitivos (especialmente Sustentada e Seletiva) exigem que o usuário reaja rapidamente *após* a aparição de um estímulo (Tempo de Reação). O uso de eventos brutos do DOM, como `onMouseDown` ou `onTouchStart`, cria uma vulnerabilidade grave onde o jogador pode manter o dedo pressionado na tela ou metralhar cliques antes do estímulo aparecer, registrando tempos de reação irreais ou nulos e estragando a precisão do teste clínico.
+
+**Regra:** Para interações atreladas a tempo de reação, é estritamente proibido o uso de handlers brutos. Deve-se obrigatoriamente utilizar componentes de interação padronizados (como o `<DedoNervosoButton />`) que intercedem em eventos unificados (`onPointerDown`/`onPointerUp`), exigem um toque limpo e intencional, bloqueiam cliques prolongados ("hold") e disparam callbacks de erro em caso de antecipação desleal.
 
 ---
 
