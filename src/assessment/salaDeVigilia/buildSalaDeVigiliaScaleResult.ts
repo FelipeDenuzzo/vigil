@@ -23,8 +23,9 @@ export function buildSalaDeVigiliaScaleResult(
   let baseScore = Math.round(clamp(100 - ((metrics.sdRT - 80) / (600 - 80)) * 100));
 
   // Penalidade por Omissões (se o usuário não clicar nas lâmpadas que acenderam)
-  const hitRate = metrics.totalTargets > 0 
-    ? (metrics.totalTargets - metrics.omissions) / metrics.totalTargets 
+  const totalTargets = metrics.hits + metrics.omissions;
+  const hitRate = totalTargets > 0 
+    ? (totalTargets - metrics.omissions) / totalTargets 
     : 1;
     
   // Penalidade por Comissões (cliques errados) - subtrai 2 pontos por cada clique impulsivo, limitado a -30

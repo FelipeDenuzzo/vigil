@@ -4,7 +4,7 @@ import type { MentalVaultSessionMetrics } from './types';
 
 export interface MentalVaultScaleResult {
   score: number;
-  level: string;
+  level: 'mínimo' | 'leve' | 'moderado' | 'importante';
 }
 
 export function buildMentalVaultScaleResult(
