@@ -13,6 +13,13 @@ import db from '../../../../lib/firebase';
 const EVALUATOR_URL    = import.meta.env.VITE_EVALUATOR_URL    as string | undefined;
 const EVALUATOR_SECRET = import.meta.env.VITE_EVALUATOR_SECRET as string | undefined;
 
+function getSeverity(score: number): 'minimo' | 'leve' | 'moderado' | 'importante' {
+  if (score >= 80) return 'minimo';
+  if (score >= 60) return 'leve';
+  if (score >= 40) return 'moderado';
+  return 'importante';
+}
+
 export interface TrilhaZigueZagueEvaluationResult {
   metrics:      TrilhaZigueZagueSessionMetrics;
   geminiReport: EvaluationReport | null;
@@ -72,7 +79,7 @@ export async function useTrilhaZigueZagueEvaluation(
     attentionType: 'alternada',
     sessionId:     log.sessionId,
     startedAt:     log.startedAt,
-    severity:      scale.label,
+    severity:      getSeverity(scale.score),
 
     // Trilha Zigue Zague específicos (precisa ser injetado para a IA no prompt)
     timePhase1:       metrics.timePhase1,
@@ -94,7 +101,7 @@ export async function useTrilhaZigueZagueEvaluation(
         game:          'trilha-zigue-zague',
         attentionType: 'alternada',
         score:         scale.score,
-        level:         scale.label,
+        level:         getSeverity(scale.score),
         createdAt:     serverTimestamp(),
       }, { merge: true });
     }
