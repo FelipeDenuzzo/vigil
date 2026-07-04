@@ -58,8 +58,9 @@ Toda nova avaliação ou treino deve seguir os mesmos padrões arquiteturais est
 | **SalaDeVigilia** (Sala de Vigília) | Sustentada | `src/attentions/sustained/games/SalaDeVigilia/SalaDeVigilia.tsx` |
 | **FruitWatch** (Observação de Frutas) | Sustentada | `src/attentions/sustained/games/FruitWatch/FruitWatchGame.tsx` |
 | **LongMazes** (Labirintos Prolongados) | Sustentada | `src/attentions/sustained/games/LongMazes/LongMazesGame.tsx` |
-| **ColorShape** (Cor ou Forma) | Alternada | `src/attentions/alternated/games/ColorShape/ColorShapeGame.tsx` |
+| **ColorShape** (Cor ou Forma) | Alternada | `src/attentions/alternating/games/ColorShape/ColorShapeGame.tsx` |
 | **Insetos** (Insetos) | Alternada | `src/attentions/alternating/games/Insetos/InsetosGame.tsx` |
+| **TrilhaZigueZague** (Trilha Zigue-Zague) | Alternada | `src/attentions/alternating/games/TrilhaZigueZague/TrilhaZigueZague.tsx` |
 
 **Estrutura de pastas por tipo de atenção (já existem no repositório):**
 
@@ -297,6 +298,7 @@ O Vigil unifica métricas clínicas comprovadas (Balizadores) com feedback lúdi
 | **Cor ou Forma** | Agilidade de Adaptação | Custo de Alternância Global | Variável pronta na engine: `switchCostRtMs` |
 | **Insetos** | Agilidade de Reconfiguração | Custo de Transição Dinâmica | `Média RT nos primeiros 10s após inversão de regra` MENOS `Média RT Global` |
 | **Labirintos** | Bússola Mental / Eficiência | Índice de Eficiência de Rota (IER) | `Tempo Total Conclusão * (1 + (Qtd de Batidas e Erros / 10))` |
+| **Trilha Zigue-Zague** | Flexibilidade Cognitiva | Custo de Set-Switching | `switchingCost = timePhase2 - timePhase1` |
 
 > **Nota Crítica de Arquitetura:** O Gemini nunca inventará ou deduzirá essas pontuações. Os arquivos TypeScript do avaliador (artefato 2) farão a matemática precisa baseada nos logs de eventos, enviarão esses números exatos para o payload do prompt e a IA os usará estritamente como balizadores irrefutáveis. O Front-end também utilizará esses dados absolutos para plotar os Gráficos de Evolução de forma determinística.
 
@@ -361,6 +363,13 @@ O objetivo desta matriz é entregar ao Back-end a fórmula matemática exata e e
 * **O Baseline Saudável (100 pts):** `IER` $\le$ 180 segundos.
 * **O Pior Cenário (0 pts):** `IER` $\ge$ 480 segundos (Estourou o tempo e bateu muito).
 * **Fórmula:** `Nota = 100 - ((IER - 180) / 3)`
+
+### 🟢 10. Trilha Zigue-Zague (Métrica UX: Flexibilidade Cognitiva)
+* **A Variável no Back-end:** `switchingCost` (Tempo Fase 2 menos Tempo Fase 1).
+* **O Baseline Saudável (100 pts):** `switchingCost` $\le$ 10 segundos.
+* **O Pior Cenário (0 pts):** `switchingCost` $\ge$ 100 segundos.
+* **Penalidades Adicionais:** 2 pontos descontados por cada erro cometido.
+* **Fórmula:** `Nota = clamp(100 - ((switchingCost - 10) / 90) * 100, 0, 100) - (Erros * 2)`
 
 ---
 

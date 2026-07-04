@@ -62,20 +62,99 @@ export const ALTERNATING_EVALUATION_SCHEMA = {
   ],
 };
 
-// ─── Prompt clínico — Atenção Alternada (ColorShape) ────────────────────────
+// ─── Prompt clínico — Atenção Alternada ────────────────────────
 export function buildAlternatingPrompt(input: AlternatingEvaluatorInput): string {
   const displaySeverity = input.severity === 'minimo' ? 'mínimo' : (input.severity ?? 'indeterminado');
-  const totalTrials = input.totalTrials ?? 0;
+  const isTrilha = input.game === 'trilha-zigue-zague';
 
-  const noEngagementWarning = totalTrials === 0
-    ? `
+  // Configuração específica por jogo
+  let gameDescription = '';
+  let dimensionsDescription = '';
+  let specificData = '';
+  let noEngagementWarning = '';
+
+  if (isTrilha) {
+    const timePhase1 = input.timePhase1 ?? 0;
+    const timePhase2 = input.timePhase2 ?? 0;
+    
+    noEngagementWarning = (timePhase1 === 0 && timePhase2 === 0)
+      ? `
+ATENÇÃO — SESSÃO SEM ENGAJAMENTO:
+Nenhuma fase foi completada.
+- Não faça inferências sobre flexibilidade cognitiva.
+- generalStrengths e clinicalStrengths devem ficar vazios.
+- generalSummary e clinicalNote devem mencionar que os dados são insuficientes.
+`
+      : '';
+
+    gameDescription = `O usuário completou o treino "Trilha Zigue-Zague" do Vigil (uma versão do Trail Making Test B).
+O usuário precisa conectar alvos alternando entre números e letras em ordem (1-A-2-B-3-C...).`;
+
+    dimensionsDescription = `O instrumento avalia 2 dimensões executivas principais:
+1. **Velocidade de Processamento Simples (Fase 1)**: Capacidade basal visomotora e de busca.
+2. **Custo de Set-Switching (Fase 2 - Fase 1)**: Atraso causado pela necessidade constante de alternar regras e inibir a sequência natural. Avalia a flexibilidade cognitiva.`;
+
+    specificData = `Métricas globais:
+  Tempo Fase 1 (TMT-A): ${timePhase1} segundos
+  Tempo Fase 2 (TMT-B): ${timePhase2} segundos
+  Custo de Mudança (Switching Cost): ${input.switchCostRtMs ?? (timePhase2 - timePhase1)} segundos
+
+Erros Cometidos (Perseveração e Falha Sequencial):
+  Erros de Mudança (Shifting Errors): ${input.shiftingErrors ?? 0} (Falhou em alternar entre número/letra)
+  Erros de Sequência (Sequencing Errors): ${input.sequencingErrors ?? 0} (Perdeu a ordem alfabética/numérica)
+  Total de Erros: ${input.totalErrors ?? 0}`;
+
+  } else {
+    const totalTrials = input.totalTrials ?? 0;
+    noEngagementWarning = totalTrials === 0
+      ? `
 ATENÇÃO — SESSÃO SEM ENGAJAMENTO:
 totalTrials é 0. Nenhuma tentativa foi registrada.
 - Não faça inferências sobre flexibilidade cognitiva, perseveração ou velocidade.
 - generalStrengths e clinicalStrengths devem ficar vazios.
 - generalSummary e clinicalNote devem mencionar que os dados são insuficientes.
 `
-    : '';
+      : '';
+
+    gameDescription = `O usuário completou um treino de task-switching do Vigil ("Cor ou Forma" ou "Insetos")
+onde alterna rapidamente regras de classificação ao longo dos estímulos.`;
+
+    dimensionsDescription = `O instrumento avalia 3 dimensões executivas:
+1. **Custo de Mudança (Custo de Transição)**: latência extra ao mudar de regra vs. repetir. Avalia flexibilidade cognitiva.
+2. **Custo de Mistura (Efeito de Cautela)**: lentidão global na fase mista vs. bloco puro. Avalia sobrecarga da memória de trabalho.
+3. **Perseveração**: erros de troca onde a regra anterior foi mantida. Avalia rigidez cognitiva.`;
+
+    specificData = `Métricas globais:
+  totalTrials:  ${totalTrials}
+  accuracy:     ${input.accuracy ?? 0}%  → ${input.accuracyNote ?? 'indeterminado'}
+  avgRtMs:      ${formatMsToSeconds(input.avgRtMs ?? 0)}
+  timeouts:     ${input.timeoutCount ?? 0} (${input.timeoutPct ?? 0}%)
+
+Custo de Mudança (Transição):
+  switch trials:    ${input.switchTrials ?? 0}
+  repeat trials:    ${input.repeatTrials ?? 0}
+  switch accuracy:  ${input.switchAccuracy ?? 0}%
+  repeat accuracy:  ${input.repeatAccuracy ?? 0}%
+  switch RT médio:  ${formatMsToSeconds(input.switchAvgRtMs ?? 0)}
+  repeat RT médio:  ${formatMsToSeconds(input.repeatAvgRtMs ?? 0)}
+  custo RT:         ${formatMsToSeconds(input.switchCostRtMs ?? 0)}  → ${input.switchingCostNote ?? 'indeterminado'}
+  custo erro:       ${input.switchCostErrorPp ?? 0} p.p.
+
+Custo de Mistura (Cautela):
+  pure trials:      ${input.pureTrials ?? 0}
+  pure accuracy:    ${input.pureAccuracy ?? 0}%
+  pure RT médio:    ${formatMsToSeconds(input.pureAvgRtMs ?? 0)}
+  custo RT:         ${formatMsToSeconds(input.mixingCostRtMs ?? 0)}  → ${input.mixingCostNote ?? 'indeterminado'}
+  custo erro:       ${input.mixingCostErrorPp ?? 0} p.p.
+
+Perseveração:
+  erros:   ${input.perseverationErrors ?? 0}
+  taxa:    ${input.perseverationPct ?? 0}% dos switch trials  → ${input.perseverationNote ?? 'indeterminado'}
+
+Por regra (blocos puros):
+  cor/grupo1   — accuracy: ${input.colorAccuracy ?? 0}%  RT: ${formatMsToSeconds(input.colorAvgRtMs ?? 0)}
+  forma/grupo2 — accuracy: ${input.shapeAccuracy ?? 0}%  RT: ${formatMsToSeconds(input.shapeAvgRtMs ?? 0)}`;
+  }
 
   return `
 Você é um avaliador especializado em neuropsicologia das funções executivas.
@@ -89,23 +168,18 @@ Deve gerar um laudo em DUAS camadas distintas:
 │ Linguagem técnica, prudente, embasada nos dados numéricos.
 │ Campos: clinicalStrengths, clinicalWeaknesses, clinicalRecommendation, clinicalNote.
 
-O usuário completou o treino "Cor ou Forma" do Vigil — uma tarefa de task-switching
-onde alterna entre classificar estímulos pela cor ou pela forma conforme a regra exibida.
+${gameDescription}
 
-O instrumento avalia 3 dimensões executivas:
-1. **Custo de Mudança (Custo de Transição)**: latência extra ao mudar de regra vs. repetir. Avalia flexibilidade cognitiva.
-2. **Custo de Mistura (Efeito de Cautela)**: lentidão global na fase mista vs. bloco puro. Avalia sobrecarga da memória de trabalho.
-3. **Perseveração**: erros de troca onde a regra anterior foi mantida. Avalia rigidez cognitiva.
+${dimensionsDescription}
 
 REGRAS GERAIS:
 - Não recalcule métricas — já processadas pelo sistema local.
 - Não feche diagnóstico clínico.
 - PROIBIÇÃO DE TERMOS TÉCNICOS: Nas camadas 'general' e 'ludic', NUNCA utilize termos em inglês (como Switching Cost, Mixing Cost, Perseveration, etc). Use explicações simples (ex: "tempo extra para mudar de tarefa").
 - FUNDAMENTAÇÃO: na camada clínica, cite explicitamente os valores numéricos (segundos, %).
-- NARRATIVA: clinicalNote articula as 3 dimensões em conjunto — custo de mudança alto com perseveração
-  conta história diferente de custo de mudança alto sem perseveração.
+- NARRATIVA: clinicalNote deve articular os dados numéricos em conjunto (ex: flexibilidade e perseveração).
 - severity e notas de custo são verdade absoluta.
-- clinicalRecommendation DEVE alertar que os dados vêm de treino (não diagnóstico)
+- clinicalRecommendation DEVE alertar que os dados vêm de treino virtual (não diagnóstico)
   e orientar busca por profissional certificado.
 - score coerente com severity: mínimo→80–100, leve→60–79, moderado→40–59, importante→0–39.
 ${noEngagementWarning}
@@ -114,36 +188,7 @@ sessionId:     ${input.sessionId}
 attentionType: alternada
 severity (calculada localmente): ${displaySeverity}
 
-Métricas globais:
-  totalTrials:  ${totalTrials}
-  accuracy:     ${input.accuracy ?? 0}%  → ${input.accuracyNote ?? 'indeterminado'}
-  avgRtMs:      ${formatMsToSeconds(input.avgRtMs)}
-  timeouts:     ${input.timeoutCount ?? 0} (${input.timeoutPct ?? 0}%)
-
-Custo de Mudança (Transição):
-  switch trials:    ${input.switchTrials ?? 0}
-  repeat trials:    ${input.repeatTrials ?? 0}
-  switch accuracy:  ${input.switchAccuracy ?? 0}%
-  repeat accuracy:  ${input.repeatAccuracy ?? 0}%
-  switch RT médio:  ${formatMsToSeconds(input.switchAvgRtMs)}
-  repeat RT médio:  ${formatMsToSeconds(input.repeatAvgRtMs)}
-  custo RT:         ${formatMsToSeconds(input.switchCostRtMs)}  → ${input.switchingCostNote ?? 'indeterminado'}
-  custo erro:       ${input.switchCostErrorPp ?? 0} p.p.
-
-Custo de Mistura (Cautela):
-  pure trials:      ${input.pureTrials ?? 0}
-  pure accuracy:    ${input.pureAccuracy ?? 0}%
-  pure RT médio:    ${formatMsToSeconds(input.pureAvgRtMs)}
-  custo RT:         ${formatMsToSeconds(input.mixingCostRtMs)}  → ${input.mixingCostNote ?? 'indeterminado'}
-  custo erro:       ${input.mixingCostErrorPp ?? 0} p.p.
-
-Perseveração:
-  erros:   ${input.perseverationErrors ?? 0}
-  taxa:    ${input.perseverationPct ?? 0}% dos switch trials  → ${input.perseverationNote ?? 'indeterminado'}
-
-Por regra (blocos puros):
-  cor   — accuracy: ${input.colorAccuracy ?? 0}%  RT: ${formatMsToSeconds(input.colorAvgRtMs)}
-  forma — accuracy: ${input.shapeAccuracy ?? 0}%  RT: ${formatMsToSeconds(input.shapeAvgRtMs)}
+${specificData}
 ───────────────────────────────────────────────────────────────────────────
 
 Gere o laudo com os dois campos de cada camada completamente preenchidos.

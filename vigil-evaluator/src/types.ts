@@ -106,6 +106,7 @@ export interface AlternatingEvaluatorInput {
   sessionId:           string;
   startedAt?:          string;
   severity?:           'minimo' | 'leve' | 'moderado' | 'importante';
+  game?:               'color-shape' | 'insetos' | 'trilha-zigue-zague';
   // Métricas globais
   totalTrials?:        number;
   accuracy?:           number;
@@ -140,6 +141,13 @@ export interface AlternatingEvaluatorInput {
   mixingCostNote?:      string;
   perseverationNote?:   string;
   accuracyNote?:        string;
+
+  // Trilha Zigue-Zague
+  timePhase1?:          number;
+  timePhase2?:          number;
+  shiftingErrors?:      number;
+  sequencingErrors?:    number;
+  totalErrors?:         number;
 }
 
 // ─── Dividida (placeholder — campos definidos quando o jogo existir) ──────────

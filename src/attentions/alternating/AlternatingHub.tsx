@@ -4,8 +4,9 @@ import { Button } from '../../shared/components/Button';
 import { Card } from '../../shared/components/Card';
 import ColorShapePlay from './ColorShapePlay';
 import InsetosPlay from './InsetosPlay';
+import TrilhaZigueZaguePlay from './TrilhaZigueZaguePlay';
 
-type ActiveGame = 'color-shape' | 'insetos' | null;
+type ActiveGame = 'color-shape' | 'insetos' | 'trilha-zigue-zague' | null;
 
 export const AlternatingHub: React.FC = () => {
   const navigate = useNavigate();
@@ -50,6 +51,12 @@ export const AlternatingHub: React.FC = () => {
         {activeGame === 'insetos' && (
           <div style={{ width: '100%', minHeight: '600px' }}>
             <InsetosPlay onClose={() => setActiveGame(null)} />
+          </div>
+        )}
+
+        {activeGame === 'trilha-zigue-zague' && (
+          <div style={{ width: '100%', minHeight: '600px' }}>
+            <TrilhaZigueZaguePlay onClose={() => setActiveGame(null)} />
           </div>
         )}
 
@@ -108,6 +115,30 @@ export const AlternatingHub: React.FC = () => {
               >
                 Formigas e joaninhas se movem pela tela — toque rapidamente nos
                 insetos do grupo ativo quando eles piscarem!
+              </p>
+            </Card>
+
+            <Card
+              interactive
+              accent="var(--color-alternating)"
+              onClick={() => setActiveGame('trilha-zigue-zague')}
+            >
+              <p
+                style={{
+                  fontSize: 'var(--text-lg)',
+                  fontWeight: 600,
+                  marginBottom: 'var(--space-2)',
+                }}
+              >
+                🔀 Trilha Zigue-Zague
+              </p>
+              <p
+                style={{
+                  fontSize: 'var(--text-sm)',
+                  color: '#ffffff',
+                }}
+              >
+                Conecte números e letras alternadamente o mais rápido possível (Ex: 1-A-2-B-3-C). Avalia sua flexibilidade cognitiva.
               </p>
             </Card>
           </div>
