@@ -44,17 +44,17 @@ export const TrilhaZigueZagueResult: React.FC<Props> = ({
           
           <div style={{ marginTop: 24 }}>
             <h4 style={{ color: '#10b981' }}>O que você fez bem:</h4>
-            <p style={{ color: '#e8e9f0', lineHeight: 1.6 }}>{geminiReport.general?.generalStrengths || '...'}</p>
+            <p style={{ color: '#e8e9f0', lineHeight: 1.6 }}>{geminiReport.general?.strengths?.join(', ') || '...'}</p>
           </div>
 
           <div style={{ marginTop: 24 }}>
             <h4 style={{ color: '#3b82f6' }}>O que melhorar:</h4>
-            <p style={{ color: '#e8e9f0', lineHeight: 1.6 }}>{geminiReport.general?.generalWeaknesses || '...'}</p>
+            <p style={{ color: '#e8e9f0', lineHeight: 1.6 }}>{geminiReport.general?.weaknesses?.join(', ') || '...'}</p>
           </div>
 
           <div style={{ marginTop: 24, padding: 16, background: 'rgba(0,0,0,0.2)', borderRadius: 8 }}>
             <h4 style={{ color: '#e8e9f0', marginTop: 0 }}>Recomendação</h4>
-            <p style={{ color: '#a3a8cc', margin: 0, lineHeight: 1.6 }}>{geminiReport.general?.generalRecommendation || '...'}</p>
+            <p style={{ color: '#a3a8cc', margin: 0, lineHeight: 1.6 }}>{geminiReport.general?.recommendation || '...'}</p>
           </div>
         </div>
       ) : (

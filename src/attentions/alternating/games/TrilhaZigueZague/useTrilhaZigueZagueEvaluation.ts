@@ -72,7 +72,7 @@ export async function useTrilhaZigueZagueEvaluation(
     attentionType: 'alternada',
     sessionId:     log.sessionId,
     startedAt:     log.startedAt,
-    severity:      scale.level,
+    severity:      scale.label,
 
     // Trilha Zigue Zague específicos (precisa ser injetado para a IA no prompt)
     timePhase1:       metrics.timePhase1,
@@ -94,7 +94,7 @@ export async function useTrilhaZigueZagueEvaluation(
         game:          'trilha-zigue-zague',
         attentionType: 'alternada',
         score:         scale.score,
-        level:         scale.level,
+        level:         scale.label,
         createdAt:     serverTimestamp(),
       }, { merge: true });
     }

@@ -1,6 +1,6 @@
 // src/attentions/alternating/games/TrilhaZigueZague/TrilhaZigueZague.tsx
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import type { GamePhase, TrilhaNode, TrilhaZigueZagueSessionLog } from './types';
 import { TrilhaZigueZagueInstructions } from './TrilhaZigueZagueInstructions';
 import { TrilhaZigueZagueGame } from './TrilhaZigueZagueGame';
@@ -54,7 +54,7 @@ export const TrilhaZigueZague: React.FC<Props> = ({ sessionId, onComplete, onClo
   const shiftingErrsRef = useRef(0);
   const sequencingErrsRef = useRef(0);
 
-  const handlePhase1Complete = (timeMs: number, shiftErr: number, seqErr: number) => {
+  const handlePhase1Complete = (timeMs: number, _shiftErr: number, seqErr: number) => {
     timePhase1Ref.current = timeMs / 1000;
     // seqErr in Phase1 goes to sequencingErrors, but we usually only care about Phase2 for shifting/sequencing.
     // We'll accumulate them anyway.
@@ -75,8 +75,6 @@ export const TrilhaZigueZague: React.FC<Props> = ({ sessionId, onComplete, onClo
         sessionId,
         startedAt: startedAtRef.current,
         sessionData: {
-          sessionId,
-          startedAt: startedAtRef.current,
           timePhase1: timePhase1Ref.current,
           timePhase2: timePhase2Ref.current,
           shiftingErrors: shiftingErrsRef.current,

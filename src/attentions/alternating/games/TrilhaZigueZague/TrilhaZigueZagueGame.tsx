@@ -130,7 +130,6 @@ export const TrilhaZigueZagueGame: React.FC<TrilhaZigueZagueGameProps> = ({
       {/* Draw nodes */}
       {nodes.map(node => {
         const isClicked = expectedSequence.indexOf(node.id) < currentIndex;
-        const isCurrent = expectedSequence[currentIndex] === node.id;
         const isError = errorNodeId === node.id;
         
         let bgColor = '#1e2133';
