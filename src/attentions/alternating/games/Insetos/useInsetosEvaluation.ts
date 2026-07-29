@@ -80,14 +80,14 @@ export async function useInsetosEvaluation(
     // Métricas globais
     totalTrials:      metrics.totalTrials,
     totalHits:        metrics.totalHits,
-    accuracyPct:      metrics.accuracyPct,
+    accuracy:         metrics.accuracyPct,      // campo correto no AlternatingEvaluatorInput
     omissions:        metrics.omissions,
     commissionErrors: metrics.commissionErrors,
     meanRT:           metrics.meanRT,
 
     // Custo de alternância
-    switchCostMs:      metrics.switchCostMs,
-    switchCostNote:    scale.switchCostNote,
+    switchCostRtMs:    metrics.switchCostMs,    // campo correto no AlternatingEvaluatorInput
+    switchingCostNote: scale.switchCostNote,    // campo correto no AlternatingEvaluatorInput
 
     // Custo de multi-track
     multiTrackCostPct: metrics.multiTrackCostPct,

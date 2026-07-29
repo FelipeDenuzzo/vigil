@@ -80,6 +80,7 @@ export async function useTrilhaZigueZagueEvaluation(
     sessionId:     log.sessionId,
     startedAt:     log.startedAt,
     severity:      getSeverity(scale.score),
+    totalTrials:   0, // Trilha não tem trials discretos; campo obrigatório pela validação da rota
 
     // Trilha Zigue Zague específicos (precisa ser injetado para a IA no prompt)
     timePhase1:       metrics.timePhase1,
@@ -87,9 +88,9 @@ export async function useTrilhaZigueZagueEvaluation(
     shiftingErrors:   metrics.shiftingErrors,
     sequencingErrors: metrics.sequencingErrors,
     totalErrors:      metrics.totalErrors,
-    
-    // Passando o Custo pro backend (a IA recebe)
-    switchCostRtMs:   metrics.switchingCost * 1000 // Convertendo para ms caso a IA espere ms (ou o prompt lida com segundos)
+
+    // Custo de mudança em segundos — o prompt de alternada o exibe com label "segundos"
+    switchCostRtMs:   metrics.switchingCost,
   };
 
   // Salva score localmente antes da IA
