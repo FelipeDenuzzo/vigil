@@ -11,9 +11,9 @@ export function buildMentalVaultScaleResult(
   metrics: MentalVaultSessionMetrics
 ): MentalVaultScaleResult {
   const levelClass =
-    metrics.avgAbsoluteRecall >= 4.5 ? 'mínimo' :
-    metrics.avgAbsoluteRecall >= 3.5 ? 'leve' :
-    metrics.avgAbsoluteRecall >= 2.5 ? 'moderado' : 'importante';
+    metrics.avgAbsoluteRecall >= 0.85 ? 'mínimo' :
+    metrics.avgAbsoluteRecall >= 0.70 ? 'leve' :
+    metrics.avgAbsoluteRecall >= 0.50 ? 'moderado' : 'importante';
 
   // Formula A: Cofre Mental (TBRS Cost)
   const tbrsCostPct = Math.max(0, (metrics.tbrsCost || 0) * 100);
