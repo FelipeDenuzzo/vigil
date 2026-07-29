@@ -1,17 +1,20 @@
-// src/simulator/VigilSimulator.tsx
-// Página do Simulador de Payload Vigil — acessível via /simulator (requireAdmin).
-
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { runScenario } from './SimulatorRunner';
 import { trilhaZigueZagueScenarios } from './scenarios/trilhaZigueZague';
 import { insetosScenarios } from './scenarios/insetos';
 import { colorShapeScenarios } from './scenarios/colorShape';
+import { fruitWatchScenarios } from './scenarios/fruitWatch';
+import { longMazesScenarios } from './scenarios/longMazes';
+import { salaDeVigiliaScenarios } from './scenarios/salaDeVigilia';
+import { acharOFaltandoScenarios } from './scenarios/acharOFaltando';
+import { visualSearchScenarios } from './scenarios/visualSearch';
 import type { SimulationLog, GameGroup, Scenario } from './types';
 import './VigilSimulator.css';
 
 // ── Registro dos grupos ──────────────────────────────────────────────────────
 const GAME_GROUPS: GameGroup[] = [
+  // Alternada
   {
     id: 'trilha',
     label: 'Trilha Zigue-Zague (alternada)',
@@ -29,6 +32,38 @@ const GAME_GROUPS: GameGroup[] = [
     label: 'Color Shape (alternada)',
     attentionType: 'alternada',
     scenarios: colorShapeScenarios,
+  },
+  // Sustentada
+  {
+    id: 'fruitwatch',
+    label: 'Fruit Watch / Foco Ninja (sustentada)',
+    attentionType: 'sustentada',
+    scenarios: fruitWatchScenarios,
+  },
+  {
+    id: 'longmazes',
+    label: 'Long Mazes (sustentada)',
+    attentionType: 'sustentada',
+    scenarios: longMazesScenarios,
+  },
+  {
+    id: 'saladevigilia',
+    label: 'Sala de Vigília (sustentada)',
+    attentionType: 'sustentada',
+    scenarios: salaDeVigiliaScenarios,
+  },
+  // Seletiva
+  {
+    id: 'acharofaltando',
+    label: 'Achar o Faltando (seletiva)',
+    attentionType: 'seletiva',
+    scenarios: acharOFaltandoScenarios,
+  },
+  {
+    id: 'visualsearch',
+    label: 'Visual Search Hunt (seletiva)',
+    attentionType: 'seletiva',
+    scenarios: visualSearchScenarios,
   },
 ];
 
