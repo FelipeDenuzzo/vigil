@@ -8,11 +8,17 @@ export function buildMentalVaultTechnicalReport(
   startedAt: string,
   metrics: MentalVaultSessionMetrics
 ): EvaluatorInput {
+  const severity =
+    metrics.avgAbsoluteRecall >= 4.5 ? 'minimo' :
+    metrics.avgAbsoluteRecall >= 3.5 ? 'leve' :
+    metrics.avgAbsoluteRecall >= 2.5 ? 'moderado' : 'importante';
+
   return {
     sessionId,
     startedAt,
     attentionType: 'dividida',
     game: 'cofre-mental',
+    severity,
     
     // Métricas do teste
     nivelMaximo: metrics.nivelMaximo,

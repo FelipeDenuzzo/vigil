@@ -9,6 +9,8 @@ import { longMazesScenarios } from './scenarios/longMazes';
 import { salaDeVigiliaScenarios } from './scenarios/salaDeVigilia';
 import { acharOFaltandoScenarios } from './scenarios/acharOFaltando';
 import { visualSearchScenarios } from './scenarios/visualSearch';
+import { mentalVaultScenarios } from './scenarios/mentalVault';
+import { selectiveListeningScenarios } from './scenarios/selectiveListening';
 import type { SimulationLog, GameGroup, Scenario } from './types';
 import './VigilSimulator.css';
 
@@ -64,6 +66,19 @@ const GAME_GROUPS: GameGroup[] = [
     label: 'Visual Search Hunt (seletiva)',
     attentionType: 'seletiva',
     scenarios: visualSearchScenarios,
+  },
+  // Dividida
+  {
+    id: 'mentalvault',
+    label: 'Cofre Mental (dividida)',
+    attentionType: 'dividida',
+    scenarios: mentalVaultScenarios,
+  },
+  {
+    id: 'selectivelistening',
+    label: 'Escuta Seletiva (dividida)',
+    attentionType: 'dividida',
+    scenarios: selectiveListeningScenarios,
   },
 ];
 
