@@ -89,7 +89,7 @@ export function calculateFruitWatchScore(results: PhaseRawResult[]): FruitWatchS
 
   // Fórmula da Matriz (Nota de 0 a 100)
   const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
-  const finalScore = Math.round(clamp(100 - (dtc / 40) * 100, 0, 100));
+  const finalScore = Math.round(clamp(avg12 - (dtc / 40) * 100, 0, 100));
 
   // Como finalScore agora é o balizador (antes era o focoContinuo), mantemos a variável para compatibilidade
   const focoContinuo = finalScore;
