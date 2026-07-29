@@ -142,6 +142,12 @@ export interface AlternatingEvaluatorInput {
   perseverationNote?:   string;
   accuracyNote?:        string;
 
+  // Insetos
+  multiTrackCostPct?:   number;
+  vigilanceDecayPct?:   number;
+  meanRT?:              number;
+  speedNote?:           string;
+
   // Trilha Zigue-Zague
   timePhase1?:          number;
   timePhase2?:          number;

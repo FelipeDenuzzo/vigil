@@ -104,6 +104,40 @@ Erros Cometidos (Perseveração e Falha Sequencial):
   Erros de Sequência (Sequencing Errors): ${input.sequencingErrors ?? 0} (Perdeu a ordem alfabética/numérica)
   Total de Erros: ${input.totalErrors ?? 0}`;
 
+  } else if (input.game === 'insetos') {
+    const totalTrials = input.totalTrials ?? 0;
+    noEngagementWarning = totalTrials === 0
+      ? `
+ATENÇÃO — SESSÃO SEM ENGAJAMENTO:
+totalTrials é 0. Nenhuma tentativa foi registrada.
+- Não faça inferências sobre flexibilidade cognitiva, vigilância ou velocidade.
+- generalStrengths e clinicalStrengths devem ficar vazios.
+- generalSummary e clinicalNote devem mencionar que os dados são insuficientes.
+`
+      : '';
+
+    gameDescription = `O usuário completou o treino "Insetos" do Vigil (uma tarefa de atenção alternada baseada em task-switching complexo).
+O usuário precisa classificar insetos mudando rapidamente o critério com base em indicações visuais, gerando alternância constante das regras.`;
+
+    dimensionsDescription = `O instrumento avalia 3 dimensões executivas:
+1. **Custo de Mudança (Switch Cost)**: RT pós-troca vs. RT médio de repetição. Avalia flexibilidade cognitiva.
+2. **Custo de Multi-Track (Carga Cognitiva)**: queda de acurácia nos blocos tardios (com mais trilhas) vs. blocos iniciais. Avalia sobrecarga de memória de trabalho.
+3. **Decaimento de Vigilância**: aumento da taxa de omissões do início para o final da tarefa. Avalia fadiga cognitiva sob alternância.`;
+
+    specificData = `Métricas globais:
+  totalTrials:  ${totalTrials}
+  accuracy:     ${input.accuracy ?? 0}%  → ${input.accuracyNote ?? 'indeterminado'}
+  avgRtMs:      ${formatMsToSeconds(input.meanRT ?? input.avgRtMs ?? 0)}  → ${input.speedNote ?? 'indeterminado'}
+  omissions:    ${input.omissions ?? 0}
+  commissions:  ${input.commissionErrors ?? 0}
+
+Custo de Mudança (Transição):
+  custo RT:         ${formatMsToSeconds(input.switchCostRtMs ?? 0)}  → ${input.switchingCostNote ?? 'indeterminado'}
+
+Carga Cognitiva e Fadiga:
+  custo de Multi-Track (queda de acurácia): ${input.multiTrackCostPct ?? 0}%
+  decaimento de vigilância (aumento de omissões): ${input.vigilanceDecayPct ?? 0}%`;
+
   } else {
     const totalTrials = input.totalTrials ?? 0;
     noEngagementWarning = totalTrials === 0
@@ -116,7 +150,7 @@ totalTrials é 0. Nenhuma tentativa foi registrada.
 `
       : '';
 
-    gameDescription = `O usuário completou um treino de task-switching do Vigil ("Cor ou Forma" ou "Insetos")
+    gameDescription = `O usuário completou o treino de task-switching "Cor ou Forma" do Vigil,
 onde alterna rapidamente regras de classificação ao longo dos estímulos.`;
 
     dimensionsDescription = `O instrumento avalia 3 dimensões executivas:
