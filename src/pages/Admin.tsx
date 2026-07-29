@@ -141,6 +141,17 @@ export function Admin() {
             ↻ Atualizar
           </button>
           <button
+            onClick={() => navigate('/simulator')}
+            style={{
+              padding: '8px 16px', borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--color-primary)', background: 'rgba(99,102,241,0.1)',
+              color: 'var(--color-primary)', fontSize: 'var(--text-sm)', cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            🧪 Simulador
+          </button>
+          <button
             onClick={() => navigate('/treinar')}
             style={{
               padding: '8px 16px', borderRadius: 'var(--radius-md)',

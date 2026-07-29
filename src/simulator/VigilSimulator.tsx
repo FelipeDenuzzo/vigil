@@ -156,12 +156,10 @@ function LogTable({
   logs,
   activeId,
   onSelect,
-  onClear,
 }: {
   logs: SimulationLog[];
   activeId: string | null;
   onSelect: (log: SimulationLog) => void;
-  onClear: () => void;
 }) {
   if (logs.length === 0) {
     return (
@@ -356,7 +354,6 @@ export function VigilSimulator() {
           logs={logs}
           activeId={activeLog?.id ?? null}
           onSelect={(log) => setActiveLog(log)}
-          onClear={() => { setLogs([]); setActiveLog(null); }}
         />
       </div>
     </div>
