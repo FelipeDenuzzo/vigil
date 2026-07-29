@@ -9,9 +9,9 @@ export function buildMentalVaultTechnicalReport(
   metrics: MentalVaultSessionMetrics
 ): EvaluatorInput {
   const severity =
-    metrics.avgAbsoluteRecall >= 4.5 ? 'minimo' :
-    metrics.avgAbsoluteRecall >= 3.5 ? 'leve' :
-    metrics.avgAbsoluteRecall >= 2.5 ? 'moderado' : 'importante';
+    (metrics.avgAbsoluteRecall ?? 0) >= 4.5 ? 'minimo' :
+    (metrics.avgAbsoluteRecall ?? 0) >= 3.5 ? 'leve' :
+    (metrics.avgAbsoluteRecall ?? 0) >= 2.5 ? 'moderado' : 'importante';
 
   return {
     sessionId,
