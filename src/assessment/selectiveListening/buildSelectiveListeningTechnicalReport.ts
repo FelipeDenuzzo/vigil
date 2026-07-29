@@ -3,6 +3,7 @@ import { SelectiveListeningMetrics, SelectiveListeningScaleResult } from './type
 
 export interface DividedEvaluatorInput {
   attentionType: 'dividida';
+  game?: 'escuta-seletiva';
   sessionId: string;
   severity?: 'minimo' | 'leve' | 'moderado' | 'importante';
   totalRounds?: number;
@@ -36,6 +37,7 @@ export function buildSelectiveListeningTechnicalReport(
 
   return {
     attentionType: 'dividida',
+    game: 'escuta-seletiva',
     sessionId,
     severity: rawSeverity,
     totalRounds: metrics.totalRounds,
