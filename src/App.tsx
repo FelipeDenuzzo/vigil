@@ -16,6 +16,7 @@ import { AguardandoAcesso } from './pages/AguardandoAcesso';
 import { Admin } from './pages/Admin';
 import { NotFound } from './pages/NotFound';
 import { OnboardingFlow } from './onboarding/OnboardingFlow';
+import { VigilSimulator } from './simulator/VigilSimulator';
 import './shared/base.css';
 
 export default function App() {
@@ -62,6 +63,9 @@ export default function App() {
 
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
+
+          {/* Simulador de Payload — apenas admins */}
+          <Route path="/simulator" element={<ProtectedRoute requireAdmin><VigilSimulator /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
