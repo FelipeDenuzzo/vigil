@@ -9,6 +9,12 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // ── Helper: verifica se o usuário autenticado está aprovado ─────────────────
+    function isApproved() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accessStatus == 'approved';
+    }
+
     // ── users ──────────────────────────────────────────────────────────────────
     // Usuário lê/cria o próprio documento. Admin lê e atualiza qualquer um.
     match /users/{uid} {
@@ -22,44 +28,62 @@ service cloud.firestore {
                     && request.resource.data.accessStatus == 'pending'
                     && request.resource.data.role == 'user';
 
-      // Atualização: apenas admin (aprovar, bloquear, promover)
-      allow update: if isAdmin();
+      // Atualização/Exclusão geral: apenas admin
+      allow update, delete: if isAdmin();
 
-      // Exclusão: apenas admin
-      allow delete: if isAdmin();
-
-      // ← ADICIONADO: usuário grava apenas baseline e onboardingCompleted no próprio doc
+      // Permitir que o próprio usuário atualize apenas baseline e onboardingCompleted
       allow update: if request.auth != null
                     && request.auth.uid == uid
                     && request.resource.data.diff(resource.data).affectedKeys()
                         .hasOnly(['baseline', 'onboardingCompleted']);
+
+      // ── consent (subcoleção) ────────────────────────────────────────────────
+      // CORREGIDO: Mapeia o caminho correto da subcoleção de consentimento usada no frontend
+      match /consent/{consentDoc} {
+        allow read, write: if request.auth != null
+                           && request.auth.uid == uid;
+      }
     }
 
     // ── sessions ───────────────────────────────────────────────────────────────
     match /sessions/{sessionId} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == resource.data.uid;
+      // Leitura: próprio proprietário do dado ou administrador
+      allow read: if request.auth != null
+                  && (resource.data.uid == request.auth.uid || isAdmin());
 
-      allow create: if request.auth != null
+      // Criação: apenas usuários com conta aprovada pelo admin
+      allow create: if isApproved()
                     && request.resource.data.uid == request.auth.uid;
+
+      // Atualização: apenas usuários aprovados, donos do dado, impedindo hijacking de UID
+      allow update: if isApproved()
+                    && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == resource.data.uid;
+
+      // Exclusão: apenas administradores
+      allow delete: if isAdmin();
     }
 
     // ── sessionReports ────────────────────────────────────────────────────────
     match /sessionReports/{sessionId} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == resource.data.uid;
+      // Leitura: próprio proprietário do dado ou administrador
+      allow read: if request.auth != null
+                  && (resource.data.uid == request.auth.uid || isAdmin());
 
-      allow create: if request.auth != null
+      // Criação: apenas usuários com conta aprovada pelo admin
+      allow create: if isApproved()
                     && request.resource.data.uid == request.auth.uid;
+
+      // Atualização: apenas usuários aprovados, donos do dado, impedindo hijacking de UID
+      allow update: if isApproved()
+                    && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == resource.data.uid;
+
+      // Exclusão: apenas administradores
+      allow delete: if isAdmin();
     }
 
-    // ── consent ───────────────────────────────────────────────────────────────
-    match /consent/{uid} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == uid;
-    }
-
-    // Bloqueia qualquer outro caminho não mapeado.
+    // Bloqueia qualquer outro caminho não mapeado por padrão.
     match /{document=**} {
       allow read, write: if false;
     }

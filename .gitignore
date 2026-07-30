@@ -1,20 +1,36 @@
+# Node & Build Outputs
 node_modules/
 dist/
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
 .DS_Store
+
+# Environment & Local Secrets
 .env
+.env.*
 .env.local
 .env.*.local
+.env.production
+.env.development
 
-# GCP keys and credentials
+# Vercel Configuration & Outputs
+.vercel/
+
+# GCP Credentials & JSON Keys
 nova-chave.json
 *-chave.json
 *key.json
 gha-creds-*.json
+service-account*.json
+credentials*.json
+*.json-chave
 
-# VS Code settings
+# Development Environment Settings
 .vscode/
 
-
+# Temporary Files, Backups and Backend Folders
+*backup*
+temp/
+tmp/
+vigil-evaluator/
