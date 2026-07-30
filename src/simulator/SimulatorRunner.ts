@@ -2,6 +2,7 @@
 // Executa um cenário contra o GCP evaluator e retorna um SimulationLog completo.
 
 import type { Scenario, SimulationLog } from './types';
+import { auth } from '../lib/firebase';
 
 export async function runScenario(
   scenario: Scenario,
@@ -31,10 +32,10 @@ export async function runScenario(
     };
   }
 
-  const url    = import.meta.env.VITE_EVALUATOR_URL as string | undefined;
-  const secret = import.meta.env.VITE_EVALUATOR_SECRET as string | undefined;
+  const url   = import.meta.env.VITE_EVALUATOR_URL as string | undefined;
+  const token = await auth.currentUser?.getIdToken();
 
-  if (!url || !secret) {
+  if (!url || !token) {
     return {
       id,
       scenarioLabel: scenario.label,
@@ -44,7 +45,7 @@ export async function runScenario(
       httpStatus: null,
       responseBody: null,
       durationMs: 0,
-      error: 'VITE_EVALUATOR_URL ou VITE_EVALUATOR_SECRET não configurados',
+      error: 'VITE_EVALUATOR_URL ou Firebase Auth Token não configurados/disponíveis',
       timestamp,
       localScore: scenario.localScore,
       aiScore: null,
@@ -64,7 +65,7 @@ export async function runScenario(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-evaluator-secret': secret,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(60_000), // mais generoso que o app real (45s)

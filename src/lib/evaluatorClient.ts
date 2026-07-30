@@ -236,11 +236,11 @@ export function buildEvaluatorInput(
 export async function callEvaluator(
   input: EvaluatorInput
 ): Promise<EvaluationReport | null> {
-  const url    = import.meta.env.VITE_EVALUATOR_URL;
-  const secret = import.meta.env.VITE_EVALUATOR_SECRET;
+  const url   = import.meta.env.VITE_EVALUATOR_URL;
+  const token = await auth.currentUser?.getIdToken();
 
-  if (!url || !secret) {
-    if (import.meta.env.DEV) console.warn('[callEvaluator] VITE_EVALUATOR_URL ou VITE_EVALUATOR_SECRET não configurados');
+  if (!url || !token) {
+    if (import.meta.env.DEV) console.warn('[callEvaluator] VITE_EVALUATOR_URL ou Firebase Auth Token não configurados/disponíveis');
     return null;
   }
 
@@ -249,9 +249,9 @@ export async function callEvaluator(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-evaluator-secret': secret,
+        'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ ...input, uid: auth.currentUser?.uid }),
+      body: JSON.stringify(input),
       signal: AbortSignal.timeout(45_000),
     });
 
@@ -284,11 +284,11 @@ export async function callEvaluator(
 export async function callOnboardingEvaluator(
   input: EvaluatorInput
 ): Promise<OnboardingReport | null> {
-  const url    = import.meta.env.VITE_EVALUATOR_URL;
-  const secret = import.meta.env.VITE_EVALUATOR_SECRET;
+  const url   = import.meta.env.VITE_EVALUATOR_URL;
+  const token = await auth.currentUser?.getIdToken();
 
-  if (!url || !secret) {
-    if (import.meta.env.DEV) console.warn('[callOnboardingEvaluator] config ausente');
+  if (!url || !token) {
+    if (import.meta.env.DEV) console.warn('[callOnboardingEvaluator] config ou token ausente');
     return null;
   }
 
@@ -297,9 +297,9 @@ export async function callOnboardingEvaluator(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-evaluator-secret': secret,
+        'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ ...input, uid: auth.currentUser?.uid }),
+      body: JSON.stringify(input),
       signal: AbortSignal.timeout(45_000),
     });
 
